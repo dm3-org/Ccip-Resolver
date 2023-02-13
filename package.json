@@ -1,5 +1,5 @@
 {
-    "name": "typescript-eth-solidity-hardhat-template",
+    "name": "optimism-resolver",
     "version": "1.0.0",
     "description": "",
     "scripts": {
@@ -18,7 +18,7 @@
         "LICENSE",
         "README.md"
     ],
-    "author": "Kristjan Kosic <kristjan@protokol.com>",
+    "author": "Alex Plutta alex.plutta@googlemail.com",
     "license": "MIT",
     "devDependencies": {
         "@nomiclabs/hardhat-ethers": "^2.0.3",
