@@ -5,8 +5,6 @@ import "./IExtendedResolver.sol";
 import "./SupportsInterface.sol";
 import "./OptimisimProofVerifier.sol";
 
-import "hardhat/console.sol";
-
 /**
  * Implements an ENS resolver that directs all queries to a CCIP read gateway.
  * Callers must implement EIP 3668 and ENSIP 10.
@@ -65,21 +63,14 @@ contract OptimismResolver is IExtendedResolver, SupportsInterface, OptimisimProo
      * Callback used by CCIP read compatible clients to verify and parse the response.
      * extraData -> the original call data
      */
-    function resolveWithProof(bytes calldata response, bytes calldata extraData)
-        external
-        view
-        returns (bytes memory result)
-    {
+    function resolveWithProof(bytes calldata response, bytes calldata extraData) external view returns (bytes memory) {
         (bytes memory result, L2StateProof memory proof) = abi.decode(response, (bytes, L2StateProof));
-        console.log(proof.stateRootBatchHeader.batchIndex);
 
+        return isValidProof(proof);
         //Do stuff with proof
-        // require(verifyStateRootProof(proof), "Invalid state root");
 
         // bytes32 slot = keccak256(abi.encodePacked(node, uint256(1)));
         //bytes32 value = getStorageValue(l2resolver, slot, proof);
-
-        return result;
     }
 
     function supportsInterface(bytes4 interfaceID) public pure override returns (bool) {

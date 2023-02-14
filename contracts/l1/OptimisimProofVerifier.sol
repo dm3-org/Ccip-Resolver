@@ -8,8 +8,14 @@ import {Lib_RLPReader} from "@eth-optimism/contracts/libraries/rlp/Lib_RLPReader
 import {Lib_BytesUtils} from "@eth-optimism/contracts/libraries/utils/Lib_BytesUtils.sol";
 import {IStateCommitmentChain} from "@eth-optimism/contracts/L1/rollup/IStateCommitmentChain.sol";
 
+import "hardhat/console.sol";
+
 contract OptimisimProofVerifier is Lib_AddressResolver {
-    constructor(address _ovmAddressManager, address _l2resolver) Lib_AddressResolver(_ovmAddressManager) {}
+    address l2Resolver;
+
+    constructor(address _ovmAddressManager, address _l2resolver) Lib_AddressResolver(_ovmAddressManager) {
+        l2Resolver = _l2resolver;
+    }
 
     struct L2StateProof {
         bytes32 stateRoot;
@@ -19,8 +25,22 @@ contract OptimisimProofVerifier is Lib_AddressResolver {
         bytes storageTrieWitness;
     }
 
-    function verifyStateRootProof(L2StateProof memory proof) internal view returns (bool) {
-        IStateCommitmentChain ovmStateCommitmentChain = IStateCommitmentChain(resolve("OVM_StateCommitmentChain"));
+    function isValidProof(L2StateProof memory proof) internal view returns (bytes memory) {
+        console.log(proof.stateRootBatchHeader.batchIndex);
+        bytes32 node = 0xde9b09fd7c5f901e23a3f19fecc54828e9c848539801e86591bd9801b019f84f;
+        bytes32 slot = keccak256(abi.encodePacked(node, uint256(1)));
+
+        console.log("slot");
+        console.logBytes32(slot);
+
+        require(verifyStateRootProof(proof), "Invalid state root");
+        return getStorageValue(l2Resolver, slot, proof);
+    }
+
+    function verifyStateRootProof(L2StateProof memory proof) private view returns (bool) {
+        //StateCommitmentChain
+        //https://etherscan.io/address/0xBe5dAb4A2e9cd0F27300dB4aB94BeE3A233AEB19
+        IStateCommitmentChain ovmStateCommitmentChain = IStateCommitmentChain(resolve("StateCommitmentChain"));
         return
             ovmStateCommitmentChain.verifyStateCommitment(
                 proof.stateRoot,
@@ -33,7 +53,7 @@ contract OptimisimProofVerifier is Lib_AddressResolver {
         address target,
         bytes32 slot,
         L2StateProof memory proof
-    ) internal pure returns (bytes32) {
+    ) private pure returns (bytes memory) {
         (bool exists, bytes memory encodedResolverAccount) = Lib_SecureMerkleTrie.get(
             abi.encodePacked(target),
             proof.stateTrieWitness,
@@ -47,6 +67,6 @@ contract OptimisimProofVerifier is Lib_AddressResolver {
             account.storageRoot
         );
         require(storageExists, "Storage value does not exist");
-        return Lib_BytesUtils.toBytes32(Lib_RLPReader.readBytes(retrievedValue));
+        return Lib_RLPReader.readBytes(retrievedValue);
     }
 }

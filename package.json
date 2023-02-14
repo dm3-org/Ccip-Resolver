@@ -64,6 +64,7 @@
         "timeout": 10000000
     },
     "dependencies": {
+        "@defi-wonderland/smock": "^2.3.4",
         "@eth-optimism/contracts": "^0.5.40"
     }
 }
