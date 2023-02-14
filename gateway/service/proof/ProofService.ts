@@ -8,9 +8,9 @@ export class ProofService {
         this.l2_provider = l2_provider;
     }
 
-    public async proof(contractAddress: string) {
+    public async proofText(contractAddress: string) {
         const blocknr = await this.l2_provider.getBlockNumber();
-        const p =await makeStateTrieProof(this.l2_provider, blocknr, contractAddress, "0");
+        const p = await makeStateTrieProof(this.l2_provider, blocknr, contractAddress, "0");
         console.log(p);
     }
 }

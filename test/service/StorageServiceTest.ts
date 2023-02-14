@@ -2,7 +2,7 @@ import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { expect } from "chai";
 import { ethers } from "hardhat";
 import { PublicResolver } from "typechain";
-import { StorageHelper } from "../../gateway/service/StorageService";
+import { StorageHelper } from "../../gateway/service/storage/StorageService";
 
 describe("StorageService", () => {
     let owner: SignerWithAddress;

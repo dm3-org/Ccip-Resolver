@@ -1,7 +1,7 @@
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { ethers } from "hardhat";
 import { PublicResolver } from "typechain";
-import { ProofService } from "../../gateway/service/ProofService";
+import { ProofService } from "../../gateway/service/proof/ProofService";
 describe("ProofServiceTest", () => {
     let publicResolver: PublicResolver;
     let owner: SignerWithAddress;
