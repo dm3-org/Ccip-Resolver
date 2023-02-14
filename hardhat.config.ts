@@ -10,6 +10,7 @@ import "dotenv/config";
 import "hardhat-deploy";
 import "solidity-coverage";
 import "hardhat-storage-layout";
+import "hardhat-tracer";
 
 const ETHERSCAN_API_KEY = process.env.ETHERSCAN_API_KEY || "Your etherscan API key";
 
