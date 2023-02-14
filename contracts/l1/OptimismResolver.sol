@@ -55,8 +55,12 @@ contract OptimismResolver is IExtendedResolver, SupportsInterface, OptimisimProo
         revert OffchainLookup(address(this), urls, callData, OptimismResolver.resolveWithProof.selector, callData);
     }
 
-    function getResponse(string calldata node, L2StateProof calldata proof) public pure returns (bytes memory) {
-        return abi.encode(node, proof);
+    function getResponse(
+        bytes calldata result,
+        bytes32  slot,
+        L2StateProof calldata proof
+    ) public pure returns (bytes memory) {
+        return abi.encode(result, slot, proof);
     }
 
     /**
@@ -64,9 +68,12 @@ contract OptimismResolver is IExtendedResolver, SupportsInterface, OptimisimProo
      * extraData -> the original call data
      */
     function resolveWithProof(bytes calldata response, bytes calldata extraData) external view returns (bytes memory) {
-        (bytes memory result, L2StateProof memory proof) = abi.decode(response, (bytes, L2StateProof));
+        (bytes memory result, bytes32 slot, L2StateProof memory proof) = abi.decode(
+            response,
+            (bytes, bytes32, L2StateProof)
+        );
 
-        return isValidProof(proof);
+        return isValidProof(slot, proof);
         //Do stuff with proof
 
         // bytes32 slot = keccak256(abi.encodePacked(node, uint256(1)));

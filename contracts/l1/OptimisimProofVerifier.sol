@@ -25,14 +25,7 @@ contract OptimisimProofVerifier is Lib_AddressResolver {
         bytes storageTrieWitness;
     }
 
-    function isValidProof(L2StateProof memory proof) internal view returns (bytes memory) {
-        console.log(proof.stateRootBatchHeader.batchIndex);
-        bytes32 node = 0xde9b09fd7c5f901e23a3f19fecc54828e9c848539801e86591bd9801b019f84f;
-        bytes32 slot = keccak256(abi.encodePacked(node, uint256(1)));
-
-        console.log("slot");
-        console.logBytes32(slot);
-
+    function isValidProof(bytes32 slot, L2StateProof memory proof) internal view returns (bytes memory) {
         require(verifyStateRootProof(proof), "Invalid state root");
         return getStorageValue(l2Resolver, slot, proof);
     }
