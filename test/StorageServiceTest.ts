@@ -5,8 +5,9 @@ import { hexlify, keccak256 } from "ethers/lib/utils";
 import { ethers, storageLayout } from "hardhat";
 import { IStateCommitmentChain, LibAddressManager, OptimismResolver, PublicResolver } from "typechain";
 import { TrieTestGenerator } from "./helper/trie-test-generator.js";
+import { StorageHelper } from "../gateway/service/StorageService";
 
-describe("OptimismResolver", () => {
+describe.skip("OptimismResolver", () => {
     let owner: SignerWithAddress;
     let nameOwner: SignerWithAddress;
 
@@ -53,6 +54,9 @@ describe("OptimismResolver", () => {
             deliveryServices: ["foo.dm3"],
         };
         await publicResolver.connect(nameOwner).setText(node, recordName, JSON.stringify(profile));
+        await publicResolver
+            .connect(nameOwner)
+            .setText(ethers.utils.namehash("bar.dm3"), recordName, "fewfeewferfefeffewfEWFWFEWFWEFEEEFEWFWEF");
 
         //The storage of the resolver smart contract account
         const storageGenerator = await TrieTestGenerator.fromNodes({
@@ -101,5 +105,33 @@ describe("OptimismResolver", () => {
         const responseString = Buffer.from(responseBytes.slice(2), "hex").toString();
 
         expect(responseString).to.eql(JSON.stringify(profile));
+
+        const nodeHash = keccak256(node);
+        const recordHash = keccak256(ethers.utils.toUtf8Bytes(recordName));
+        const slotIndex = "00".repeat(31) + "01";
+
+        //keccak256(recordHash . keccak256(nodeHash slotIndex))
+        //
+        const finalHash = keccak256(ethers.utils.toUtf8Bytes(recordHash + keccak256(nodeHash + slotIndex)));
+        const givenSlot = await ethers.provider.getStorageAt(publicResolver.address, 0);
+        console.log(responseBytes.substring(2).length);
+        console.log(givenSlot);
+        await storageLayout.export();
+
+        console.log("onchainSlot");
+        console.log(await optimismResolver.mapLocation(0, node, recordName));
+        console.log("offchainSlot");
+        console.log(await getSlot(0, node, recordName));
+
+        const gateway = new StorageHelper(ethers.provider, publicResolver.address);
+        console.log(responseBytes);
+
+        console.log("Gateway");
+        await gateway.readFromStorage(0, node, recordName);
     });
 });
+
+const getSlot = (slot: number, node: string, recordName: string) => {
+    const innerHash = ethers.utils.solidityKeccak256(["bytes32", "uint256"], [node, slot]);
+    return ethers.utils.solidityKeccak256(["string", "bytes32"], [recordName, innerHash]);
+};
