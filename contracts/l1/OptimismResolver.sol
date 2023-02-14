@@ -55,14 +55,6 @@ contract OptimismResolver is IExtendedResolver, SupportsInterface, OptimisimProo
         revert OffchainLookup(address(this), urls, callData, OptimismResolver.resolveWithProof.selector, callData);
     }
 
-    function getResponse(
-        bytes calldata result,
-        bytes32  slot,
-        L2StateProof calldata proof
-    ) public pure returns (bytes memory) {
-        return abi.encode(result, slot, proof);
-    }
-
     /**
      * Callback used by CCIP read compatible clients to verify and parse the response.
      * extraData -> the original call data

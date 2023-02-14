@@ -18,7 +18,6 @@ export class StorageHelper {
 
     public async readFromStorage(slot: number, node: string, recordName: string) {
         const initialSlot = this.getStorageSlot(slot, node, recordName);
-        console.log(initialSlot);
         //This is the initial value of the slot
         //Indicting the length of the following sequence
 
