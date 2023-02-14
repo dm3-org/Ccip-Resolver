@@ -32,7 +32,7 @@ describe.skip("OptimismResolver", () => {
 
         await mockContracts();
 
-        const publicResolverFactory = await ethers.getContractFactory("PublicResolver");
+        const publicResolverFactory = await ethers.getContractFactory("contracts/l2/L2PublicLegacyResolver.sol:L2PublicResolverLegacy");
         publicResolver = (await publicResolverFactory.deploy()) as PublicResolver;
 
         const optimismResolverFactory = await ethers.getContractFactory("OptimismResolver");

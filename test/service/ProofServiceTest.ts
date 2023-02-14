@@ -12,7 +12,7 @@ describe("ProofServiceTest", () => {
         const publicResolverFactory = await ethers.getContractFactory("PublicResolver");
         publicResolver = (await publicResolverFactory.deploy()) as PublicResolver;
     });
-    it.only("Creates proof", async () => {
+    it("Creates proof", async () => {
         const proofService = new ProofService(ethers.provider);
 
         await proofService.proof(publicResolver.address);

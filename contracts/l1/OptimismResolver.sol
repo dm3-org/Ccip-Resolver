@@ -4,12 +4,13 @@ pragma solidity ^0.8.9;
 import "./IExtendedResolver.sol";
 import "./SupportsInterface.sol";
 import "./OptimisimProofVerifier.sol";
+import "./OwnedENSNode.sol";
 
 /**
  * Implements an ENS resolver that directs all queries to a CCIP read gateway.
  * Callers must implement EIP 3668 and ENSIP 10.
  */
-contract OptimismResolver is IExtendedResolver, SupportsInterface, OptimisimProofVerifier {
+contract OptimismResolver is IExtendedResolver, SupportsInterface, OptimisimProofVerifier, OwnedENSNode {
     address public owner;
     string public url;
     mapping(address => bool) public signers;
@@ -21,8 +22,9 @@ contract OptimismResolver is IExtendedResolver, SupportsInterface, OptimisimProo
         string memory _url,
         address _owner,
         address _ovmAddressManager,
-        address _l2resolver
-    ) OptimisimProofVerifier(_ovmAddressManager, _l2resolver) {
+        address _l2resolver,
+        ENS _ensRegisrty
+    ) OptimisimProofVerifier(_ovmAddressManager, _l2resolver) OwnedENSNode(_ensRegisrty) {
         url = _url;
         owner = _owner;
     }
@@ -47,9 +49,10 @@ contract OptimismResolver is IExtendedResolver, SupportsInterface, OptimisimProo
      * @param name The DNS-encoded name to resolve.
      * @param data The ABI encoded data for the underlying resolution function (Eg, addr(bytes32), text(bytes32,string), etc).
      * @return The return data, ABI encoded identically to the underlying function.
-     */
+     */                                           
     function resolve(bytes calldata name, bytes calldata data) external view override returns (bytes memory) {
-        bytes memory callData = abi.encodeWithSelector(IResolverService.resolve.selector, name, data);
+        bytes memory callData = abi.encodeWithSelector(IResolverService.resolve.selector, name, replaceNodeWithOwnedNode(data));
+
         string[] memory urls = new string[](1);
         urls[0] = url;
         revert OffchainLookup(address(this), urls, callData, OptimismResolver.resolveWithProof.selector, callData);
