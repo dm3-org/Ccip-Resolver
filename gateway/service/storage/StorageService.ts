@@ -11,13 +11,13 @@ export class StorageHelper {
         this.contractAddress = contractAddress;
     }
 
-    private getStorageSlot(slot: number, node: string, recordName: string) {
+    public static getStorageSlot(slot: number, node: string, recordName: string) {
         const innerHash = ethers.utils.solidityKeccak256(["bytes32", "uint256"], [node, slot]);
         return ethers.utils.solidityKeccak256(["string", "bytes32"], [recordName, innerHash]);
     }
 
     public async readFromStorage(slot: number, node: string, recordName: string) {
-        const initialSlot = this.getStorageSlot(slot, node, recordName);
+        const initialSlot = StorageHelper.getStorageSlot(slot, node, recordName);
         //This is the initial value of the slot
         //Indicting the length of the following sequence
 

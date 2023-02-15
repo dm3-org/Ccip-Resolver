@@ -5,7 +5,7 @@ import { ENSRegMock, OwnedENSNode } from "typechain";
 
 import { expect } from "chai";
 
-describe.only("OwnedENSNodeTest", () => {
+describe("OwnedENSNodeTest", () => {
     let user1: SignerWithAddress;
     let user2: SignerWithAddress;
     let ownedENSNode: OwnedENSNode;

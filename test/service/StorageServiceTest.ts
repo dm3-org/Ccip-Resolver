@@ -15,7 +15,7 @@ describe("StorageService", () => {
         publicResolver = (await publicResolverFactory.deploy()) as PublicResolver;
     });
 
-    it("Reads byte sequence longer than 32 bytes from storage", async () => {
+    it.only("Reads byte sequence longer than 32 bytes from storage", async () => {
         const storageHelper = new StorageHelper(ethers.provider, publicResolver.address);
 
         const profile = {
@@ -31,6 +31,10 @@ describe("StorageService", () => {
 
         const profileFromStorageBytes = await storageHelper.readFromStorage(0, node, recordName);
         const profileFromStorageString = Buffer.from(profileFromStorageBytes.slice(2), "hex").toString();
+
+        console.log(node);
+        console.log(recordName);
+        console.log(JSON.stringify(profile));
 
         expect(profileFromStorageString).to.equal(JSON.stringify(profile));
     });
