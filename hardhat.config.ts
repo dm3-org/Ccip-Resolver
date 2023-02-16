@@ -18,10 +18,9 @@ module.exports = {
     defaultNetwork: "hardhat",
     networks: {
         hardhat: {
-            // // If you want to do some forking, uncomment this
-            // forking: {
-            //   url: MAINNET_RPC_URL
-            // }
+            forking: {
+                url: "https://eth-mainnet.g.alchemy.com/v2/L1PIhq_TFU7sofEqd2IJwWqhBsJYah1S",
+            },
         },
         localhost: {},
     },
@@ -40,7 +39,7 @@ module.exports = {
         },
     },
     solidity: {
-        compilers: [    
+        compilers: [
             {
                 version: "0.5.16",
             },

@@ -1,21 +1,21 @@
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { expect } from "chai";
 import { ethers } from "hardhat";
-import { PublicResolver } from "typechain";
+import { L2PublicResolver, PublicResolver } from "typechain";
 import { StorageHelper } from "../../gateway/service/storage/StorageService";
 
 describe("StorageService", () => {
     let owner: SignerWithAddress;
-    let publicResolver: PublicResolver;
+    let publicResolver: L2PublicResolver;
 
     beforeEach(async () => {
         [owner] = await ethers.getSigners();
 
-        const publicResolverFactory = await ethers.getContractFactory("PublicResolver");
-        publicResolver = (await publicResolverFactory.deploy()) as PublicResolver;
+        const publicResolverFactory = await ethers.getContractFactory("L2PublicResolver");
+        publicResolver = (await publicResolverFactory.deploy()) as L2PublicResolver;
     });
 
-    it.only("Reads byte sequence longer than 32 bytes from storage", async () => {
+    it("Reads byte sequence longer than 32 bytes from storage", async () => {
         const storageHelper = new StorageHelper(ethers.provider, publicResolver.address);
 
         const profile = {
@@ -32,9 +32,7 @@ describe("StorageService", () => {
         const profileFromStorageBytes = await storageHelper.readFromStorage(0, node, recordName);
         const profileFromStorageString = Buffer.from(profileFromStorageBytes.slice(2), "hex").toString();
 
-        console.log(node);
-        console.log(recordName);
-        console.log(JSON.stringify(profile));
+    
 
         expect(profileFromStorageString).to.equal(JSON.stringify(profile));
     });

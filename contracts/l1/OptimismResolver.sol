@@ -68,7 +68,7 @@ contract OptimismResolver is IExtendedResolver, SupportsInterface, OptimisimProo
             (bytes, bytes32, L2StateProof)
         );
 
-        return isValidProof(slot, proof);
+        return isValidProof( proof);
         //Do stuff with proof
 
         // bytes32 slot = keccak256(abi.encodePacked(node, uint256(1)));
