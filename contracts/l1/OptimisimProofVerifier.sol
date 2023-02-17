@@ -40,7 +40,8 @@ contract OptimisimProofVerifier is Lib_AddressResolver {
         Lib_OVMCodec.EVMAccount memory account = getAccount(proof);
         console.log("got acc");
 
-        proofStorageProofs(account.storageRoot, proof.storageProofs);
+        bytes memory result = proofStorageProofs(account.storageRoot, proof.storageProofs);
+        console.logBytes(result);
         console.log("exit");
     }
 
@@ -72,10 +73,15 @@ contract OptimisimProofVerifier is Lib_AddressResolver {
         view
         returns (bytes memory)
     {
+        bytes memory result = abi.encodePacked("0x");
+
         for (uint256 i = 0; i < storageProofs.length; i++) {
             StorageProof memory storageProof = storageProofs[i];
-            proofSingleSlot(storageRoot, storageProof);
+            bytes memory slotValue = proofSingleSlot(storageRoot, storageProof);
+            console.logBytes(slotValue);
+            result = abi.encodePacked(result, slotValue);
         }
+        return result;
     }
 
     function proofSingleSlot(bytes32 storageRoot, StorageProof memory storageProof)
@@ -83,8 +89,6 @@ contract OptimisimProofVerifier is Lib_AddressResolver {
         view
         returns (bytes memory)
     {
-        console.log("start single slot");
-        console.logBytes32(storageProof.key);
         (bool storageExists, bytes memory retrievedValue) = Lib_SecureMerkleTrie.get(
             abi.encodePacked(storageProof.key),
             storageProof.storageTrieWitness,
