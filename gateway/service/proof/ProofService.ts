@@ -89,7 +89,6 @@ export class ProofService {
             //TODO figure out how to proof empty slot
             throw "unimplemented";
         }
-
         const lastByte = value.substring(value.length - 2);
         const lastBit = parseInt(lastByte, 16) % 2;
 
@@ -113,15 +112,17 @@ export class ProofService {
     }
     private async proofComplexData(initialSlot: string, length: number, resolverAddr: string, blocknr: number) {
         const firstSlot = keccak256(initialSlot);
+
         const totalSlots = Math.ceil(length / 64);
 
         const slots = [...Array(totalSlots).keys()].map((i) => BigNumber.from(firstSlot).add(i).toHexString());
+        //I have to figure out why this sometimes failes
+        let getProofResponse = await this.getProof(resolverAddr, slots, blocknr);
 
-        const getProofResponse = await this.l2_provider.send("eth_getProof", [
-            resolverAddr,
-            slots,
-            toRpcHexString(blocknr),
-        ]);
+        if (getProofResponse.storageProof.length !== totalSlots) {
+            console.log("reattempting");
+            getProofResponse = await this.getProof(resolverAddr, slots, blocknr);
+        }
 
         const proofs = getProofResponse.storageProof as StorageProof[];
 
@@ -131,6 +132,14 @@ export class ProofService {
                 storageTrieWitness: ethers.utils.RLP.encode(p.proof),
             };
         });
+    }
+    private async getProof(resolverAddr: string, slots: string[], blocknr: number) {
+        const getProofResponse = await this.l2_provider.send("eth_getProof", [
+            resolverAddr,
+            slots,
+            toRpcHexString(blocknr),
+        ]);
+        return getProofResponse;
     }
 
     private async getStateRoot(): Promise<[StateRoot, number]> {

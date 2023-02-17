@@ -18,6 +18,7 @@ contract OptimisimProofVerifier is Lib_AddressResolver {
     constructor(address _ovmAddressManager, address _l2resolver) Lib_AddressResolver(_ovmAddressManager) {
         l2Resolver = _l2resolver;
     }
+    
 
     struct L2StateProof {
         address target;
@@ -62,6 +63,7 @@ contract OptimisimProofVerifier is Lib_AddressResolver {
             );
     }
 
+    //Todo rename to getStorageRoot
     function getAccount(L2StateProof memory proof) public view returns (Lib_OVMCodec.EVMAccount memory) {
         (bool exists, bytes memory encodedResolverAccount) = Lib_SecureMerkleTrie.get(
             abi.encodePacked(proof.target),
