@@ -42,10 +42,7 @@ contract OptimisimProofVerifier is Lib_AddressResolver {
     }
 
     function isValidStateCommitment(L2StateProof memory proof) private view returns (bool) {
-        //StateCommitmentChain
-        //https://etherscan.io/address/0xBe5dAb4A2e9cd0F27300dB4aB94BeE3A233AEB19
-        address ovmStateCommitmentChainAddress = resolve("StateCommitmentChain");
-        IStateCommitmentChain ovmStateCommitmentChain = IStateCommitmentChain(ovmStateCommitmentChainAddress);
+        IStateCommitmentChain ovmStateCommitmentChain = IStateCommitmentChain(resolve("StateCommitmentChain"));
         return
             ovmStateCommitmentChain.verifyStateCommitment(
                 proof.stateRoot,
@@ -66,8 +63,9 @@ contract OptimisimProofVerifier is Lib_AddressResolver {
     }
 
     function trimResult(bytes memory result, uint256 length) private pure returns (bytes memory) {
-        bytes memory trimed = new bytes((length / 2) + 1);
-        for (uint256 i = 0; i < (length / 2) + 1; i++) {
+        bytes memory trimed = new bytes((length / 2) - 1);
+
+        for (uint256 i = 0; i < (length / 2) - 1; i++) {
             trimed[i] = (result[i]);
         }
         return trimed;
@@ -83,6 +81,11 @@ contract OptimisimProofVerifier is Lib_AddressResolver {
         for (uint256 i = 0; i < storageProofs.length; i++) {
             StorageProof memory storageProof = storageProofs[i];
             bytes memory slotValue = getSingleStorageProof(storageRoot, storageProof);
+            //The first slot should not be included in the result
+
+            if (storageProofs.length > 1 && i == 0) {
+                continue;
+            }
             result = abi.encodePacked(result, slotValue);
         }
         return result;
