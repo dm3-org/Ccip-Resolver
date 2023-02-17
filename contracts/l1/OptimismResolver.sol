@@ -24,7 +24,7 @@ contract OptimismResolver is IExtendedResolver, SupportsInterface, OptimisimProo
         address _ovmAddressManager,
         address _l2resolver,
         ENS _ensRegisrty
-    ) OptimisimProofVerifier(_ovmAddressManager, _l2resolver) OwnedENSNode(_ensRegisrty) {
+    ) OptimisimProofVerifier(_ovmAddressManager) OwnedENSNode(_ensRegisrty) {
         url = _url;
         owner = _owner;
     }

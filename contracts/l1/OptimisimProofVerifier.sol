@@ -12,12 +12,7 @@ import {StateCommitmentChain} from "@eth-optimism/contracts/L1/rollup/StateCommi
 import "hardhat/console.sol";
 
 contract OptimisimProofVerifier is Lib_AddressResolver {
-    //TODO Remove constructor
-    address l2Resolver;
-
-    constructor(address _ovmAddressManager, address _l2resolver) Lib_AddressResolver(_ovmAddressManager) {
-        l2Resolver = _l2resolver;
-    }
+    constructor(address _ovmAddressManager) Lib_AddressResolver(_ovmAddressManager){}
 
     struct L2StateProof {
         address target;
