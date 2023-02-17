@@ -12,6 +12,7 @@ import {StateCommitmentChain} from "@eth-optimism/contracts/L1/rollup/StateCommi
 import "hardhat/console.sol";
 
 contract OptimisimProofVerifier is Lib_AddressResolver {
+    //TODO Remove constructor
     address l2Resolver;
 
     constructor(address _ovmAddressManager, address _l2resolver) Lib_AddressResolver(_ovmAddressManager) {
@@ -25,10 +26,13 @@ contract OptimisimProofVerifier is Lib_AddressResolver {
         Lib_OVMCodec.ChainInclusionProof stateRootProof;
         bytes stateTrieWitness;
         StorageProof[] storageProofs;
+        //Todo add length
     }
     struct StorageProof {
         bytes32 key;
+        //Todo remove value
         bytes32 value;
+        //Todo remove proof
         bytes[] proof;
         bytes storageTrieWitness;
     }
@@ -73,6 +77,7 @@ contract OptimisimProofVerifier is Lib_AddressResolver {
         view
         returns (bytes memory)
     {
+        //TODO return result without trailing 0
         bytes memory result = abi.encodePacked("0x");
 
         for (uint256 i = 0; i < storageProofs.length; i++) {
