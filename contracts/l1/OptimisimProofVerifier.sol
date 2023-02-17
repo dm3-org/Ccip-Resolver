@@ -63,6 +63,9 @@ contract OptimisimProofVerifier is Lib_AddressResolver {
     }
 
     function trimResult(bytes memory result, uint256 length) private pure returns (bytes memory) {
+        if (length == 0) {
+            return result;
+        }
         bytes memory trimed = new bytes((length / 2) - 1);
 
         for (uint256 i = 0; i < (length / 2) - 1; i++) {
@@ -73,7 +76,7 @@ contract OptimisimProofVerifier is Lib_AddressResolver {
 
     function getMultipleStorageProofs(bytes32 storageRoot, StorageProof[] memory storageProofs)
         private
-        pure
+        view
         returns (bytes memory)
     {
         bytes memory result = new bytes(0);
@@ -86,6 +89,7 @@ contract OptimisimProofVerifier is Lib_AddressResolver {
             if (storageProofs.length > 1 && i == 0) {
                 continue;
             }
+
             result = abi.encodePacked(result, slotValue);
         }
         return result;
@@ -93,7 +97,7 @@ contract OptimisimProofVerifier is Lib_AddressResolver {
 
     function getSingleStorageProof(bytes32 storageRoot, StorageProof memory storageProof)
         private
-        pure
+        view
         returns (bytes memory)
     {
         (bool storageExists, bytes memory retrievedValue) = Lib_SecureMerkleTrie.get(
@@ -101,7 +105,9 @@ contract OptimisimProofVerifier is Lib_AddressResolver {
             storageProof.storageTrieWitness,
             storageRoot
         );
-        require(storageExists, "Storage value does not exist");
+        if (!storageExists) {
+            return retrievedValue;
+        }
         return Lib_RLPReader.readBytes(retrievedValue);
     }
 }

@@ -4,8 +4,9 @@ import { mockProof } from "../mockProof";
 import { OptimisimProofVerifier, StateCommitmentChain, LibAddressManager } from "typechain";
 import { expect } from "chai";
 import { FakeContract, smock } from "@defi-wonderland/smock";
+import { mockProofForEmptySlot } from "../mocks/mockProofForEmptySlot";
 
-describe("OptimismProofVerifier", () => {
+describe.only("OptimismProofVerifier", () => {
     let owner: SignerWithAddress;
     let optimismProofVerifier: OptimisimProofVerifier;
     let stateCommitmentChain: StateCommitmentChain;
@@ -38,10 +39,19 @@ describe("OptimismProofVerifier", () => {
             "0x2D2d42a1200d8e3ACDFa45Fe58b47F45ebbbaCd6"
         )) as OptimisimProofVerifier;
     });
-    it.only("Resolves corrent Proof over multiple Slots", async () => {
+    it("Resolves correct Proof for an empty slot", async () => {
+        const proof = mockProofForEmptySlot;
+        const responseBytes = await optimismProofVerifier.getProofValue(proof);
+        console.log(responseBytes);
+
+        const responseString = Buffer.from(responseBytes.slice(2), "hex").toString();
+
+        expect(responseString).to.equal("");
+    });
+    it("Resolves correct Proof over multiple Slots", async () => {
         const proof = mockProof;
         const responseBytes = await optimismProofVerifier.getProofValue(proof);
-        console.log(responseBytes)
+        console.log(responseBytes);
         const profile = {
             publicSigningKey: "0ekgI3CBw2iXNXudRdBQHiOaMpG9bvq9Jse26dButug=",
             publicEncryptionKey: "Vrd/eTAk/jZb/w5L408yDjOO5upNFDGdt0lyWRjfBEk=",

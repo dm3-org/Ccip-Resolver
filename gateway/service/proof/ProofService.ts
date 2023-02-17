@@ -89,30 +89,44 @@ export class ProofService {
             length,
         };
     }
+
+    private async handleSingleSlot(resolverAddr: string, slot: string, blockNr: number, length: number) {
+        const res = await this.getProof(resolverAddr, [slot], blockNr);
+        console.log(res);
+        const { storageProof, accountProof } = res;
+
+        return {
+            accountProof,
+            storageProof: this.mapStorageProof(storageProof),
+            length,
+        };
+    }
     //Return also the account proof
     private async getStorageAndAccountProofs(
         initalSlot: string,
         blockNr: number,
         resolverAddr: string
     ): Promise<{ storageProof: StorageProof[]; accountProof: string[]; length: number }> {
-        const nr = toRpcHexString(blockNr);
-        const getProofResponse = await this.l2_provider.send("eth_getProof", [resolverAddr, [initalSlot], nr]);
-
-        const value = getProofResponse.storageProof[0].value;
-        if (value === ZERO_BYTES) {
+        const slotValue = await this.l2_provider.getStorageAt(resolverAddr, initalSlot, blockNr);
+        if (slotValue === ZERO_BYTES) {
             console.log("Slot empty");
-            //TODO figure out how to proof empty slot
-            throw "unimplemented";
+            return this.handleSingleSlot(resolverAddr, initalSlot, blockNr, 0);
         }
-        const lastByte = value.substring(value.length - 2);
+        /* 
+        const lastByte = slotValue.substring(slotValue.length - 2);
         const lastBit = parseInt(lastByte, 16) % 2;
 
+        if (lastBit === 0) {
+            console.log("single slot");
+            return this.handleSingleSlot(resolverAddr, initalSlot, blockNr, BigNumber.from(slotValue).toNumber() + 2);
+        }
+ */
+        /*
         const storageProof: StorageProof = {
-            ...getProofResponse.storageProof[0],
-            value: ZERO_BYTES,
-            storageTrieWitness: ethers.utils.RLP.encode(getProofResponse.storageProof[0].proof),
+            ...slotValue.storageProof[0],
+            storageTrieWitness: ethers.utils.RLP.encode(slotValue.storageProof[0].proof),
         };
-        const accountProof = getProofResponse.accountProof;
+        const accountProof = slotValue.accountProof;
 
         if (lastBit === 0) {
             console.log("SINGLE SLOT");
@@ -123,8 +137,16 @@ export class ProofService {
         const length = BigNumber.from(value).toNumber() + 2;
         const consequentStorageProofs = await this.proofComplexData(initalSlot, length, resolverAddr, blockNr);
 
-        return { storageProof: [storageProof, ...consequentStorageProofs], accountProof, length };
+        return { storageProof: [storageProof, ...consequentStorageProofs], accountProof, length }; */
     }
+
+    private mapStorageProof(storageProofs: EthGetProofResponse["storageProof"]): StorageProof[] {
+        return storageProofs.map(({ key, proof }) => ({
+            key,
+            storageTrieWitness: ethers.utils.RLP.encode(proof),
+        }));
+    }
+
     private async proofComplexData(initialSlot: string, length: number, resolverAddr: string, blocknr: number) {
         const firstSlot = keccak256(initialSlot);
 

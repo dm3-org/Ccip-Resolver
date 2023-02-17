@@ -39,14 +39,14 @@ describe("ProofServiceTest", () => {
         )) as OptimisimProofVerifier;
     });
 
-    it.only("", async () => {
+    it("", async () => {
         const l2Provider = new ethers.providers.JsonRpcProvider(
             "https://opt-mainnet.g.alchemy.com/v2/DBATzBzSluCdFAA6Zi7YMWHpDGm1soJI"
         );
         const proofService = new ProofService(l1_provider, l2Provider);
 
         const node = ethers.utils.namehash("foo.eth");
-        const recordName = "network.dm3.eth";
+        const recordName = "bar";
 
         const ownNode = ethers.utils.keccak256(
             ethers.utils.defaultAbiCoder.encode(
@@ -55,13 +55,12 @@ describe("ProofServiceTest", () => {
             )
         );
 
-        /*         const proof = await proofService.proofText("0x2D2d42a1200d8e3ACDFa45Fe58b47F45ebbbaCd6", ownNode, recordName);
+        const proof = await proofService.proofText("0x2D2d42a1200d8e3ACDFa45Fe58b47F45ebbbaCd6", ownNode, recordName);
 
-        console.log(JSON.stringify(proof)); */
+        console.log(JSON.stringify(proof));
 
-        const proof = mockProof;
+        // const proof = mockProof;
 
         //const ocRes = await optimismProofVerifier.isValidProof(proof);
-
     });
 });
