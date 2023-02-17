@@ -30,19 +30,21 @@ contract OptimisimProofVerifier is Lib_AddressResolver {
         bytes32 key;
         bytes32 value;
         bytes[] proof;
-        string storageTrieWitness;
+        bytes storageTrieWitness;
     }
 
     function isValidProof(L2StateProof memory proof) public view returns (bytes memory) {
         console.log("start proof");
-        require(verifyStateRootProof(proof), "Invalid state root");
+        require(isValidStateCommitment(proof), "Invalid state root");
         console.log("start acc");
         Lib_OVMCodec.EVMAccount memory account = getAccount(proof);
         console.log("got acc");
-        console.logBytes32(account.codeHash);
+
+        proofStorageProofs(account.storageRoot, proof.storageProofs);
+        console.log("exit");
     }
 
-    function verifyStateRootProof(L2StateProof memory proof) private view returns (bool) {
+    function isValidStateCommitment(L2StateProof memory proof) private view returns (bool) {
         //StateCommitmentChain
         //https://etherscan.io/address/0xBe5dAb4A2e9cd0F27300dB4aB94BeE3A233AEB19
         address ovmStateCommitmentChainAddress = resolve("StateCommitmentChain");
@@ -65,25 +67,30 @@ contract OptimisimProofVerifier is Lib_AddressResolver {
         return Lib_OVMCodec.decodeEVMAccount(encodedResolverAccount);
     }
 
-    function getStorageValue(
-        address target,
-        bytes32 slot,
-        L2StateProof memory proof
-    ) private view returns (bytes memory) {
-        (bool exists, bytes memory encodedResolverAccount) = Lib_SecureMerkleTrie.get(
-            abi.encodePacked(target),
-            proof.stateTrieWitness,
-            proof.stateRoot
-        );
-        require(exists, "Account does not exist");
-        /*
-        Lib_OVMCodec.EVMAccount memory account = Lib_OVMCodec.decodeEVMAccount(encodedResolverAccount);
+    function proofStorageProofs(bytes32 storageRoot, StorageProof[] memory storageProofs)
+        private
+        view
+        returns (bytes memory)
+    {
+        for (uint256 i = 0; i < storageProofs.length; i++) {
+            StorageProof memory storageProof = storageProofs[i];
+            proofSingleSlot(storageRoot, storageProof);
+        }
+    }
+
+    function proofSingleSlot(bytes32 storageRoot, StorageProof memory storageProof)
+        private
+        view
+        returns (bytes memory)
+    {
+        console.log("start single slot");
+        console.logBytes32(storageProof.key);
         (bool storageExists, bytes memory retrievedValue) = Lib_SecureMerkleTrie.get(
-            abi.encodePacked(slot),
-            proof.storageTrieWitness,
-            account.storageRoot
+            abi.encodePacked(storageProof.key),
+            storageProof.storageTrieWitness,
+            storageRoot
         );
         require(storageExists, "Storage value does not exist");
-        return Lib_RLPReader.readBytes(retrievedValue); */
+        return Lib_RLPReader.readBytes(retrievedValue);
     }
 }

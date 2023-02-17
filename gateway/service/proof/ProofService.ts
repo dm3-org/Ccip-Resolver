@@ -63,14 +63,6 @@ export class ProofService {
         };
         const stateTreeWitness = ethers.utils.RLP.encode(accountProof);
 
-        const px = await this.crossChainMessenger.getStorageProof(resolverAddr, storageProof[1].key, {
-            blockTag: "latest",
-        });
-
-        console.log("px");
-
-        console.log(px);
-
         return {
             target: resolverAddr,
             stateRoot,
@@ -88,7 +80,6 @@ export class ProofService {
         blockNr: number,
         resolverAddr: string
     ): Promise<{ storageProof: StorageProof[]; accountProof: string[] }> {
-        // const getProofResponse = await makeStateTrieProof(this.l2_provider, blockNr, resolverAddr, initalSlot);
         const nr = toRpcHexString(blockNr);
         const getProofResponse = await this.l2_provider.send("eth_getProof", [resolverAddr, [initalSlot], nr]);
 
@@ -125,10 +116,12 @@ export class ProofService {
         const totalSlots = Math.ceil(length / 64);
 
         const slots = [...Array(totalSlots).keys()].map((i) => BigNumber.from(firstSlot).add(i).toHexString());
-        const nr = toRpcHexString(blocknr);
 
-        console.log(nr);
-        const getProofResponse = await this.l2_provider.send("eth_getProof", [resolverAddr, [slots[1]], nr]);
+        const getProofResponse = await this.l2_provider.send("eth_getProof", [
+            resolverAddr,
+            slots,
+            toRpcHexString(blocknr),
+        ]);
 
         const proofs = getProofResponse.storageProof as StorageProof[];
 
@@ -148,12 +141,6 @@ export class ProofService {
             throw "State root not found";
         }
         const magicBlocknr = stateRoot.batch.header.prevTotalElements.add(stateRoot.stateRootIndexInBatch).add(1);
-        console.log("total batches");
-        console.log(batchIndex);
-        console.log("magicBlocknr");
-        console.log(magicBlocknr.toHexString());
         return [stateRoot, magicBlocknr.toNumber()];
     }
 }
-//Get the number total batches from State Commitment Chain
-//
