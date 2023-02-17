@@ -49,9 +49,13 @@ contract OptimismResolver is IExtendedResolver, SupportsInterface, OptimisimProo
      * @param name The DNS-encoded name to resolve.
      * @param data The ABI encoded data for the underlying resolution function (Eg, addr(bytes32), text(bytes32,string), etc).
      * @return The return data, ABI encoded identically to the underlying function.
-     */                                           
+     */
     function resolve(bytes calldata name, bytes calldata data) external view override returns (bytes memory) {
-        bytes memory callData = abi.encodeWithSelector(IResolverService.resolve.selector, name, replaceNodeWithOwnedNode(data));
+        bytes memory callData = abi.encodeWithSelector(
+            IResolverService.resolve.selector,
+            name,
+            replaceNodeWithOwnedNode(data)
+        );
 
         string[] memory urls = new string[](1);
         urls[0] = url;
@@ -68,7 +72,7 @@ contract OptimismResolver is IExtendedResolver, SupportsInterface, OptimisimProo
             (bytes, bytes32, L2StateProof)
         );
 
-        return isValidProof( proof);
+        //return isValidProof( proof);
         //Do stuff with proof
 
         // bytes32 slot = keccak256(abi.encodePacked(node, uint256(1)));

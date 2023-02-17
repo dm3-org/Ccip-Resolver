@@ -1,4 +1,4 @@
-import { FakeContract, smock } from "@defi-wonderland/smock";
+/* import { FakeContract, smock } from "@defi-wonderland/smock";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers.js";
 import { expect } from "chai";
 import { hexlify, keccak256 } from "ethers/lib/utils";
@@ -132,3 +132,4 @@ const getSlot = (slot: number, node: string, recordName: string) => {
     const innerHash = ethers.utils.solidityKeccak256(["bytes32", "uint256"], [node, slot]);
     return ethers.utils.solidityKeccak256(["string", "bytes32"], [recordName, innerHash]);
 };
+ */

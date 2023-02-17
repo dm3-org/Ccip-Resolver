@@ -1,10 +1,10 @@
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { ethers } from "hardhat";
 import { mockProof } from "../mockProof";
-import { LibAddressManager, OptimisimProofVerifier, StateCommitmentChain } from "typechain";
-import { ProofService } from "../../gateway/service/proof/ProofService";
+import { OptimisimProofVerifier, StateCommitmentChain, LibAddressManager } from "typechain";
+import { expect } from "chai";
 
-describe("ProofServiceTest", () => {
+describe("OptimismProofVerifier", () => {
     let owner: SignerWithAddress;
     let optimismProofVerifier: OptimisimProofVerifier;
     let stateCommitmentChain: StateCommitmentChain;
@@ -38,30 +38,15 @@ describe("ProofServiceTest", () => {
             "0x2D2d42a1200d8e3ACDFa45Fe58b47F45ebbbaCd6"
         )) as OptimisimProofVerifier;
     });
-
-    it.only("", async () => {
-        const l2Provider = new ethers.providers.JsonRpcProvider(
-            "https://opt-mainnet.g.alchemy.com/v2/DBATzBzSluCdFAA6Zi7YMWHpDGm1soJI"
-        );
-        const proofService = new ProofService(l1_provider, l2Provider);
-
-        const node = ethers.utils.namehash("foo.eth");
-        const recordName = "network.dm3.eth";
-
-        const ownNode = ethers.utils.keccak256(
-            ethers.utils.defaultAbiCoder.encode(
-                ["bytes32", "address"],
-                [node, "0x99C19AB10b9EC8aC6fcda9586E81f6B73a298870"]
-            )
-        );
-
-        /*         const proof = await proofService.proofText("0x2D2d42a1200d8e3ACDFa45Fe58b47F45ebbbaCd6", ownNode, recordName);
-
-        console.log(JSON.stringify(proof)); */
-
+    it("Resolves corrent Proof over multiple Slots", () => {
         const proof = mockProof;
+        const res = optimismProofVerifier.getProofValue(proof);
+        const profile = {
+            publicSigningKey: "0ekgI3CBw2iXNXudRdBQHiOaMpG9bvq9Jse26dButug=",
+            publicEncryptionKey: "Vrd/eTAk/jZb/w5L408yDjOO5upNFDGdt0lyWRjfBEk=",
+            deliveryServices: ["foo.dm3"],
+        };
 
-        //const ocRes = await optimismProofVerifier.isValidProof(proof);
-
+        expect(res).to.equal(JSON.stringify(profile));
     });
 });

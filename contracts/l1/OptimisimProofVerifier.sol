@@ -33,11 +33,11 @@ contract OptimisimProofVerifier is Lib_AddressResolver {
         bytes storageTrieWitness;
     }
 
-    function isValidProof(L2StateProof memory proof) public view returns (bytes memory) {
+    function getProofValue(L2StateProof memory proof) public view returns (bytes memory) {
         require(isValidStateCommitment(proof), "Invalid state root");
-        Lib_OVMCodec.EVMAccount memory account = getAccount(proof);
 
-        bytes memory result = getMultipleStorageProofs(account.storageRoot, proof.storageProofs);
+        bytes32 storageRoot = getStorageRoot(proof);
+        bytes memory result = getMultipleStorageProofs(storageRoot, proof.storageProofs);
         return trimResult(result, proof.length);
     }
 
@@ -55,14 +55,14 @@ contract OptimisimProofVerifier is Lib_AddressResolver {
     }
 
     //Todo rename to getStorageRoot
-    function getAccount(L2StateProof memory proof) public view returns (Lib_OVMCodec.EVMAccount memory) {
+    function getStorageRoot(L2StateProof memory proof) private view returns (bytes32) {
         (bool exists, bytes memory encodedResolverAccount) = Lib_SecureMerkleTrie.get(
             abi.encodePacked(proof.target),
             proof.stateTrieWitness,
             proof.stateRoot
         );
-        require(exists, "Account does not exist");
-        return Lib_OVMCodec.decodeEVMAccount(encodedResolverAccount);
+        require(exists, "Account it not part of the provided state root");
+        return Lib_OVMCodec.decodeEVMAccount(encodedResolverAccount).storageRoot;
     }
 
     function trimResult(bytes memory result, uint256 length) private pure returns (bytes memory) {
