@@ -17,8 +17,6 @@ const ZERO_BYTES = "0x0000000000000000000000000000000000000000000000000000000000
 
 interface StorageProof {
     key: string;
-    value: string;
-    proof: string[];
     storageTrieWitness: string;
 }
 
@@ -32,6 +30,20 @@ interface ProofInputObject {
     };
     stateTrieWitness: string;
     storageProofs: StorageProof[];
+    length: number;
+}
+
+interface EthGetProofResponse {
+    accountProof: string[];
+    balance: string;
+    codeHash: string;
+    nonce: string;
+    storageHash: string;
+    storageProof: {
+        key: string;
+        value: string;
+        proof: string[];
+    }[];
 }
 export class ProofService {
     private readonly l1_provider: ethers.providers.StaticJsonRpcProvider;
@@ -48,12 +60,16 @@ export class ProofService {
             l2SignerOrProvider: this.l2_provider,
         });
     }
-
+    //Refactor to general OP proofer
     public async proofText(resolverAddr: string, node: string, recordName: string): Promise<ProofInputObject> {
         const slot = StorageHelper.getStorageSlot(TEXTS_SLOT_NAME, node, recordName);
 
         const [stateRootObj, blockNr] = await this.getStateRoot();
-        const { storageProof, accountProof } = await this.getStorageAndAccountProofs(slot, blockNr, resolverAddr);
+        const { storageProof, accountProof, length } = await this.getStorageAndAccountProofs(
+            slot,
+            blockNr,
+            resolverAddr
+        );
 
         const stateRoot = stateRootObj.stateRoot;
         const stateRootBatchHeader = stateRootObj.batch.header;
@@ -70,16 +86,15 @@ export class ProofService {
             stateRootBatchHeader,
             stateRootProof,
             stateTrieWitness: stateTreeWitness,
+            length,
         };
-
-        //console.log(proofs[0].proof);
     }
     //Return also the account proof
     private async getStorageAndAccountProofs(
         initalSlot: string,
         blockNr: number,
         resolverAddr: string
-    ): Promise<{ storageProof: StorageProof[]; accountProof: string[] }> {
+    ): Promise<{ storageProof: StorageProof[]; accountProof: string[]; length: number }> {
         const nr = toRpcHexString(blockNr);
         const getProofResponse = await this.l2_provider.send("eth_getProof", [resolverAddr, [initalSlot], nr]);
 
@@ -102,13 +117,13 @@ export class ProofService {
         if (lastBit === 0) {
             console.log("SINGLE SLOT");
 
-            return { storageProof: [storageProof], accountProof };
+            throw "unimplemented";
         }
 
         const length = BigNumber.from(value).toNumber() + 2;
         const consequentStorageProofs = await this.proofComplexData(initalSlot, length, resolverAddr, blockNr);
 
-        return { storageProof: [storageProof, ...consequentStorageProofs], accountProof };
+        return { storageProof: [storageProof, ...consequentStorageProofs], accountProof, length };
     }
     private async proofComplexData(initialSlot: string, length: number, resolverAddr: string, blocknr: number) {
         const firstSlot = keccak256(initialSlot);
@@ -123,17 +138,17 @@ export class ProofService {
             console.log("reattempting");
             getProofResponse = await this.getProof(resolverAddr, slots, blocknr);
         }
+        console.log(getProofResponse);
+        const proofs = getProofResponse.storageProof;
 
-        const proofs = getProofResponse.storageProof as StorageProof[];
-
-        return proofs.map((p) => {
+        return proofs.map(({ key, proof }) => {
             return {
-                ...p,
-                storageTrieWitness: ethers.utils.RLP.encode(p.proof),
+                key,
+                storageTrieWitness: ethers.utils.RLP.encode(proof),
             };
         });
     }
-    private async getProof(resolverAddr: string, slots: string[], blocknr: number) {
+    private async getProof(resolverAddr: string, slots: string[], blocknr: number): Promise<EthGetProofResponse> {
         const getProofResponse = await this.l2_provider.send("eth_getProof", [
             resolverAddr,
             slots,

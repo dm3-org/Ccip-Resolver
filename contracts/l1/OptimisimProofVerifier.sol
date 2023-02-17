@@ -18,7 +18,6 @@ contract OptimisimProofVerifier is Lib_AddressResolver {
     constructor(address _ovmAddressManager, address _l2resolver) Lib_AddressResolver(_ovmAddressManager) {
         l2Resolver = _l2resolver;
     }
-    
 
     struct L2StateProof {
         address target;
@@ -26,28 +25,20 @@ contract OptimisimProofVerifier is Lib_AddressResolver {
         Lib_OVMCodec.ChainBatchHeader stateRootBatchHeader;
         Lib_OVMCodec.ChainInclusionProof stateRootProof;
         bytes stateTrieWitness;
+        uint256 length;
         StorageProof[] storageProofs;
-        //Todo add length
     }
     struct StorageProof {
         bytes32 key;
-        //Todo remove value
-        bytes32 value;
-        //Todo remove proof
-        bytes[] proof;
         bytes storageTrieWitness;
     }
 
     function isValidProof(L2StateProof memory proof) public view returns (bytes memory) {
-        console.log("start proof");
         require(isValidStateCommitment(proof), "Invalid state root");
-        console.log("start acc");
         Lib_OVMCodec.EVMAccount memory account = getAccount(proof);
-        console.log("got acc");
 
-        bytes memory result = proofStorageProofs(account.storageRoot, proof.storageProofs);
-        console.logBytes(result);
-        console.log("exit");
+        bytes memory result = getMultipleStorageProofs(account.storageRoot, proof.storageProofs);
+        return trimResult(result, proof.length);
     }
 
     function isValidStateCommitment(L2StateProof memory proof) private view returns (bool) {
@@ -74,26 +65,32 @@ contract OptimisimProofVerifier is Lib_AddressResolver {
         return Lib_OVMCodec.decodeEVMAccount(encodedResolverAccount);
     }
 
-    function proofStorageProofs(bytes32 storageRoot, StorageProof[] memory storageProofs)
+    function trimResult(bytes memory result, uint256 length) private pure returns (bytes memory) {
+        bytes memory trimed = new bytes((length / 2) + 1);
+        for (uint256 i = 0; i < (length / 2) + 1; i++) {
+            trimed[i] = (result[i]);
+        }
+        return trimed;
+    }
+
+    function getMultipleStorageProofs(bytes32 storageRoot, StorageProof[] memory storageProofs)
         private
-        view
+        pure
         returns (bytes memory)
     {
-        //TODO return result without trailing 0
-        bytes memory result = abi.encodePacked("0x");
+        bytes memory result = new bytes(0);
 
         for (uint256 i = 0; i < storageProofs.length; i++) {
             StorageProof memory storageProof = storageProofs[i];
-            bytes memory slotValue = proofSingleSlot(storageRoot, storageProof);
-            console.logBytes(slotValue);
+            bytes memory slotValue = getSingleStorageProof(storageRoot, storageProof);
             result = abi.encodePacked(result, slotValue);
         }
         return result;
     }
 
-    function proofSingleSlot(bytes32 storageRoot, StorageProof memory storageProof)
+    function getSingleStorageProof(bytes32 storageRoot, StorageProof memory storageProof)
         private
-        view
+        pure
         returns (bytes memory)
     {
         (bool storageExists, bytes memory retrievedValue) = Lib_SecureMerkleTrie.get(
