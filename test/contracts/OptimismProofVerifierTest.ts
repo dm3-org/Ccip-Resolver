@@ -1,13 +1,12 @@
-import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
-import { ethers } from "hardhat";
-import { mockProofOfMultislot } from "../mockProof";
-import { OptimisimProofVerifier, StateCommitmentChain, LibAddressManager } from "typechain";
-import { expect } from "chai";
 import { FakeContract, smock } from "@defi-wonderland/smock";
+import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
+import { expect } from "chai";
+import { ethers } from "hardhat";
+import { LibAddressManager, OptimisimProofVerifier, StateCommitmentChain } from "typechain";
+import { mockProofOfMultislot } from "../mockProof";
 import { mockProofForEmptySlot } from "../mocks/mockProofForEmptySlot";
-import { ProofService } from "./../../gateway/service/proof/ProofService";
 
-describe("OptimismProofVerifier", () => {
+describe.only("OptimismProofVerifier", () => {
     let owner: SignerWithAddress;
     let optimismProofVerifier: OptimisimProofVerifier;
     let stateCommitmentChain: StateCommitmentChain;
@@ -50,7 +49,7 @@ describe("OptimismProofVerifier", () => {
 
         expect(responseString).to.equal("");
     });
-    it.only("Resolves correct Proof over multiple Slots", async () => {
+    it("Resolves correct Proof over multiple Slots", async () => {
         const proof = mockProofOfMultislot;
         const responseBytes = await optimismProofVerifier.getProofValue(proof);
         const profile = {
