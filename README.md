@@ -1,6 +1,6 @@
 # Optimism-Resolver
 
-## A Optimism CCIP resolver for ENS
+## An Optimism CCIP resolver for ENS
 
 Storing data on Ethereum Mainnet is expensive hence it is appealing to use other storage solutions that offer more compelling rates. To facilitate this https://eips.ethereum.org/EIPS/eip-3668 introduces CCIP a standard that can be used to securely retrieve external data. While the solution is focussed on ENS, the methodology can be adapted to any other data from Optimism.
 
