@@ -8,7 +8,7 @@ import {
     StateRootBatchHeader,
 } from "@eth-optimism/sdk";
 import { BigNumber, ethers } from "ethers";
-import { keccak256 } from "ethers/lib/utils";
+import { hexlify, keccak256 } from "ethers/lib/utils";
 import { StorageHelper } from "../storage/StorageService";
 
 const TEXTS_SLOT_NAME = 9;
@@ -141,11 +141,12 @@ export class ProofService {
     private decodeLength(slot: string) {
         const lastByte = slot.substring(slot.length - 2);
         const lastBit = parseInt(lastByte, 16) % 2;
-
         //If the last bit is not set it is a short type
         if (lastBit === 0) {
             //The length is encoded as length / 2
-            return BigNumber.from(lastByte).div(2).toNumber();
+            return BigNumber.from("0x" + lastByte)
+                .div(2)
+                .toNumber();
         }
         //The length is encoded as length *2+1
         return BigNumber.from(slot).sub(1).div(2).toNumber();

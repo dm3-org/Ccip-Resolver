@@ -6,8 +6,9 @@ import { mockProofForSingleSlot } from "../mocks/mockProofForSingleSlot";
 import { LibAddressManager, OptimisimProofVerifier, StateCommitmentChain } from "typechain";
 import { mockProofOfMultislot } from "../mockProof";
 import { mockProofForEmptySlot } from "../mocks/mockProofForEmptySlot";
+import { mockProofForSlot31BytesLong } from "../mocks/mockProofForSlot31BytesLong";
 
-describe("OptimismProofVerifier", () => {
+describe.only("OptimismProofVerifier", () => {
     let owner: SignerWithAddress;
     let optimismProofVerifier: OptimisimProofVerifier;
     let stateCommitmentChain: StateCommitmentChain;
@@ -56,6 +57,13 @@ describe("OptimismProofVerifier", () => {
         const responseString = Buffer.from(responseBytes.slice(2), "hex").toString();
 
         expect(responseString).to.eql("bar");
+    });
+    it("Resolves correct Proof for a 31 byte long single Slot", async () => {
+        const proof = mockProofForSlot31BytesLong;
+        const responseBytes = await optimismProofVerifier.getProofValue(proof);
+        const responseString = Buffer.from(responseBytes.slice(2), "hex").toString();
+
+        expect(responseString).to.eql("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
     });
     it("Resolves correct Proof over multiple Slots", async () => {
         const proof = mockProofOfMultislot;

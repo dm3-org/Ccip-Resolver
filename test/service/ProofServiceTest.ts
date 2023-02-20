@@ -57,6 +57,21 @@ describe("ProofServiceTest", () => {
 
         expect(proof.length).to.be.equal(3);
     });
+    it("sinlge slot 31 bytes long", async () => {
+        const proofService = new ProofService(l1_provider, l2Provider);
+
+        const node = ethers.utils.namehash("foo.eth");
+        const recordName = "my-slot";
+
+        const ownNode = ethers.utils.keccak256(
+            ethers.utils.defaultAbiCoder.encode(
+                ["bytes32", "address"],
+                [node, "0x99C19AB10b9EC8aC6fcda9586E81f6B73a298870"]
+            )
+        );
+        const proof = await proofService.proofText("0x2D2d42a1200d8e3ACDFa45Fe58b47F45ebbbaCd6", ownNode, recordName);
+        expect(proof.length).to.be.equal(31);
+    });
     it("multislot slot", async () => {
         const l2Provider = new ethers.providers.JsonRpcProvider(
             "https://opt-mainnet.g.alchemy.com/v2/DBATzBzSluCdFAA6Zi7YMWHpDGm1soJI"
@@ -75,7 +90,6 @@ describe("ProofServiceTest", () => {
 
         const proof = await proofService.proofText("0x2D2d42a1200d8e3ACDFa45Fe58b47F45ebbbaCd6", ownNode, recordName);
 
-        console.log(JSON.stringify(proof));
         const profile = {
             publicSigningKey: "0ekgI3CBw2iXNXudRdBQHiOaMpG9bvq9Jse26dButug=",
             publicEncryptionKey: "Vrd/eTAk/jZb/w5L408yDjOO5upNFDGdt0lyWRjfBEk=",
