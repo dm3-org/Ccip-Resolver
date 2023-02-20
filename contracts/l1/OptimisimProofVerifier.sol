@@ -12,7 +12,7 @@ import {StateCommitmentChain} from "@eth-optimism/contracts/L1/rollup/StateCommi
 import "hardhat/console.sol";
 
 contract OptimisimProofVerifier is Lib_AddressResolver {
-    constructor(address _ovmAddressManager) Lib_AddressResolver(_ovmAddressManager){}
+    constructor(address _ovmAddressManager) Lib_AddressResolver(_ovmAddressManager) {}
 
     struct L2StateProof {
         address target;
@@ -29,7 +29,9 @@ contract OptimisimProofVerifier is Lib_AddressResolver {
     }
 
     function getProofValue(L2StateProof memory proof) public view returns (bytes memory) {
+        console.log("start get proof");
         require(isValidStateCommitment(proof), "Invalid state root");
+        console.log("commitment");
 
         bytes32 storageRoot = getStorageRoot(proof);
         bytes memory result = getMultipleStorageProofs(storageRoot, proof.storageProofs);
@@ -61,9 +63,9 @@ contract OptimisimProofVerifier is Lib_AddressResolver {
         if (length == 0) {
             return result;
         }
-        bytes memory trimed = new bytes((length / 2) - 1);
+        bytes memory trimed = new bytes(length);
 
-        for (uint256 i = 0; i < (length / 2) - 1; i++) {
+        for (uint256 i = 0; i < length; i++) {
             trimed[i] = (result[i]);
         }
         return trimed;
@@ -80,11 +82,7 @@ contract OptimisimProofVerifier is Lib_AddressResolver {
             StorageProof memory storageProof = storageProofs[i];
             bytes memory slotValue = getSingleStorageProof(storageRoot, storageProof);
             //The first slot should not be included in the result
-
-            if (storageProofs.length > 1 && i == 0) {
-                continue;
-            }
-
+            console.logBytes(slotValue);
             result = abi.encodePacked(result, slotValue);
         }
         return result;

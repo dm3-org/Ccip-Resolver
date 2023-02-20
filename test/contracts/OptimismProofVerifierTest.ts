@@ -1,12 +1,13 @@
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { ethers } from "hardhat";
-import { mockProof } from "../mockProof";
+import { mockProofOfMultislot } from "../mockProof";
 import { OptimisimProofVerifier, StateCommitmentChain, LibAddressManager } from "typechain";
 import { expect } from "chai";
 import { FakeContract, smock } from "@defi-wonderland/smock";
 import { mockProofForEmptySlot } from "../mocks/mockProofForEmptySlot";
+import { ProofService } from "./../../gateway/service/proof/ProofService";
 
-describe.only("OptimismProofVerifier", () => {
+describe("OptimismProofVerifier", () => {
     let owner: SignerWithAddress;
     let optimismProofVerifier: OptimisimProofVerifier;
     let stateCommitmentChain: StateCommitmentChain;
@@ -15,7 +16,9 @@ describe.only("OptimismProofVerifier", () => {
     const l1_provider = new ethers.providers.JsonRpcProvider(
         "https://eth-mainnet.g.alchemy.com/v2/L1PIhq_TFU7sofEqd2IJwWqhBsJYah1S"
     );
-
+    const l2Provider = new ethers.providers.JsonRpcProvider(
+        "https://opt-mainnet.g.alchemy.com/v2/DBATzBzSluCdFAA6Zi7YMWHpDGm1soJI"
+    );
     beforeEach(async () => {
         [owner] = await ethers.getSigners();
 
@@ -35,8 +38,7 @@ describe.only("OptimismProofVerifier", () => {
             .returns("0xBe5dAb4A2e9cd0F27300dB4aB94BeE3A233AEB19");
 
         optimismProofVerifier = (await optimismProofVerifierFactory.deploy(
-            addresManager.address,
-            "0x2D2d42a1200d8e3ACDFa45Fe58b47F45ebbbaCd6"
+            addresManager.address
         )) as OptimisimProofVerifier;
     });
     it("Resolves correct Proof for an empty slot", async () => {
@@ -48,10 +50,9 @@ describe.only("OptimismProofVerifier", () => {
 
         expect(responseString).to.equal("");
     });
-    it("Resolves correct Proof over multiple Slots", async () => {
-        const proof = mockProof;
+    it.only("Resolves correct Proof over multiple Slots", async () => {
+        const proof = mockProofOfMultislot;
         const responseBytes = await optimismProofVerifier.getProofValue(proof);
-        console.log(responseBytes);
         const profile = {
             publicSigningKey: "0ekgI3CBw2iXNXudRdBQHiOaMpG9bvq9Jse26dButug=",
             publicEncryptionKey: "Vrd/eTAk/jZb/w5L408yDjOO5upNFDGdt0lyWRjfBEk=",

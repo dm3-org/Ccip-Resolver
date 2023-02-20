@@ -1,16 +1,15 @@
-import { BigNumber, Contract, ethers } from "ethers";
-import {
-    makeStateTrieProof,
-    makeMerkleTreeProof,
-    asL2Provider,
-    L2Provider,
-    CrossChainMessenger,
-    StateRootBatchHeader,
-    StateRoot,
-} from "@eth-optimism/sdk";
 import { toRpcHexString } from "@eth-optimism/core-utils";
-import { StorageHelper } from "../storage/StorageService";
+import {
+    asL2Provider,
+    CrossChainMessenger,
+    L2Provider,
+    makeMerkleTreeProof,
+    StateRoot,
+    StateRootBatchHeader,
+} from "@eth-optimism/sdk";
+import { BigNumber, ethers } from "ethers";
 import { keccak256 } from "ethers/lib/utils";
+import { StorageHelper } from "../storage/StorageService";
 
 const TEXTS_SLOT_NAME = 9;
 const ZERO_BYTES = "0x0000000000000000000000000000000000000000000000000000000000000000";
@@ -64,18 +63,14 @@ export class ProofService {
     public async proofText(resolverAddr: string, node: string, recordName: string): Promise<ProofInputObject> {
         const slot = StorageHelper.getStorageSlot(TEXTS_SLOT_NAME, node, recordName);
 
-        const [stateRootObj, blockNr] = await this.getStateRoot();
-        const { storageProof, accountProof, length } = await this.getStorageAndAccountProofs(
-            slot,
-            blockNr,
-            resolverAddr
-        );
+        const [optimismStateRoot, blockNr] = await this.getStateRoot();
+        const { storageProof, accountProof, length } = await this.getProofPerSlot(slot, blockNr, resolverAddr);
 
-        const stateRoot = stateRootObj.stateRoot;
-        const stateRootBatchHeader = stateRootObj.batch.header;
+        const stateRoot = optimismStateRoot.stateRoot;
+        const stateRootBatchHeader = optimismStateRoot.batch.header;
         const stateRootProof = {
-            index: stateRootObj.stateRootIndexInBatch,
-            siblings: makeMerkleTreeProof(stateRootObj.batch.stateRoots, stateRootObj.stateRootIndexInBatch),
+            index: optimismStateRoot.stateRootIndexInBatch,
+            siblings: makeMerkleTreeProof(optimismStateRoot.batch.stateRoots, optimismStateRoot.stateRootIndexInBatch),
         };
         const stateTreeWitness = ethers.utils.RLP.encode(accountProof);
 
@@ -90,9 +85,27 @@ export class ProofService {
         };
     }
 
-    private async handleSingleSlot(resolverAddr: string, slot: string, blockNr: number, length: number) {
+    //Return also the account proof
+    private async getProofPerSlot(
+        initalSlot: string,
+        blockNr: number,
+        resolverAddr: string
+    ): Promise<{ storageProof: StorageProof[]; accountProof: string[]; length: number }> {
+        const slotValue = await this.l2_provider.getStorageAt(resolverAddr, initalSlot, blockNr);
+
+        const length = this.decodeLength(slotValue);
+
+        //Handle slots at most 31 bytes long
+        if (length <= 31) {
+            console.log("handle short type");
+            return this.handleShortType(resolverAddr, initalSlot, blockNr, length);
+        }
+        console.log("handle long type");
+        return this.handleLongType(initalSlot, resolverAddr, blockNr, length);
+    }
+
+    private async handleShortType(resolverAddr: string, slot: string, blockNr: number, length: number) {
         const res = await this.getProof(resolverAddr, [slot], blockNr);
-        console.log(res);
         const { storageProof, accountProof } = res;
 
         return {
@@ -101,74 +114,41 @@ export class ProofService {
             length,
         };
     }
-    //Return also the account proof
-    private async getStorageAndAccountProofs(
-        initalSlot: string,
-        blockNr: number,
-        resolverAddr: string
-    ): Promise<{ storageProof: StorageProof[]; accountProof: string[]; length: number }> {
-        const slotValue = await this.l2_provider.getStorageAt(resolverAddr, initalSlot, blockNr);
-        if (slotValue === ZERO_BYTES) {
-            console.log("Slot empty");
-            return this.handleSingleSlot(resolverAddr, initalSlot, blockNr, 0);
-        }
-        /* 
-        const lastByte = slotValue.substring(slotValue.length - 2);
-        const lastBit = parseInt(lastByte, 16) % 2;
 
-        if (lastBit === 0) {
-            console.log("single slot");
-            return this.handleSingleSlot(resolverAddr, initalSlot, blockNr, BigNumber.from(slotValue).toNumber() + 2);
+    private async handleLongType(initialSlot: string, resolverAddr: string, blocknr: number, length: number) {
+        const firstSlot = keccak256(initialSlot);
+        const totalSlots = Math.ceil((length * 2 + 1) / 64);
+
+        const slots = [...Array(totalSlots).keys()].map((i) => BigNumber.from(firstSlot).add(i).toHexString());
+        const proofResponse = await this.getProof(resolverAddr, slots, blocknr);
+
+        if (proofResponse.storageProof.length !== totalSlots) {
+            throw "invalid proof response";
         }
- */
-        /*
-        const storageProof: StorageProof = {
-            ...slotValue.storageProof[0],
-            storageTrieWitness: ethers.utils.RLP.encode(slotValue.storageProof[0].proof),
+
+        return {
+            accountProof: proofResponse.accountProof,
+            storageProof: this.mapStorageProof(proofResponse.storageProof),
+            length,
         };
-        const accountProof = slotValue.accountProof;
-
-        if (lastBit === 0) {
-            console.log("SINGLE SLOT");
-
-            throw "unimplemented";
-        }
-
-        const length = BigNumber.from(value).toNumber() + 2;
-        const consequentStorageProofs = await this.proofComplexData(initalSlot, length, resolverAddr, blockNr);
-
-        return { storageProof: [storageProof, ...consequentStorageProofs], accountProof, length }; */
     }
-
     private mapStorageProof(storageProofs: EthGetProofResponse["storageProof"]): StorageProof[] {
         return storageProofs.map(({ key, proof }) => ({
             key,
             storageTrieWitness: ethers.utils.RLP.encode(proof),
         }));
     }
+    private decodeLength(slot: string) {
+        const lastByte = slot.substring(slot.length - 2);
+        const lastBit = parseInt(lastByte, 16) % 2;
 
-    private async proofComplexData(initialSlot: string, length: number, resolverAddr: string, blocknr: number) {
-        const firstSlot = keccak256(initialSlot);
-
-        const totalSlots = Math.ceil(length / 64);
-
-        const slots = [...Array(totalSlots).keys()].map((i) => BigNumber.from(firstSlot).add(i).toHexString());
-        //I have to figure out why this sometimes failes
-        let getProofResponse = await this.getProof(resolverAddr, slots, blocknr);
-
-        if (getProofResponse.storageProof.length !== totalSlots) {
-            console.log("reattempting");
-            getProofResponse = await this.getProof(resolverAddr, slots, blocknr);
+        //If the last bit is not set it is a short type
+        if (lastBit === 0) {
+            //The length is encoded as length / 2
+            return BigNumber.from(lastByte).div(2).toNumber();
         }
-        console.log(getProofResponse);
-        const proofs = getProofResponse.storageProof;
-
-        return proofs.map(({ key, proof }) => {
-            return {
-                key,
-                storageTrieWitness: ethers.utils.RLP.encode(proof),
-            };
-        });
+        //The length is encoded as length *2+1
+        return BigNumber.from(slot).sub(1).div(2).toNumber();
     }
     private async getProof(resolverAddr: string, slots: string[], blocknr: number): Promise<EthGetProofResponse> {
         const getProofResponse = await this.l2_provider.send("eth_getProof", [
