@@ -2,11 +2,12 @@ import { FakeContract, smock } from "@defi-wonderland/smock";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { expect } from "chai";
 import { ethers } from "hardhat";
+import { mockProofForSingleSlot } from "../mocks/mockProofForSingleSlot";
 import { LibAddressManager, OptimisimProofVerifier, StateCommitmentChain } from "typechain";
 import { mockProofOfMultislot } from "../mockProof";
 import { mockProofForEmptySlot } from "../mocks/mockProofForEmptySlot";
 
-describe.only("OptimismProofVerifier", () => {
+describe("OptimismProofVerifier", () => {
     let owner: SignerWithAddress;
     let optimismProofVerifier: OptimisimProofVerifier;
     let stateCommitmentChain: StateCommitmentChain;
@@ -23,7 +24,6 @@ describe.only("OptimismProofVerifier", () => {
 
         const optimismProofVerifierFactory = await ethers.getContractFactory("OptimisimProofVerifier");
         const stateCommitmentChainFactory = await ethers.getContractFactory("StateCommitmentChain");
-        const addresManagerFactory = await ethers.getContractFactory("Lib_AddressManager");
 
         stateCommitmentChain = new ethers.Contract(
             "0xBe5dAb4A2e9cd0F27300dB4aB94BeE3A233AEB19",
@@ -48,6 +48,14 @@ describe.only("OptimismProofVerifier", () => {
         const responseString = Buffer.from(responseBytes.slice(2), "hex").toString();
 
         expect(responseString).to.equal("");
+    });
+
+    it("Resolves correct Proof for a single Slot", async () => {
+        const proof = mockProofForSingleSlot;
+        const responseBytes = await optimismProofVerifier.getProofValue(proof);
+        const responseString = Buffer.from(responseBytes.slice(2), "hex").toString();
+
+        expect(responseString).to.eql("bar");
     });
     it("Resolves correct Proof over multiple Slots", async () => {
         const proof = mockProofOfMultislot;

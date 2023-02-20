@@ -5,7 +5,7 @@ import { LibAddressManager, OptimisimProofVerifier, StateCommitmentChain } from 
 import { ProofService } from "../../gateway/service/proof/ProofService";
 import { expect } from "chai";
 
-describe.skip("ProofServiceTest", () => {
+describe("ProofServiceTest", () => {
     let owner: SignerWithAddress;
     let optimismProofVerifier: OptimisimProofVerifier;
     let stateCommitmentChain: StateCommitmentChain;
@@ -45,7 +45,7 @@ describe.skip("ProofServiceTest", () => {
         const proofService = new ProofService(l1_provider, l2Provider);
 
         const node = ethers.utils.namehash("foo.eth");
-        const recordName = "bar";
+        const recordName = "foo";
 
         const ownNode = ethers.utils.keccak256(
             ethers.utils.defaultAbiCoder.encode(
@@ -53,10 +53,9 @@ describe.skip("ProofServiceTest", () => {
                 [node, "0x99C19AB10b9EC8aC6fcda9586E81f6B73a298870"]
             )
         );
-
         const proof = await proofService.proofText("0x2D2d42a1200d8e3ACDFa45Fe58b47F45ebbbaCd6", ownNode, recordName);
 
-        expect(proof.length).to.be.equal(0);
+        expect(proof.length).to.be.equal(3);
     });
     it("multislot slot", async () => {
         const l2Provider = new ethers.providers.JsonRpcProvider(
