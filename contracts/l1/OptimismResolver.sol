@@ -3,17 +3,17 @@ pragma solidity ^0.8.9;
 
 import "./IExtendedResolver.sol";
 import "./SupportsInterface.sol";
-import "./OptimisimProofVerifier.sol";
+import "./IOptimismProofVerifier.sol";
 import "./OwnedENSNode.sol";
+import "hardhat/console.sol";
 
 /**
  * Implements an ENS resolver that directs all queries to a CCIP read gateway.
  * Callers must implement EIP 3668 and ENSIP 10.
  */
-contract OptimismResolver is IExtendedResolver, SupportsInterface, OptimisimProofVerifier, OwnedENSNode {
+contract OptimismResolver is IExtendedResolver, SupportsInterface, OwnedENSNode {
     address public owner;
     string public url;
-    mapping(address => bool) public signers;
 
     event NewOwner(address newOwner);
     error OffchainLookup(address sender, string[] urls, bytes callData, bytes4 callbackFunction, bytes extraData);
@@ -21,10 +21,9 @@ contract OptimismResolver is IExtendedResolver, SupportsInterface, OptimisimProo
     constructor(
         string memory _url,
         address _owner,
-        address _ovmAddressManager,
-        address _l2resolver,
+        IOptimismProofVerifier optimismProofVerifier,
         ENS _ensRegisrty
-    ) OptimisimProofVerifier(_ovmAddressManager) OwnedENSNode(_ensRegisrty) {
+    ) OwnedENSNode(_ensRegisrty) {
         url = _url;
         owner = _owner;
     }
@@ -67,9 +66,9 @@ contract OptimismResolver is IExtendedResolver, SupportsInterface, OptimisimProo
      * extraData -> the original call data
      */
     function resolveWithProof(bytes calldata response, bytes calldata extraData) external view returns (bytes memory) {
-        (bytes memory result, bytes32 slot, L2StateProof memory proof) = abi.decode(
+        (bytes memory result, bytes32 slot, IOptimismProofVerifier.L2StateProof memory proof) = abi.decode(
             response,
-            (bytes, bytes32, L2StateProof)
+            (bytes, bytes32, IOptimismProofVerifier.L2StateProof)
         );
 
         //return isValidProof( proof);

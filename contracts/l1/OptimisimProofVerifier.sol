@@ -9,25 +9,10 @@ import {Lib_BytesUtils} from "@eth-optimism/contracts/libraries/utils/Lib_BytesU
 import {IStateCommitmentChain} from "@eth-optimism/contracts/L1/rollup/IStateCommitmentChain.sol";
 import {StateCommitmentChain} from "@eth-optimism/contracts/L1/rollup/StateCommitmentChain.sol";
 import "solidity-bytes-utils/contracts/BytesLib.sol";
+import {IOptimismProofVerifier} from "./IOptimismProofVerifier.sol";
 
-import "hardhat/console.sol";
-
-contract OptimisimProofVerifier is Lib_AddressResolver {
+contract OptimisimProofVerifier is IOptimismProofVerifier, Lib_AddressResolver {
     constructor(address _ovmAddressManager) Lib_AddressResolver(_ovmAddressManager) {}
-
-    struct L2StateProof {
-        address target;
-        bytes32 stateRoot;
-        Lib_OVMCodec.ChainBatchHeader stateRootBatchHeader;
-        Lib_OVMCodec.ChainInclusionProof stateRootProof;
-        bytes stateTrieWitness;
-        uint256 length;
-        StorageProof[] storageProofs;
-    }
-    struct StorageProof {
-        bytes32 key;
-        bytes storageTrieWitness;
-    }
 
     function getProofValue(L2StateProof memory proof) public view returns (bytes memory) {
         require(isValidStateCommitment(proof), "Invalid state root");
