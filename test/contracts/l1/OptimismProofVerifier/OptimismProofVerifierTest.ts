@@ -2,11 +2,11 @@ import { FakeContract, smock } from "@defi-wonderland/smock";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { expect } from "chai";
 import { ethers } from "hardhat";
-import { mockProofForSingleSlot } from "../mocks/mockProofForSingleSlot";
+import { mockProofForSingleSlot } from "../../../mocks/mockProofForSingleSlot";
 import { LibAddressManager, OptimisimProofVerifier, StateCommitmentChain } from "typechain";
-import { mockProofOfMultislot } from "../mocks/mockProofForMultislot";
-import { mockProofForEmptySlot } from "../mocks/mockProofForEmptySlot";
-import { mockProofForSlot31BytesLong } from "../mocks/mockProofForSlot31BytesLong";
+import { mockProofOfMultislot } from "../../../mocks/mockProofForMultislot";
+import { mockProofForEmptySlot } from "../../../mocks/mockProofForEmptySlot";
+import { mockProofForSlot31BytesLong } from "../../../mocks/mockProofForSlot31BytesLong";
 
 describe("OptimismProofVerifier", () => {
     let owner: SignerWithAddress;

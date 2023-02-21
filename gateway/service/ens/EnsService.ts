@@ -1,7 +1,6 @@
 import { ethers } from "ethers";
-import { ProofInputObject, ProofService } from "../proof/ProofService";
-
-const TEXTS_SLOT_NAME = 9;
+import { ProofService } from "../proof/ProofService";
+import { ProofInputObject } from "../proof/types";
 
 export class EnsService {
     private readonly resolverAddress: string;
@@ -12,6 +11,7 @@ export class EnsService {
     }
 
     public proofText(node: string, recordName: string): Promise<ProofInputObject> {
+        const TEXTS_SLOT_NAME = 9;
         const slot = EnsService.getStorageSlotForText(TEXTS_SLOT_NAME, node, recordName);
         return this.proofService.createProof(this.resolverAddress, slot);
     }
