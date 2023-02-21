@@ -66,16 +66,8 @@ contract OptimismResolver is IExtendedResolver, SupportsInterface, OwnedENSNode 
      * extraData -> the original call data
      */
     function resolveWithProof(bytes calldata response, bytes calldata extraData) external view returns (bytes memory) {
-        (bytes memory result, bytes32 slot, IOptimismProofVerifier.L2StateProof memory proof) = abi.decode(
-            response,
-            (bytes, bytes32, IOptimismProofVerifier.L2StateProof)
-        );
-
-        //return isValidProof( proof);
-        //Do stuff with proof
-
-        // bytes32 slot = keccak256(abi.encodePacked(node, uint256(1)));
-        //bytes32 value = getStorageValue(l2resolver, slot, proof);
+        IOptimismProofVerifier.L2StateProof memory proof = abi.decode(proof, (IOptimismProofVerifier.L2StateProof));
+        return IOptimismProofVerifier.getProofValue(proof);
     }
 
     function supportsInterface(bytes4 interfaceID) public pure override returns (bool) {
