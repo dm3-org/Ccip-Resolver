@@ -8,7 +8,7 @@ import { mockProofOfMultislot } from "../mocks/mockProofForMultislot";
 import { mockProofForEmptySlot } from "../mocks/mockProofForEmptySlot";
 import { mockProofForSlot31BytesLong } from "../mocks/mockProofForSlot31BytesLong";
 
-describe.only("OptimismProofVerifier", () => {
+describe("OptimismProofVerifier", () => {
     let owner: SignerWithAddress;
     let optimismProofVerifier: OptimisimProofVerifier;
     let stateCommitmentChain: StateCommitmentChain;

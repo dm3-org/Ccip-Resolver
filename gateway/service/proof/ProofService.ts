@@ -1,49 +1,9 @@
 import { toRpcHexString } from "@eth-optimism/core-utils";
-import {
-    asL2Provider,
-    CrossChainMessenger,
-    L2Provider,
-    makeMerkleTreeProof,
-    StateRoot,
-    StateRootBatchHeader,
-} from "@eth-optimism/sdk";
+import { asL2Provider, CrossChainMessenger, L2Provider, makeMerkleTreeProof, StateRoot } from "@eth-optimism/sdk";
 import { BigNumber, ethers } from "ethers";
-import { hexlify, keccak256 } from "ethers/lib/utils";
-import { StorageHelper } from "../storage/StorageService";
+import { keccak256 } from "ethers/lib/utils";
+import { EthGetProofResponse, ProofInputObject, StorageProof } from "./types";
 
-const TEXTS_SLOT_NAME = 9;
-const ZERO_BYTES = "0x0000000000000000000000000000000000000000000000000000000000000000";
-
-interface StorageProof {
-    key: string;
-    storageTrieWitness: string;
-}
-
-interface ProofInputObject {
-    target: string;
-    stateRoot: string;
-    stateRootBatchHeader: StateRootBatchHeader;
-    stateRootProof: {
-        index: number;
-        siblings: string[];
-    };
-    stateTrieWitness: string;
-    storageProofs: StorageProof[];
-    length: number;
-}
-
-interface EthGetProofResponse {
-    accountProof: string[];
-    balance: string;
-    codeHash: string;
-    nonce: string;
-    storageHash: string;
-    storageProof: {
-        key: string;
-        value: string;
-        proof: string[];
-    }[];
-}
 export class ProofService {
     private readonly l1_provider: ethers.providers.StaticJsonRpcProvider;
     private readonly l2_provider: L2Provider<ethers.providers.StaticJsonRpcProvider>;
@@ -59,12 +19,9 @@ export class ProofService {
             l2SignerOrProvider: this.l2_provider,
         });
     }
-    //Refactor to general OP proofer
-    public async proofText(resolverAddr: string, node: string, recordName: string): Promise<ProofInputObject> {
-        const slot = StorageHelper.getStorageSlot(TEXTS_SLOT_NAME, node, recordName);
-
+    public async createProof(target: string, slot: string): Promise<ProofInputObject> {
         const [optimismStateRoot, blockNr] = await this.getStateRoot();
-        const { storageProof, accountProof, length } = await this.getProofPerSlot(slot, blockNr, resolverAddr);
+        const { storageProof, accountProof, length } = await this.getProofPerSlot(slot, blockNr, target);
 
         const stateRoot = optimismStateRoot.stateRoot;
         const stateRootBatchHeader = optimismStateRoot.batch.header;
@@ -75,7 +32,7 @@ export class ProofService {
         const stateTreeWitness = ethers.utils.RLP.encode(accountProof);
 
         return {
-            target: resolverAddr,
+            target,
             stateRoot,
             storageProofs: storageProof,
             stateRootBatchHeader,
@@ -85,7 +42,6 @@ export class ProofService {
         };
     }
 
-    //Return also the account proof
     private async getProofPerSlot(
         initalSlot: string,
         blockNr: number,
@@ -105,7 +61,7 @@ export class ProofService {
     }
 
     private async handleShortType(resolverAddr: string, slot: string, blockNr: number, length: number) {
-        const res = await this.getProof(resolverAddr, [slot], blockNr);
+        const res = await this.makeGetProofRpcCall(resolverAddr, [slot], blockNr);
         const { storageProof, accountProof } = res;
 
         return {
@@ -120,7 +76,7 @@ export class ProofService {
         const totalSlots = Math.ceil((length * 2 + 1) / 64);
 
         const slots = [...Array(totalSlots).keys()].map((i) => BigNumber.from(firstSlot).add(i).toHexString());
-        const proofResponse = await this.getProof(resolverAddr, slots, blocknr);
+        const proofResponse = await this.makeGetProofRpcCall(resolverAddr, slots, blocknr);
 
         if (proofResponse.storageProof.length !== totalSlots) {
             throw "invalid proof response";
@@ -151,7 +107,11 @@ export class ProofService {
         //The length is encoded as length *2+1
         return BigNumber.from(slot).sub(1).div(2).toNumber();
     }
-    private async getProof(resolverAddr: string, slots: string[], blocknr: number): Promise<EthGetProofResponse> {
+    private async makeGetProofRpcCall(
+        resolverAddr: string,
+        slots: string[],
+        blocknr: number
+    ): Promise<EthGetProofResponse> {
         const getProofResponse = await this.l2_provider.send("eth_getProof", [
             resolverAddr,
             slots,

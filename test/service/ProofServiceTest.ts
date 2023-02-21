@@ -1,10 +1,9 @@
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
+import { expect } from "chai";
 import { ethers } from "hardhat";
-import { mockProofOfMultislot } from "../mocks/mockProofForMultislot";
 import { LibAddressManager, OptimisimProofVerifier, StateCommitmentChain } from "typechain";
 import { ProofService } from "../../gateway/service/proof/ProofService";
-import { expect } from "chai";
-
+import { EnsService } from "./../../gateway/service/ens/EnsService";
 describe("ProofServiceTest", () => {
     let owner: SignerWithAddress;
     let optimismProofVerifier: OptimisimProofVerifier;
@@ -53,7 +52,9 @@ describe("ProofServiceTest", () => {
                 [node, "0x99C19AB10b9EC8aC6fcda9586E81f6B73a298870"]
             )
         );
-        const proof = await proofService.proofText("0x2D2d42a1200d8e3ACDFa45Fe58b47F45ebbbaCd6", ownNode, recordName);
+
+        const slot = EnsService.getStorageSlotForText(9, ownNode, recordName);
+        const proof = await proofService.createProof("0x2D2d42a1200d8e3ACDFa45Fe58b47F45ebbbaCd6", slot);
 
         expect(proof.length).to.be.equal(3);
     });
@@ -69,7 +70,10 @@ describe("ProofServiceTest", () => {
                 [node, "0x99C19AB10b9EC8aC6fcda9586E81f6B73a298870"]
             )
         );
-        const proof = await proofService.proofText("0x2D2d42a1200d8e3ACDFa45Fe58b47F45ebbbaCd6", ownNode, recordName);
+
+        const slot = EnsService.getStorageSlotForText(9, ownNode, recordName);
+        const proof = await proofService.createProof("0x2D2d42a1200d8e3ACDFa45Fe58b47F45ebbbaCd6", slot);
+
         expect(proof.length).to.be.equal(31);
     });
     it("multislot slot", async () => {
@@ -88,7 +92,9 @@ describe("ProofServiceTest", () => {
             )
         );
 
-        const proof = await proofService.proofText("0x2D2d42a1200d8e3ACDFa45Fe58b47F45ebbbaCd6", ownNode, recordName);
+        const slot = EnsService.getStorageSlotForText(9, ownNode, recordName);
+
+        const proof = await proofService.createProof("0x2D2d42a1200d8e3ACDFa45Fe58b47F45ebbbaCd6", slot);
 
         const profile = {
             publicSigningKey: "0ekgI3CBw2iXNXudRdBQHiOaMpG9bvq9Jse26dButug=",
