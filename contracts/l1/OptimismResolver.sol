@@ -14,6 +14,7 @@ import "hardhat/console.sol";
 contract OptimismResolver is IExtendedResolver, SupportsInterface, OwnedENSNode {
     address public owner;
     string public url;
+    IOptimismProofVerifier public optimismProofVerifier;
 
     event NewOwner(address newOwner);
     error OffchainLookup(address sender, string[] urls, bytes callData, bytes4 callbackFunction, bytes extraData);
@@ -21,11 +22,12 @@ contract OptimismResolver is IExtendedResolver, SupportsInterface, OwnedENSNode 
     constructor(
         string memory _url,
         address _owner,
-        IOptimismProofVerifier optimismProofVerifier,
-        ENS _ensRegisrty
-    ) OwnedENSNode(_ensRegisrty) {
+        IOptimismProofVerifier _optimismProofVerifier,
+        ENS _ensRegistry
+    ) OwnedENSNode(_ensRegistry) {
         url = _url;
         owner = _owner;
+        optimismProofVerifier = _optimismProofVerifier;
     }
 
     modifier onlyOwner() {
@@ -66,8 +68,8 @@ contract OptimismResolver is IExtendedResolver, SupportsInterface, OwnedENSNode 
      * extraData -> the original call data
      */
     function resolveWithProof(bytes calldata response, bytes calldata extraData) external view returns (bytes memory) {
-        IOptimismProofVerifier.L2StateProof memory proof = abi.decode(proof, (IOptimismProofVerifier.L2StateProof));
-        return IOptimismProofVerifier.getProofValue(proof);
+        IOptimismProofVerifier.L2StateProof memory proof = abi.decode(response, (IOptimismProofVerifier.L2StateProof));
+        return optimismProofVerifier.getProofValue(proof);
     }
 
     function supportsInterface(bytes4 interfaceID) public pure override returns (bool) {
