@@ -4,7 +4,7 @@ import { expect } from "chai";
 import { ethers } from "hardhat";
 import { mockProofForSingleSlot } from "../mocks/mockProofForSingleSlot";
 import { LibAddressManager, OptimisimProofVerifier, StateCommitmentChain } from "typechain";
-import { mockProofOfMultislot } from "../mockProof";
+import { mockProofOfMultislot } from "../mocks/mockProofForMultislot";
 import { mockProofForEmptySlot } from "../mocks/mockProofForEmptySlot";
 import { mockProofForSlot31BytesLong } from "../mocks/mockProofForSlot31BytesLong";
 

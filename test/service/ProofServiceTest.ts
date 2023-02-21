@@ -1,6 +1,6 @@
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { ethers } from "hardhat";
-import { mockProofOfMultislot } from "../mockProof";
+import { mockProofOfMultislot } from "../mocks/mockProofForMultislot";
 import { LibAddressManager, OptimisimProofVerifier, StateCommitmentChain } from "typechain";
 import { ProofService } from "../../gateway/service/proof/ProofService";
 import { expect } from "chai";
