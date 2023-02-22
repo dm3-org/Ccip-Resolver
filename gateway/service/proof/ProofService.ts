@@ -19,7 +19,8 @@ export class ProofService {
             l2SignerOrProvider: this.l2_provider,
         });
     }
-    public async createProof(target: string, slot: string): Promise<ProofInputObject> {
+    //Todo move to own TS type
+    public async createProof(target: string, slot: string): Promise<{ proof: ProofInputObject; result: string }> {
         const [optimismStateRoot, blockNr] = await this.getStateRoot();
         const { storageProof, accountProof, length } = await this.getProofPerSlot(slot, blockNr, target);
 
@@ -31,7 +32,11 @@ export class ProofService {
         };
         const stateTreeWitness = ethers.utils.RLP.encode(accountProof);
 
-        return {
+        const result = storageProof
+            .reduce((agg, cur) => agg + cur.value.substring(2), "0x")
+            .substring(0, length * 2 + 2);
+
+        const proof = {
             target,
             stateRoot,
             storageProofs: storageProof,
@@ -40,6 +45,8 @@ export class ProofService {
             stateTrieWitness: stateTreeWitness,
             length,
         };
+
+        return { result, proof };
     }
 
     private async getProofPerSlot(
@@ -89,8 +96,9 @@ export class ProofService {
         };
     }
     private mapStorageProof(storageProofs: EthGetProofResponse["storageProof"]): StorageProof[] {
-        return storageProofs.map(({ key, proof }) => ({
+        return storageProofs.map(({ key, proof, value }) => ({
             key,
+            value,
             storageTrieWitness: ethers.utils.RLP.encode(proof),
         }));
     }
