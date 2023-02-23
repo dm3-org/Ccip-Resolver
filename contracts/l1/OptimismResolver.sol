@@ -5,7 +5,6 @@ import "./IExtendedResolver.sol";
 import "./SupportsInterface.sol";
 import "./IOptimismProofVerifier.sol";
 import "./OwnedENSNode.sol";
-import "hardhat/console.sol";
 
 /**
  * Implements an ENS resolver that directs all queries to a CCIP read gateway.

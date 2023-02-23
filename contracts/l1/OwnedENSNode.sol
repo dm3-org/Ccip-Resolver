@@ -2,7 +2,7 @@
 pragma solidity ^0.8.9;
 import "@ensdomains/ens-contracts/contracts/registry/ENS.sol";
 
-abstract contract OwnedENSNode {
+contract OwnedENSNode {
     ENS public ensRegistry;
 
     constructor(ENS _ensRegistry) {
