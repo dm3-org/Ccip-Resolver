@@ -24,7 +24,6 @@ export class CcipRouter {
 
         //Encode the proof so it can be used as calldata for the getProofValue function
         const iOptimismProofVerifier = (await ethers.getContractFactory("OptimisimProofVerifier")).interface;
-        const calldata = iOptimismProofVerifier.encodeFunctionData("getProofValue", [proof]);
 
         const iTextResolver = new ethers.utils.Interface([
             "function text(bytes32 node, string calldata key) external view returns (string memory)",
@@ -34,7 +33,10 @@ export class CcipRouter {
         const getTextResult = iTextResolver.encodeFunctionResult("text(bytes32,string)", [
             Buffer.from(result.slice(2), "hex").toString(),
         ]);
-
-        return ethers.utils.defaultAbiCoder.encode(["bytes", "bytes"], [getTextResult, calldata]);
+        console.log(proof.length);
+        return ethers.utils.defaultAbiCoder.encode(
+            ["bytes", iOptimismProofVerifier.fragments[1].inputs[0]],
+            [getTextResult, proof]
+        );
     }
 }
