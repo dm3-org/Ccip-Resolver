@@ -27,5 +27,6 @@ export interface ProofInputObject {
 }
 export interface StorageProof {
     key: string;
+    value: string;
     storageTrieWitness: string;
 }

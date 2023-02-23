@@ -44,7 +44,6 @@ describe("OptimismProofVerifier", () => {
     it("Resolves correct Proof for an empty slot", async () => {
         const proof = mockProofForEmptySlot;
         const responseBytes = await optimismProofVerifier.getProofValue(proof);
-        console.log(responseBytes);
 
         const responseString = Buffer.from(responseBytes.slice(2), "hex").toString();
 

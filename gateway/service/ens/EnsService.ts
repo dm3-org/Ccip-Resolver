@@ -1,4 +1,5 @@
 import { ethers } from "ethers";
+import { L2_PUBLIC_RESOLVER_ADDRESS } from "./../../constants";
 import { ProofService } from "../proof/ProofService";
 import { ProofInputObject } from "../proof/types";
 
@@ -6,11 +7,15 @@ export class EnsService {
     private readonly resolverAddress: string;
     private readonly proofService: ProofService;
 
-    constructor(resolverAddress: string) {
+    constructor(resolverAddress: string, proofService: ProofService) {
         this.resolverAddress = resolverAddress;
+        this.proofService = proofService;
+    }
+    public static instance() {
+        return new EnsService(L2_PUBLIC_RESOLVER_ADDRESS, new ProofService(global.l1_provider, global.l2_provider));
     }
 
-    public proofText(node: string, recordName: string): Promise<ProofInputObject> {
+    public proofText(node: string, recordName: string):Promise<{ proof: ProofInputObject; result: string }> {
         const TEXTS_SLOT_NAME = 9;
         const slot = EnsService.getStorageSlotForText(TEXTS_SLOT_NAME, node, recordName);
         return this.proofService.createProof(this.resolverAddress, slot);

@@ -45,7 +45,7 @@ export class MockProvider extends ethers.providers.BaseProvider {
         const fnSig = params.transaction.data!.toString().substring(0, 10);
 
         const rawResult = await provider.parent.perform("call", params);
-        //0x9061b923 = supportsInterface()
+        //0x9061b923 = resolve
         if (fnSig !== "0x9061b923") {
             const result = this.optimismResolver.interface.encodeFunctionResult(fnSig, [rawResult]);
             return {

@@ -4,7 +4,7 @@ import { ethers } from "hardhat";
 import { LibAddressManager, OptimisimProofVerifier, StateCommitmentChain } from "typechain";
 import { ProofService } from "../../gateway/service/proof/ProofService";
 import { EnsService } from "./../../gateway/service/ens/EnsService";
-describe.only("ProofServiceTest", () => {
+describe("ProofServiceTest", () => {
     let owner: SignerWithAddress;
     let optimismProofVerifier: OptimisimProofVerifier;
     let addresManager: LibAddressManager;

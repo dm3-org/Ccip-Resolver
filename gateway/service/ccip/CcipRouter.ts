@@ -1,15 +1,14 @@
 import { ethers } from "hardhat";
 
-import { mockProofOfMultislot } from "test/mocks/mockProofForMultislot";
 import { EnsService } from "../ens/EnsService";
-import { ProofService } from "../proof/ProofService";
-import { ProofInputObject } from "../proof/types";
-import { OptimisimProofVerifier, IOptimismProofVerifier__factory } from "typechain";
-
 export class CcipRouter {
-    private readonly resolverAddress: string;
-    constructor(resolverAddress: string) {
-        this.resolverAddress = resolverAddress;
+    private readonly ensService: EnsService;
+
+    constructor(ensService: EnsService) {
+        this.ensService = ensService;
+    }
+    public static instance() {
+        return new CcipRouter(EnsService.instance());
     }
     public async handleRequest(signature: string, request: any) {
         switch (signature) {
@@ -20,17 +19,22 @@ export class CcipRouter {
         }
     }
 
-    private handleText(request: any) {
-        //Todo implement proper request
-        const proof = mockProofOfMultislot;
-        return true;
-    }
-    private async encodeProof(proof: ProofInputObject) {
-        const interface = (await ethers.getContractFactory("IOptimisimProofVerifier")).interface;
+    private async handleText(request: any) {
+        const { proof, result } = await this.ensService.proofText(request.ownedNode, request.record);
 
-        interface.encodeFunctionData()
+        //Encode the proof so it can be used as calldata for the getProofValue function
+        const iOptimismProofVerifier = (await ethers.getContractFactory("OptimisimProofVerifier")).interface;
+        const calldata = iOptimismProofVerifier.encodeFunctionData("getProofValue", [proof]);
 
-        const myStructData = ethers.utils.AbiCoder.prototype.encode(["address", "uint", "bool"], [a, b, c]);
-        return ethers.utils.defaultAbiCoder.encode(["bytes", "uint64", "bytes"], [result, validUntil, sig]);
+        const iTextResolver = new ethers.utils.Interface([
+            "function text(bytes32 node, string calldata key) external view returns (string memory)",
+        ]);
+
+        //The return type of getText should be the value of as a string.
+        const getTextResult = iTextResolver.encodeFunctionResult("text(bytes32,string)", [
+            Buffer.from(result.slice(2), "hex").toString(),
+        ]);
+
+        return ethers.utils.defaultAbiCoder.encode(["bytes", "bytes"], [getTextResult, calldata]);
     }
 }

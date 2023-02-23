@@ -13,7 +13,7 @@ export function ccipGateway(resolverAddr: string) {
         try {
             const { request, signature } = EncodingService.decodeRequest(calldata);
 
-            const router = new CcipRouter(resolverAddr);
+            const router = CcipRouter.instance();
 
             const response = await router.handleRequest(signature, request);
 
@@ -22,11 +22,10 @@ export function ccipGateway(resolverAddr: string) {
                 return res.status(404).send({ message: "Record not found" });
             }
 
-            // const data = await Lib.offchainResolver.encodeResponse(signer, resolverAddr, response, calldata, signature);
-            res.status(500).send("unimplemented");
+            res.status(200).send({ data: response });
         } catch (e) {
             console.warn((e as Error).message);
-            res.status(400).send({ message: "rfgtrgtrrror" });
+            res.status(400).send({ message: e });
         }
     });
     return router;
