@@ -33,7 +33,6 @@ export class CcipRouter {
         const getTextResult = iTextResolver.encodeFunctionResult("text(bytes32,string)", [
             Buffer.from(result.slice(2), "hex").toString(),
         ]);
-        console.log(proof.length);
         return ethers.utils.defaultAbiCoder.encode(
             ["bytes", iOptimismProofVerifier.fragments[1].inputs[0]],
             [getTextResult, proof]

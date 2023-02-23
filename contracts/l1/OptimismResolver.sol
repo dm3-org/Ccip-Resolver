@@ -67,7 +67,10 @@ contract OptimismResolver is IExtendedResolver, SupportsInterface, OwnedENSNode 
      * extraData -> the original call data
      */
     function resolveWithProof(bytes calldata response, bytes calldata extraData) external view returns (bytes memory) {
-        IOptimismProofVerifier.L2StateProof memory proof = abi.decode(response, (IOptimismProofVerifier.L2StateProof));
+        (string memory result, IOptimismProofVerifier.L2StateProof memory proof) = abi.decode(
+            response,
+            (string, IOptimismProofVerifier.L2StateProof)
+        );
         return optimismProofVerifier.getProofValue(proof);
     }
 

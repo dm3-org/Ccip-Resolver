@@ -6,6 +6,7 @@ import { ethers } from "ethers";
 import express from "express";
 import { ethers as hreEthers } from "hardhat";
 import request from "supertest";
+import { getGateWayUrl } from "../../../helper/getGatewayUrl";
 import { ENS, OptimisimProofVerifier, OptimismResolver } from "typechain";
 import { ccipGateway } from "./../../../../gateway/http/ccipGateway";
 import { mockEnsRegistry } from "./mockEnsRegistry";
@@ -45,7 +46,7 @@ describe("OptimismResolver Test", () => {
         ccipApp.use(ccipGateway(optimismResolver.address));
     });
 
-    describe("resolveText", () => {
+    describe("resolve", () => {
         it("ccip gateway resolves existing profile using ethers.provider.getText()", async () => {
             const provider = new MockProvider(hreEthers.provider, fetchRecordFromCcipGateway, optimismResolver);
 
@@ -60,6 +61,7 @@ describe("OptimismResolver Test", () => {
 
             expect(text).to.eql(JSON.stringify(profile));
         });
+
         it("Returns empty string if record is empty", async () => {
             const provider = new MockProvider(hreEthers.provider, fetchRecordFromCcipGateway, optimismResolver);
 
@@ -68,7 +70,25 @@ describe("OptimismResolver Test", () => {
 
             expect(text).to.be.null;
         });
-      
+    });
+
+    describe("resolveWithProof", () => {
+        it("proof is valid onchain", async () => {
+            const provider = new MockProvider(hreEthers.provider, fetchRecordFromCcipGateway, optimismResolver);
+
+            const { callData, sender } = await getGateWayUrl("alex1234.eth", "network.dm3.eth", optimismResolver);
+            const { body, status } = await request(ccipApp).get(`/${sender}/${callData}`).send();
+
+            const responseBytes = await optimismResolver.resolveWithProof(body.data, callData);
+            const responseString = Buffer.from(responseBytes.slice(2), "hex").toString();
+
+            const profile = {
+                publicSigningKey: "0ekgI3CBw2iXNXudRdBQHiOaMpG9bvq9Jse26dButug=",
+                publicEncryptionKey: "Vrd/eTAk/jZb/w5L408yDjOO5upNFDGdt0lyWRjfBEk=",
+                deliveryServices: ["foo.dm3"],
+            };
+            expect(responseString).to.eql(JSON.stringify(profile));
+        });
     });
 
     const fetchRecordFromCcipGateway = async (url: string, json?: string) => {
