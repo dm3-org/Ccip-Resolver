@@ -11,21 +11,26 @@ export function ccipGateway(resolverAddr: string) {
         console.info(`GET ${resolverAddr}`);
 
         try {
-            const { request, signature } = EncodingService.decodeRequest(calldata);
+            const decodedRequest = EncodingService.decodeRequest(calldata);
+
+            if (!decodedRequest) {
+                return res.status(404).send({ message: `invalid calldata` });
+            }
+            const { request, signature } = decodedRequest;
 
             const router = CcipRouter.instance();
 
             const response = await router.handleRequest(signature, request);
 
             if (!response) {
-                console.log("Record not found");
-                return res.status(404).send({ message: "Record not found" });
+                console.log("no req");
+                return res.status(404).send({ message: `request is not supported` });
             }
 
             res.status(200).send({ data: response });
         } catch (e) {
             console.warn((e as Error).message);
-            res.status(400).send({ message: e });
+            res.status(400).send({ message: "Cant process request" });
         }
     });
     return router;

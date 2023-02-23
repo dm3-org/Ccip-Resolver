@@ -24,7 +24,7 @@ export class MockProvider extends ethers.providers.BaseProvider {
         this.fetcher = fetcher;
         this.optimismResolver = optimsimResolver;
     }
-    async getResolver(name: string) {
+    async getResolver(name: string) :Promise<ethers.providers.Resolver>{
         return new ethers.providers.Resolver(this, this.optimismResolver.address, name) as any;
     }
 

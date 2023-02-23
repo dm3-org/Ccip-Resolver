@@ -1,6 +1,7 @@
 import { FakeContract } from "@defi-wonderland/smock";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import bodyParser from "body-parser";
+import { assert } from "chai";
 import { ethers } from "ethers";
 import express from "express";
 import { ethers as hreEthers } from "hardhat";
@@ -45,7 +46,7 @@ describe("OptimismResolver Test", () => {
     });
 
     describe("resolveText", () => {
-        it.only("resolves propfile using ethers.provider.getText()", async () => {
+        it("ccip gateway resolves existing profile using ethers.provider.getText()", async () => {
             const provider = new MockProvider(hreEthers.provider, fetchRecordFromCcipGateway, optimismResolver);
 
             const resolver = await provider.getResolver("alex1234.eth");
@@ -59,20 +60,17 @@ describe("OptimismResolver Test", () => {
 
             expect(text).to.eql(JSON.stringify(profile));
         });
-        it("Throws error if lookup went wrong", async () => {
+        it("Returns empty string if record is empty", async () => {
             const provider = new MockProvider(hreEthers.provider, fetchRecordFromCcipGateway, optimismResolver);
 
             const resolver = await provider.getResolver("foo.dm3.eth");
+            const text = await resolver.getText("unknown record");
 
-            expect(resolver.getText("unknown record")).rejected;
+            expect(text).to.be.null;
         });
+      
     });
-    describe("ResolveAddr", () => {
-        it("resolvesName returns the Address of the name", async () => {
-            const provider = new MockProvider(hreEthers.provider, fetchRecordFromCcipGateway, optimismResolver);
-            await provider.resolveName("foo.dm3.eth");
-        });
-    });
+
     const fetchRecordFromCcipGateway = async (url: string, json?: string) => {
         const [sender, data] = url.split("/").slice(3);
         const response = await request(ccipApp).get(`/${sender}/${data}`).send();
