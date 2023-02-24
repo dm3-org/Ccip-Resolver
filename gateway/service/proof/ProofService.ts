@@ -30,7 +30,7 @@ export class ProofService {
             index: optimismStateRoot.stateRootIndexInBatch,
             siblings: makeMerkleTreeProof(optimismStateRoot.batch.stateRoots, optimismStateRoot.stateRootIndexInBatch),
         };
-        const stateTreeWitness = ethers.utils.RLP.encode(accountProof);
+        const stateTrieWitness = ethers.utils.RLP.encode(accountProof);
 
         const result = storageProof
             .reduce((agg, cur) => agg + cur.value.substring(2), "0x")
@@ -42,7 +42,7 @@ export class ProofService {
             storageProofs: storageProof,
             stateRootBatchHeader,
             stateRootProof,
-            stateTrieWitness: stateTreeWitness,
+            stateTrieWitness,
             length,
         };
 
