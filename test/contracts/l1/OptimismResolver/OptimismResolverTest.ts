@@ -1,13 +1,12 @@
 import { FakeContract } from "@defi-wonderland/smock";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import bodyParser from "body-parser";
-import { assert } from "chai";
 import { ethers } from "ethers";
 import express from "express";
-import { ethers as hreEthers, network } from "hardhat";
+import { ethers as hreEthers } from "hardhat";
 import request from "supertest";
-import { getGateWayUrl } from "../../../helper/getGatewayUrl";
 import { ENS, OptimisimProofVerifier, OptimismResolver } from "typechain";
+import { getGateWayUrl } from "../../../helper/getGatewayUrl";
 import { ccipGateway } from "./../../../../gateway/http/ccipGateway";
 import { mockEnsRegistry } from "./mockEnsRegistry";
 import { mockOptimismProofVerifier } from "./mockOptimismProofVerifier";
@@ -23,12 +22,8 @@ describe("OptimismResolver Test", () => {
     let ccipApp;
 
     beforeEach(async () => {
-        global.l1_provider = new ethers.providers.JsonRpcProvider(
-            process.env.MAINNET_RPC_URL
-        );
-        global.l2_provider = new ethers.providers.JsonRpcProvider(
-            process.env.OPTIMISM_RPC_URL
-        );
+        const l1_provider = new ethers.providers.JsonRpcProvider(process.env.MAINNET_RPC_URL);
+        const l2_provider = new ethers.providers.JsonRpcProvider(process.env.OPTIMISM_RPC_URL);
         [owner] = await hreEthers.getSigners();
         optimismProofVerifier = await mockOptimismProofVerifier();
         ensRegistry = await mockEnsRegistry();
@@ -43,7 +38,7 @@ describe("OptimismResolver Test", () => {
 
         ccipApp = express();
         ccipApp.use(bodyParser.json());
-        ccipApp.use(ccipGateway(optimismResolver.address));
+        ccipApp.use(ccipGateway(l1_provider, l2_provider));
     });
 
     describe("resolve", () => {

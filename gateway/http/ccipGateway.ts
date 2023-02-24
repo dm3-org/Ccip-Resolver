@@ -1,8 +1,15 @@
+import { ethers } from "ethers";
 import express from "express";
 import { CcipRouter } from "../service/ccip/CcipRouter";
 import { EncodingService } from "../service/encoding/EncodingService";
 
-export function ccipGateway(resolverAddr: string) {
+export function ccipGateway(
+    l1provider: ethers.providers.StaticJsonRpcProvider,
+    l2provider: ethers.providers.JsonRpcProvider
+) {
+    global.l1_provider = l1provider;
+    global.l2_provider = l2provider;
+
     const router = express.Router();
 
     router.get("/:resolverAddr/:calldata", async (req: express.Request, res: express.Response) => {
