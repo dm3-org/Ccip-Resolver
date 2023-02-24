@@ -69,8 +69,6 @@ describe("OptimismResolver Test", () => {
 
     describe("resolveWithProof", () => {
         it("proof is valid onchain", async () => {
-            const provider = new MockProvider(hreEthers.provider, fetchRecordFromCcipGateway, optimismResolver);
-
             const { callData, sender } = await getGateWayUrl("alex1234.eth", "network.dm3.eth", optimismResolver);
             const { body, status } = await request(ccipApp).get(`/${sender}/${callData}`).send();
 

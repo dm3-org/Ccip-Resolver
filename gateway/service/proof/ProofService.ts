@@ -67,8 +67,8 @@ export class ProofService {
     }
     private async getStateRoot(): Promise<[StateRoot, number]> {
         const batchIndex = await this.crossChainMessenger.contracts.l1.StateCommitmentChain.getTotalBatches();
-        const stateRoot = await this.crossChainMessenger.getFirstStateRootInBatch(batchIndex.toNumber() - 1);
-
+        //
+        const stateRoot = await this.crossChainMessenger.getFirstStateRootInBatch(batchIndex.toNumber() - 2);
         if (!stateRoot) {
             throw "State root not found";
         }
@@ -129,10 +129,6 @@ export class ProofService {
         //After we've calculated all slots we can request the proof for all of them for the blockNr the stateRoot is based on
         const proofResponse = await this.makeGetProofRpcCall(resolverAddr, slots, blocknr);
 
-        if (proofResponse.storageProof.length !== totalSlots) {
-            throw "invalid proof response";
-        }
-
         return {
             accountProof: proofResponse.accountProof,
             storageProof: this.mapStorageProof(proofResponse.storageProof),
@@ -144,12 +140,7 @@ export class ProofService {
         slots: string[],
         blocknr: number
     ): Promise<EthGetProofResponse> {
-        const getProofResponse = await this.l2_provider.send("eth_getProof", [
-            resolverAddr,
-            slots,
-            toRpcHexString(blocknr),
-        ]);
-        return getProofResponse;
+        return await this.l2_provider.send("eth_getProof", [resolverAddr, slots, toRpcHexString(blocknr)]);
     }
     private mapStorageProof(storageProofs: EthGetProofResponse["storageProof"]): StorageProof[] {
         return storageProofs.map(({ key, proof, value }) => ({
