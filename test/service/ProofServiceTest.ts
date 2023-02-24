@@ -3,7 +3,7 @@ import { expect } from "chai";
 import { ethers } from "hardhat";
 import { LibAddressManager, OptimisimProofVerifier, StateCommitmentChain } from "typechain";
 import { ProofService } from "../../gateway/service/proof/ProofService";
-import { EnsService } from "./../../gateway/service/ens/EnsService";
+import { EnsResolverService } from "./../../gateway/service/ens/EnsService";
 describe("ProofServiceTest", () => {
     let owner: SignerWithAddress;
     let optimismProofVerifier: OptimisimProofVerifier;
@@ -41,7 +41,7 @@ describe("ProofServiceTest", () => {
             )
         );
 
-        const slot = EnsService.getStorageSlotForText(9, ownNode, recordName);
+        const slot = EnsResolverService.getStorageSlotForText(9, ownNode, recordName);
         const { proof, result } = await proofService.createProof("0x2D2d42a1200d8e3ACDFa45Fe58b47F45ebbbaCd6", slot);
 
         expect(proof.length).to.be.equal(3);
@@ -62,7 +62,7 @@ describe("ProofServiceTest", () => {
             )
         );
 
-        const slot = EnsService.getStorageSlotForText(9, ownNode, recordName);
+        const slot = EnsResolverService.getStorageSlotForText(9, ownNode, recordName);
         const { proof, result } = await proofService.createProof("0x2D2d42a1200d8e3ACDFa45Fe58b47F45ebbbaCd6", slot);
 
         expect(proof.length).to.be.equal(31);
@@ -82,7 +82,7 @@ describe("ProofServiceTest", () => {
             )
         );
 
-        const slot = EnsService.getStorageSlotForText(9, ownNode, recordName);
+        const slot = EnsResolverService.getStorageSlotForText(9, ownNode, recordName);
 
         const { proof, result } = await proofService.createProof("0x2D2d42a1200d8e3ACDFa45Fe58b47F45ebbbaCd6", slot);
 

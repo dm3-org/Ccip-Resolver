@@ -1,10 +1,12 @@
 import { ethers } from "ethers";
 import { L2_PUBLIC_RESOLVER_ADDRESS } from "./../../constants";
 import { ProofService } from "../proof/ProofService";
-import { ProofInputObject } from "../proof/types";
+import { CreateProofResult, ProofInputObject } from "../proof/types";
 
-//TOdo rename to something like resolverService
-export class EnsService {
+/**
+ * This class provides the storage location for different for the particular fiels of the PublicResolverContract
+ */
+export class EnsResolverService {
     private readonly resolverAddress: string;
     private readonly proofService: ProofService;
 
@@ -13,12 +15,13 @@ export class EnsService {
         this.proofService = proofService;
     }
     public static instance() {
-        return new EnsService(L2_PUBLIC_RESOLVER_ADDRESS, new ProofService(global.l1_provider, global.l2_provider));
+        return new EnsResolverService(L2_PUBLIC_RESOLVER_ADDRESS, ProofService.instance());
     }
 
-    public proofText(node: string, recordName: string): Promise<{ proof: ProofInputObject; result: string }> {
+    public proofText(node: string, recordName: string): Promise<CreateProofResult> {
+        //The storage slot within the particular contract
         const TEXTS_SLOT_NAME = 9;
-        const slot = EnsService.getStorageSlotForText(TEXTS_SLOT_NAME, node, recordName);
+        const slot = EnsResolverService.getStorageSlotForText(TEXTS_SLOT_NAME, node, recordName);
         return this.proofService.createProof(this.resolverAddress, slot);
     }
     public static getStorageSlotForText(slot: number, node: string, recordName: string) {

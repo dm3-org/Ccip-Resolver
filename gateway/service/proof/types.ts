@@ -30,3 +30,8 @@ export interface StorageProof {
     value: string;
     storageTrieWitness: string;
 }
+
+export interface CreateProofResult {
+    proof: ProofInputObject;
+    result: string;
+}

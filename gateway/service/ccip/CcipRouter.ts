@@ -1,15 +1,15 @@
 import { ethers } from "hardhat";
 import { encodeText } from "./../encoding/text/encodeText";
-import { EnsService } from "../ens/EnsService";
+import { EnsResolverService } from "../ens/EnsService";
 import { getProofParamType } from "../encoding/proof/getProofParamType";
 export class CcipRouter {
-    private readonly ensService: EnsService;
+    private readonly ensService: EnsResolverService;
 
-    constructor(ensService: EnsService) {
+    constructor(ensService: EnsResolverService) {
         this.ensService = ensService;
     }
     public static instance() {
-        return new CcipRouter(EnsService.instance());
+        return new CcipRouter(EnsResolverService.instance());
     }
 
     public async handleRequest(signature: string, request: any) {
