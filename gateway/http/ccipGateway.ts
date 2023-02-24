@@ -1,7 +1,7 @@
 import { ethers } from "ethers";
 import express from "express";
 import { CcipRouter } from "../service/ccip/CcipRouter";
-import { EncodingService } from "../service/encoding/EncodingService";
+import { decodeCcipRequest } from "../service/encoding/ccipRequest/decodeCcipRequest";
 
 export function ccipGateway(
     l1provider: ethers.providers.StaticJsonRpcProvider,
@@ -18,7 +18,7 @@ export function ccipGateway(
         console.info(`GET ${resolverAddr}`);
 
         try {
-            const decodedRequest = EncodingService.decodeRequest(calldata);
+            const decodedRequest = decodeCcipRequest(calldata);
 
             if (!decodedRequest) {
                 return res.status(404).send({ message: `invalid calldata` });
