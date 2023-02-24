@@ -14,12 +14,7 @@ describe("OptimismProofVerifier", () => {
     let stateCommitmentChain: StateCommitmentChain;
     let addresManager: FakeContract<LibAddressManager>;
 
-    const l1_provider = new ethers.providers.JsonRpcProvider(
-        "https://eth-mainnet.g.alchemy.com/v2/L1PIhq_TFU7sofEqd2IJwWqhBsJYah1S"
-    );
-    const l2Provider = new ethers.providers.JsonRpcProvider(
-        "https://opt-mainnet.g.alchemy.com/v2/DBATzBzSluCdFAA6Zi7YMWHpDGm1soJI"
-    );
+    const l1_provider = new ethers.providers.JsonRpcProvider(process.env.MAINNET_RPC_URL);
     beforeEach(async () => {
         [owner] = await ethers.getSigners();
 

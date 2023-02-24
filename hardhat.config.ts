@@ -13,13 +13,22 @@ import "hardhat-storage-layout";
 import "hardhat-tracer";
 
 const ETHERSCAN_API_KEY = process.env.ETHERSCAN_API_KEY || "Your etherscan API key";
+const MAINNET_RPC_URL = process.env.MAINNET_RPC_URL;
+const OPTIMISM_RPC_URL = process.env.OPTIMISM_RPC_URL;
+
+if (!MAINNET_RPC_URL) {
+    throw new Error("Please set your MAINNET_RPC_URL in a .env file");
+}
+if (!OPTIMISM_RPC_URL) {
+    throw new Error("Please set your OPTIMISM_RPC_URL in a .env file");
+}
 
 module.exports = {
     defaultNetwork: "hardhat",
     networks: {
         hardhat: {
             forking: {
-                url: "https://eth-mainnet.g.alchemy.com/v2/L1PIhq_TFU7sofEqd2IJwWqhBsJYah1S",
+                url: MAINNET_RPC_URL,
             },
         },
         localhost: {},

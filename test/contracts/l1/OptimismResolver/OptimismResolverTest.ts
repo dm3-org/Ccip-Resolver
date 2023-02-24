@@ -4,7 +4,7 @@ import bodyParser from "body-parser";
 import { assert } from "chai";
 import { ethers } from "ethers";
 import express from "express";
-import { ethers as hreEthers } from "hardhat";
+import { ethers as hreEthers, network } from "hardhat";
 import request from "supertest";
 import { getGateWayUrl } from "../../../helper/getGatewayUrl";
 import { ENS, OptimisimProofVerifier, OptimismResolver } from "typechain";
@@ -24,10 +24,10 @@ describe("OptimismResolver Test", () => {
 
     beforeEach(async () => {
         global.l1_provider = new ethers.providers.JsonRpcProvider(
-            "https://eth-mainnet.g.alchemy.com/v2/L1PIhq_TFU7sofEqd2IJwWqhBsJYah1S"
+            process.env.MAINNET_RPC_URL
         );
         global.l2_provider = new ethers.providers.JsonRpcProvider(
-            "https://opt-mainnet.g.alchemy.com/v2/DBATzBzSluCdFAA6Zi7YMWHpDGm1soJI"
+            process.env.OPTIMISM_RPC_URL
         );
         [owner] = await hreEthers.getSigners();
         optimismProofVerifier = await mockOptimismProofVerifier();
