@@ -45,7 +45,7 @@ describe("L2PublicResolver", () => {
         expect(await l2PublicResolver.text(ownedNode, "network.dm3.profile")).to.equal("test");
     });
 
-    /* it("set addr record on L2", async () => {
+     it.only("set addr record on L2", async () => {
         const node = ethers.utils.namehash(ethers.utils.nameprep("dm3.eth"));
         const ownedNode = ethers.utils.keccak256(ethers.utils.defaultAbiCoder.encode(["bytes32", "address"], [node, user1.address]))
 
@@ -61,5 +61,5 @@ describe("L2PublicResolver", () => {
 
         // record of the owned node should be changed
         expect(await l2PublicResolver["addr(bytes32)"](ownedNode)).to.equal(user2.address);
-    }); */
+    }); 
 });
