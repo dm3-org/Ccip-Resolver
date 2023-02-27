@@ -14,7 +14,9 @@ contract L2PublicResolver is PublicResolver(ENS(address(0)), INameWrapper(addres
         string key,
         string value
     );
-    event AddrChanged(bytes32 indexed node, bytes32 ownNode, address a);
+    event AddrChanged(bytes32 indexed node, bytes32 indexed ownNode, address a);
+    event AddressChanged(bytes32 indexed node, bytes32 indexed ownNode, uint256 coinType, bytes newAddress);
+    event ABIChanged(bytes32 indexed node, bytes32 indexed ownedNode, uint256 indexed contentType);
 
     /**
      * Sets the text data associated with an ENS node and key.
@@ -49,10 +51,31 @@ contract L2PublicResolver is PublicResolver(ENS(address(0)), INameWrapper(addres
         bytes memory a
     ) public override {
         bytes32 ownedNode = LibOwnedENSNode.getOwnedENSNode(node, msg.sender);
-        emit AddressChanged(node, coinType, a);
+        emit AddressChanged(node, ownedNode, coinType, a);
         if (coinType == COIN_TYPE_ETH) {
-            emit AddrChanged(node, bytesToAddress(a));
+            emit AddrChanged(node, ownedNode, bytesToAddress(a));
         }
         versionable_addresses[recordVersions[ownedNode]][ownedNode][coinType] = a;
+    }
+
+    /**
+     * Sets the ABI associated with an ENS node.
+     * Nodes may have one ABI of each content type. To remove an ABI, set it to
+     * the empty string.
+     * @param node The node to update.
+     * @param contentType The content type of the ABI
+     * @param data The ABI data.
+     */
+    function setABI(
+        bytes32 node,
+        uint256 contentType,
+        bytes calldata data
+    ) external override {
+        // Content types must be powers of 2
+        require(((contentType - 1) & contentType) == 0, "contentType unsupported");
+        bytes32 ownedNode = LibOwnedENSNode.getOwnedENSNode(node, msg.sender);
+
+        versionable_abis[recordVersions[ownedNode]][ownedNode][contentType] = data;
+        emit ABIChanged(node, ownedNode, contentType);
     }
 }
