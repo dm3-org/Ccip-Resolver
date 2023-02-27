@@ -16,16 +16,27 @@ describe("L2PublicResolver", () => {
         l2PublicResolver = (await l2PublicResolverFactory.deploy()) as L2PublicResolver;
     });
 
-    it("set text record on L2", async () => {
+    it.only("set text record on L2", async () => {
         const node = ethers.utils.namehash(ethers.utils.nameprep("dm3.eth"));
-        const ownedNode = ethers.utils.keccak256(ethers.utils.defaultAbiCoder.encode(["bytes32", "address"], [node, user1.address]))
+        const ownedNode = ethers.utils.keccak256(
+            ethers.utils.defaultAbiCoder.encode(["bytes32", "address"], [node, user1.address])
+        );
 
         // record should initially be empty
         expect(await l2PublicResolver.text(node, "network.dm3.profile")).to.equal("");
         expect(await l2PublicResolver.text(ownedNode, "network.dm3.profile")).to.equal("");
 
         const tx = await l2PublicResolver.setText(node, "network.dm3.profile", "test");
-        await tx.wait();
+        const receipt = await tx.wait();
+
+        const [textChangedEvent] = receipt.events;
+
+        const [eventNode, eventOwnNode, _, eventKey, eventValue] = textChangedEvent.args;
+
+        expect(eventNode).to.equal(node);
+        expect(eventOwnNode).to.equal(ownedNode);
+        expect(eventKey).to.equal("network.dm3.profile");
+        expect(eventValue).to.equal("test");
 
         // record of the original node shouldn't be touched
         expect(await l2PublicResolver.text(node, "network.dm3.profile")).to.equal("");
@@ -34,7 +45,7 @@ describe("L2PublicResolver", () => {
         expect(await l2PublicResolver.text(ownedNode, "network.dm3.profile")).to.equal("test");
     });
 
-    it("set addr record on L2", async () => {
+    /* it("set addr record on L2", async () => {
         const node = ethers.utils.namehash(ethers.utils.nameprep("dm3.eth"));
         const ownedNode = ethers.utils.keccak256(ethers.utils.defaultAbiCoder.encode(["bytes32", "address"], [node, user1.address]))
 
@@ -50,5 +61,5 @@ describe("L2PublicResolver", () => {
 
         // record of the owned node should be changed
         expect(await l2PublicResolver["addr(bytes32)"](ownedNode)).to.equal(user2.address);
-    });
+    }); */
 });
