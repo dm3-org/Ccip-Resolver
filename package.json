@@ -70,7 +70,7 @@
         "@defi-wonderland/smock": "^2.3.4",
         "@ensdomains/buffer": "0.0.10",
         "@ensdomains/dnssec-oracle": "0.1.2",
-        "@ensdomains/ens-contracts": "^0.0.17",
+        "@ensdomains/ens-contracts": "^0.0.19",
         "@eth-optimism/contracts": "^0.5.40",
         "@eth-optimism/sdk": "0.0.0-2022927214235",
         "ens-contracts-legacy": "https://github.com/ensdomains/resolvers.git#v0.1.7",
