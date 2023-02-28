@@ -1,11 +1,29 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.9;
-import "@ensdomains/ens-contracts/contracts/resolvers/PublicResolver.sol";
-import "@ensdomains/ens-contracts/contracts/registry/ENS.sol";
-import "@ensdomains/ens-contracts/contracts/wrapper/INameWrapper.sol";
+
+import "@ensdomains/ens-contracts/contracts/resolvers/profiles/ABIResolver.sol";
+import "@ensdomains/ens-contracts/contracts/resolvers/profiles/AddrResolver.sol";
+import "@ensdomains/ens-contracts/contracts/resolvers/profiles/ContentHashResolver.sol";
+import "@ensdomains/ens-contracts/contracts/resolvers/profiles/InterfaceResolver.sol";
+import "@ensdomains/ens-contracts/contracts/resolvers/profiles/NameResolver.sol";
+import "@ensdomains/ens-contracts/contracts/resolvers/profiles/PubkeyResolver.sol";
+import "@ensdomains/ens-contracts/contracts/resolvers/profiles/TextResolver.sol";
+import "@ensdomains/ens-contracts/contracts/resolvers/profiles/ExtendedResolver.sol";
+import "@ensdomains/ens-contracts/contracts/resolvers/Multicallable.sol";
+
 import {LibOwnedENSNode} from "../lib/LibOwnedENSNode.sol";
 
-contract L2PublicResolver is PublicResolver(ENS(address(0)), INameWrapper(address(0)), address(0), address(0)) {
+contract L2PublicResolver is
+    Multicallable,
+    ABIResolver,
+    AddrResolver,
+    ContentHashResolver,
+    InterfaceResolver,
+    NameResolver,
+    PubkeyResolver,
+    TextResolver,
+    ExtendedResolver
+{
     uint256 private constant COIN_TYPE_ETH = 60;
     event TextChanged(
         bytes32 indexed node,
@@ -26,6 +44,28 @@ contract L2PublicResolver is PublicResolver(ENS(address(0)), INameWrapper(addres
     );
     event NameChanged(bytes32 indexed node, bytes32 indexed ownedNode, string name);
     event PubkeyChanged(bytes32 indexed node, bytes32 indexed ownedNode, bytes32 x, bytes32 y);
+
+    function isAuthorised(bytes32 node) internal view override returns (bool) {
+        return false;
+    }
+
+    function supportsInterface(bytes4 interfaceID)
+        public
+        view
+        override(
+            Multicallable,
+            ABIResolver,
+            AddrResolver,
+            ContentHashResolver,
+            InterfaceResolver,
+            NameResolver,
+            PubkeyResolver,
+            TextResolver
+        )
+        returns (bool)
+    {
+        return super.supportsInterface(interfaceID);
+    }
 
     /**
      * Sets the text data associated with an ENS node and key.

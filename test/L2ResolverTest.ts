@@ -4,9 +4,8 @@ import { ethers } from "hardhat";
 import { L2PublicResolver } from "typechain";
 
 import { expect } from "chai";
-import { Wallet } from "ethers";
 
-describe.only("L2PublicResolver", () => {
+describe("L2PublicResolver", () => {
     let user1: SignerWithAddress;
     let user2: SignerWithAddress;
     let l2PublicResolver: L2PublicResolver;
