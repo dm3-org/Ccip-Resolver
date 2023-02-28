@@ -4,6 +4,7 @@ import { ethers } from "hardhat";
 import { L2PublicResolver } from "typechain";
 
 import { expect } from "chai";
+import { Wallet } from "ethers";
 
 describe.only("L2PublicResolver", () => {
     let user1: SignerWithAddress;
@@ -165,7 +166,6 @@ describe.only("L2PublicResolver", () => {
             const ownedNode = ethers.utils.keccak256(
                 ethers.utils.defaultAbiCoder.encode(["bytes32", "address"], [node, user1.address])
             );
-            const interfaceId = "0x9061b923";
             const tx = await l2PublicResolver.setName(node, "foo");
 
             const receipt = await tx.wait();
@@ -180,6 +180,34 @@ describe.only("L2PublicResolver", () => {
             const actualName = await l2PublicResolver.name(ownedNode);
 
             expect(actualName).to.equal("foo");
+        });
+    });
+    describe("PubKey", () => {
+        it("set pubKey on L2", async () => {
+            const node = ethers.utils.namehash(ethers.utils.nameprep("dm3.eth"));
+            const ownedNode = ethers.utils.keccak256(
+                ethers.utils.defaultAbiCoder.encode(["bytes32", "address"], [node, user1.address])
+            );
+
+            const x = ethers.utils.formatBytes32String("foo");
+            const y = ethers.utils.formatBytes32String("bar");
+
+            const tx = await l2PublicResolver.setPubkey(node, x, y);
+
+            const receipt = await tx.wait();
+            const [pubKeyChangedChangedEvent] = receipt.events;
+
+            const [eventNode, eventOwnNode, eventX, eventY] = pubKeyChangedChangedEvent.args;
+
+            expect(eventNode).to.equal(node);
+            expect(eventOwnNode).to.equal(ownedNode);
+            expect(eventX).to.eql(x);
+            expect(eventY).to.eql(y);
+
+            const { x: actualX, y: actualY } = await l2PublicResolver.pubkey(ownedNode);
+
+            expect(actualX).to.equal(x);
+            expect(actualY).to.equal(y);
         });
     });
 });
