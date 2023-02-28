@@ -17,6 +17,7 @@ contract L2PublicResolver is PublicResolver(ENS(address(0)), INameWrapper(addres
     event AddrChanged(bytes32 indexed node, bytes32 indexed ownNode, address a);
     event AddressChanged(bytes32 indexed node, bytes32 indexed ownNode, uint256 coinType, bytes newAddress);
     event ABIChanged(bytes32 indexed node, bytes32 indexed ownedNode, uint256 indexed contentType);
+    event ContenthashChanged(bytes32 indexed node, bytes32 indexed ownedNode, bytes hash);
 
     /**
      * Sets the text data associated with an ENS node and key.
@@ -77,5 +78,17 @@ contract L2PublicResolver is PublicResolver(ENS(address(0)), INameWrapper(addres
 
         versionable_abis[recordVersions[ownedNode]][ownedNode][contentType] = data;
         emit ABIChanged(node, ownedNode, contentType);
+    }
+
+    /**
+     * Sets the contenthash associated with an ENS node.
+     * May only be called by the owner of that node in the ENS registry.
+     * @param node The node to update.
+     * @param hash The contenthash to set
+     */
+    function setContenthash(bytes32 node, bytes calldata hash) external override {
+        bytes32 ownedNode = LibOwnedENSNode.getOwnedENSNode(node, msg.sender);
+        versionable_hashes[recordVersions[ownedNode]][ownedNode] = hash;
+        emit ContenthashChanged(node, ownedNode, hash);
     }
 }
