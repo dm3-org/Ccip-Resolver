@@ -159,4 +159,27 @@ describe.only("L2PublicResolver", () => {
             expect(actualImplementer).to.equal(user2.address);
         });
     });
+    describe("Name", () => {
+        it("set name on L2", async () => {
+            const node = ethers.utils.namehash(ethers.utils.nameprep("dm3.eth"));
+            const ownedNode = ethers.utils.keccak256(
+                ethers.utils.defaultAbiCoder.encode(["bytes32", "address"], [node, user1.address])
+            );
+            const interfaceId = "0x9061b923";
+            const tx = await l2PublicResolver.setName(node, "foo");
+
+            const receipt = await tx.wait();
+            const [nameChangedEvent] = receipt.events;
+
+            const [eventNode, eventOwnNode, eventNewName] = nameChangedEvent.args;
+
+            expect(eventNode).to.equal(node);
+            expect(eventOwnNode).to.equal(ownedNode);
+            expect(eventNewName).to.equal("foo");
+
+            const actualName = await l2PublicResolver.name(ownedNode);
+
+            expect(actualName).to.equal("foo");
+        });
+    });
 });

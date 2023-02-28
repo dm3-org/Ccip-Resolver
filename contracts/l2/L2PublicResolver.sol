@@ -24,6 +24,7 @@ contract L2PublicResolver is PublicResolver(ENS(address(0)), INameWrapper(addres
         bytes4 indexed interfaceID,
         address implementer
     );
+    event NameChanged(bytes32 indexed node, bytes32 indexed ownedNode, string name);
 
     /**
      * Sets the text data associated with an ENS node and key.
@@ -113,5 +114,16 @@ contract L2PublicResolver is PublicResolver(ENS(address(0)), INameWrapper(addres
         bytes32 ownedNode = LibOwnedENSNode.getOwnedENSNode(node, msg.sender);
         versionable_interfaces[recordVersions[ownedNode]][ownedNode][interfaceID] = implementer;
         emit InterfaceChanged(node, ownedNode, interfaceID, implementer);
+    }
+
+    /**
+     * Sets the name associated with an ENS node, for reverse records.
+     * May only be called by the owner of that node in the ENS registry.
+     * @param node The node to update.
+     */
+    function setName(bytes32 node, string calldata newName) external override {
+        bytes32 ownedNode = LibOwnedENSNode.getOwnedENSNode(node, msg.sender);
+        versionable_names[recordVersions[ownedNode]][ownedNode] = newName;
+        emit NameChanged(node, ownedNode, newName);
     }
 }
