@@ -18,6 +18,12 @@ contract L2PublicResolver is PublicResolver(ENS(address(0)), INameWrapper(addres
     event AddressChanged(bytes32 indexed node, bytes32 indexed ownNode, uint256 coinType, bytes newAddress);
     event ABIChanged(bytes32 indexed node, bytes32 indexed ownedNode, uint256 indexed contentType);
     event ContenthashChanged(bytes32 indexed node, bytes32 indexed ownedNode, bytes hash);
+    event InterfaceChanged(
+        bytes32 indexed node,
+        bytes32 indexed ownedNode,
+        bytes4 indexed interfaceID,
+        address implementer
+    );
 
     /**
      * Sets the text data associated with an ENS node and key.
@@ -90,5 +96,22 @@ contract L2PublicResolver is PublicResolver(ENS(address(0)), INameWrapper(addres
         bytes32 ownedNode = LibOwnedENSNode.getOwnedENSNode(node, msg.sender);
         versionable_hashes[recordVersions[ownedNode]][ownedNode] = hash;
         emit ContenthashChanged(node, ownedNode, hash);
+    }
+
+    /**
+     * Sets an interface associated with a name.
+     * Setting the address to 0 restores the default behaviour of querying the contract at `addr()` for interface support.
+     * @param node The node to update.
+     * @param interfaceID The EIP 165 interface ID.
+     * @param implementer The address of a contract that implements this interface for this node.
+     */
+    function setInterface(
+        bytes32 node,
+        bytes4 interfaceID,
+        address implementer
+    ) external override {
+        bytes32 ownedNode = LibOwnedENSNode.getOwnedENSNode(node, msg.sender);
+        versionable_interfaces[recordVersions[ownedNode]][ownedNode][interfaceID] = implementer;
+        emit InterfaceChanged(node, ownedNode, interfaceID, implementer);
     }
 }

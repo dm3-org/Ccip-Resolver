@@ -119,7 +119,7 @@ describe.only("L2PublicResolver", () => {
                 ethers.utils.defaultAbiCoder.encode(["bytes32", "address"], [node, user1.address])
             );
             const contentHash = ethers.utils.keccak256(ethers.utils.toUtf8Bytes("test"));
-            const tx = await l2PublicResolver.setContenthash(node,contentHash);
+            const tx = await l2PublicResolver.setContenthash(node, contentHash);
 
             const receipt = await tx.wait();
             const [contentHashChangedEvent] = receipt.events;
@@ -133,6 +133,30 @@ describe.only("L2PublicResolver", () => {
             const actualContentHash = await l2PublicResolver.contenthash(ownedNode);
 
             expect(actualContentHash).to.equal(contentHash);
+        });
+    });
+    describe("Interface", () => {
+        it("set interface on L2", async () => {
+            const node = ethers.utils.namehash(ethers.utils.nameprep("dm3.eth"));
+            const ownedNode = ethers.utils.keccak256(
+                ethers.utils.defaultAbiCoder.encode(["bytes32", "address"], [node, user1.address])
+            );
+            const interfaceId = "0x9061b923";
+            const tx = await l2PublicResolver.setInterface(node, interfaceId, user2.address);
+
+            const receipt = await tx.wait();
+            const [interfaceChangedEvent] = receipt.events;
+
+            const [eventNode, eventOwnNode, eventInterfaceId, eventImplementer] = interfaceChangedEvent.args;
+
+            expect(eventNode).to.equal(node);
+            expect(eventOwnNode).to.equal(ownedNode);
+            expect(eventInterfaceId).to.equal(interfaceId);
+            expect(eventImplementer).to.equal(user2.address);
+
+            const actualImplementer = await l2PublicResolver.interfaceImplementer(ownedNode, interfaceId);
+
+            expect(actualImplementer).to.equal(user2.address);
         });
     });
 });
