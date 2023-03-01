@@ -28,6 +28,28 @@ describe("ProofServiceTest", () => {
         publicResolver = (await publisResolverFactory.deploy()) as L2PublicResolver;
     });
 
+    it("empy slot", async () => {
+        const proofService = new ProofService(l1_provider, l2Provider);
+
+        const node = ethers.utils.namehash("alex1234.eth");
+        const recordName = "empy-slot";
+
+        const ownNode = ethers.utils.keccak256(
+            ethers.utils.defaultAbiCoder.encode(
+                ["bytes32", "address"],
+                [node, "0x99C19AB10b9EC8aC6fcda9586E81f6B73a298870"]
+            )
+        );
+
+        const slot = EnsResolverService.getStorageSlotForText(7, 0, ownNode, recordName);
+        const { proof, result } = await proofService.createProof("0xb20eb9648b4a818aa621053f1aa1103c03f2df57", slot);
+
+        expect(proof.length).to.be.equal(0);
+        console.log(JSON.stringify(proof));
+
+        const responseString = Buffer.from(result.slice(2), "hex").toString();
+        expect(responseString).to.be.equal("");
+    });
     it("sinlge slot", async () => {
         const proofService = new ProofService(l1_provider, l2Provider);
 
@@ -42,7 +64,7 @@ describe("ProofServiceTest", () => {
         );
 
         const slot = EnsResolverService.getStorageSlotForText(7, 0, ownNode, recordName);
-        const { proof, result } = await proofService.createProof("0x2D2d42a1200d8e3ACDFa45Fe58b47F45ebbbaCd6", slot);
+        const { proof, result } = await proofService.createProof("0xb20eb9648b4a818aa621053f1aa1103c03f2df57", slot);
 
         expect(proof.length).to.be.equal(3);
 
@@ -63,7 +85,7 @@ describe("ProofServiceTest", () => {
         );
 
         const slot = EnsResolverService.getStorageSlotForText(7, 0, ownNode, recordName);
-        const { proof, result } = await proofService.createProof("0x2D2d42a1200d8e3ACDFa45Fe58b47F45ebbbaCd6", slot);
+        const { proof, result } = await proofService.createProof("0xb20eb9648b4a818aa621053f1aa1103c03f2df57", slot);
 
         expect(proof.length).to.be.equal(31);
         const responseString = Buffer.from(result.slice(2), "hex").toString();
@@ -90,7 +112,6 @@ describe("ProofServiceTest", () => {
             publicEncryptionKey: "Vrd/eTAk/jZb/w5L408yDjOO5upNFDGdt0lyWRjfBEk=",
             deliveryServices: ["foo.dm3"],
         };
-        console.log(JSON.stringify(profile));
         expect(proof.length).to.be.equal(JSON.stringify(profile).length);
         const responseString = Buffer.from(result.slice(2), "hex").toString();
         expect(responseString).to.be.equal(JSON.stringify(profile));
