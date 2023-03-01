@@ -8,8 +8,8 @@ export class CcipRouter {
     constructor(ensService: EnsResolverService) {
         this.ensService = ensService;
     }
-    public static instance() {
-        return new CcipRouter(EnsResolverService.instance());
+    public static async instance() {
+        return new CcipRouter(await EnsResolverService.instance());
     }
 
     public async handleRequest(signature: string, request: any) {

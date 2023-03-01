@@ -25,7 +25,7 @@ export function ccipGateway(
             }
             const { request, signature } = decodedRequest;
 
-            const router = CcipRouter.instance();
+            const router = await CcipRouter.instance();
 
             const response = await router.handleRequest(signature, request);
 

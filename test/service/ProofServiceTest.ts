@@ -1,11 +1,9 @@
-import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { expect } from "chai";
-import { Signer, Wallet } from "ethers";
-import { ethers, storageLayout } from "hardhat";
-import { L2PublicResolver, LibAddressManager, OptimisimProofVerifier, StateCommitmentChain } from "typechain";
+import { ethers } from "hardhat";
+import { L2PublicResolver, LibAddressManager, OptimisimProofVerifier } from "typechain";
 import { ProofService } from "../../gateway/service/proof/ProofService";
 import { EnsResolverService } from "./../../gateway/service/ens/EnsService";
-describe.only("ProofServiceTest", () => {
+describe("ProofServiceTest", () => {
     let optimismProofVerifier: OptimisimProofVerifier;
     let addresManager: LibAddressManager;
     let publicResolver: L2PublicResolver;
@@ -51,7 +49,7 @@ describe.only("ProofServiceTest", () => {
         const responseString = Buffer.from(result.slice(2), "hex").toString();
         expect(responseString).to.be.equal("bar");
     });
-    it.only("sinlge slot 31 bytes long", async () => {
+    it("sinlge slot 31 bytes long", async () => {
         const proofService = new ProofService(l1_provider, l2Provider);
 
         const node = ethers.utils.namehash("alex1234.eth");
