@@ -34,12 +34,29 @@ export class EnsResolverService {
         const slot = EnsResolverService.getStorageSlotForText(TEXTS_SLOT_NAME, version.toNumber(), node, recordName);
         return this.proofService.createProof(this.l2PublicResolver.address, slot);
     }
+    public async proofAddr(node: string, coinType: number): Promise<CreateProofResult> {
+        //The storage slot within the particular contract
+        const ADDR_SLOT_NAME = 2;
+        const version = await this.l2PublicResolver.recordVersions(node);
+        const slot = EnsResolverService.getStorageSlotForAddr(ADDR_SLOT_NAME, version.toNumber(), node, coinType);
+
+        return this.proofService.createProof(this.l2PublicResolver.address, slot);
+    }
+
     public static getStorageSlotForText(slot: number, versionNumber: number, node: string, recordName: string) {
         //versionable_texts[number][node][key]
         //versionable_texts[inner][middle][outer]
         const innerHash = hreEthers.utils.solidityKeccak256(["uint256", "uint256"], [versionNumber, slot]);
         const middleHash = hreEthers.utils.solidityKeccak256(["bytes32", "bytes32"], [node, innerHash]);
         const outerHash = hreEthers.utils.solidityKeccak256(["string", "bytes32"], [recordName, middleHash]);
+        return outerHash;
+    }
+    public static getStorageSlotForAddr(slot: number, versionNumber: number, node: string, coinType: number) {
+        //versionable_addresses[number][node][coinType]
+        //versionable_texts[inner][middle][outer]
+        const innerHash = hreEthers.utils.solidityKeccak256(["uint256", "uint256"], [versionNumber, slot]);
+        const middleHash = hreEthers.utils.solidityKeccak256(["bytes32", "bytes32"], [node, innerHash]);
+        const outerHash = hreEthers.utils.solidityKeccak256(["uint256", "bytes32"], [coinType, middleHash]);
         return outerHash;
     }
 }

@@ -18,12 +18,11 @@ export function ccipGateway(
         console.info(`GET ${resolverAddr}`);
 
         try {
-            const decodedRequest = decodeCcipRequest(calldata);
+            const { request, signature } = decodeCcipRequest(calldata);
 
-            if (!decodedRequest) {
-                return res.status(404).send({ message: `invalid calldata` });
+            if (!request) {
+                return res.status(404).send({ message: `unsupported signature ${signature}` });
             }
-            const { request, signature } = decodedRequest;
 
             const router = await CcipRouter.instance();
 
@@ -31,7 +30,7 @@ export function ccipGateway(
 
             if (!response) {
                 console.log("no req");
-                return res.status(404).send({ message: `request is not supported` });
+                return res.status(404).send({ message: `unable to process request` });
             }
 
             res.status(200).send({ data: response });
