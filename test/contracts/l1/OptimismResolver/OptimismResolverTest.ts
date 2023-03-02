@@ -56,6 +56,15 @@ describe("OptimismResolver Test", () => {
 
             expect(text).to.eql(JSON.stringify(profile));
         });
+        it("ccip gateway resolves existing profile using ethers.provider.getAddress()", async () => {
+            const provider = new MockProvider(hreEthers.provider, fetchRecordFromCcipGateway, optimismResolver);
+
+            const resolver = await provider.getResolver("alex1234.eth");
+
+            const addr = await resolver.getAddress();
+
+            expect(addr).to.equal("0x99C19AB10b9EC8aC6fcda9586E81f6B73a298870");
+        });
 
         it("Returns empty string if record is empty", async () => {
             const provider = new MockProvider(hreEthers.provider, fetchRecordFromCcipGateway, optimismResolver);

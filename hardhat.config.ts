@@ -12,7 +12,8 @@ import "solidity-coverage";
 import "hardhat-storage-layout";
 import "hardhat-tracer";
 
-const ETHERSCAN_API_KEY = process.env.ETHERSCAN_API_KEY || "Your etherscan API key";
+const ETHERSCAN_API_KEY = process.env.ETHERSCAN_API_KEY;
+const OPTIMISTIC_ETHERSCAN_API_KEY = process.env.OPTIMISTIC_ETHERSCAN_API_KEY;
 const MAINNET_RPC_URL = process.env.MAINNET_RPC_URL;
 const OPTIMISM_RPC_URL = process.env.OPTIMISM_RPC_URL;
 
@@ -31,12 +32,14 @@ module.exports = {
                 url: MAINNET_RPC_URL,
             },
         },
+        optimism: {
+            url: OPTIMISM_RPC_URL,
+            accounts: [process.env.OPTIMISM_PRIVATE_KEY],
+        },
         localhost: {},
     },
     etherscan: {
-        // Your API key for Etherscan
-        // Obtain one at https://etherscan.io/
-        apiKey: ETHERSCAN_API_KEY,
+        apiKey: OPTIMISTIC_ETHERSCAN_API_KEY,
     },
     namedAccounts: {
         deployer: {
@@ -49,12 +52,6 @@ module.exports = {
     },
     solidity: {
         compilers: [
-            {
-                version: "0.5.16",
-            },
-            {
-                version: "0.8.9",
-            },
             {
                 version: "0.8.17",
             },

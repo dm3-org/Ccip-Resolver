@@ -45,7 +45,7 @@ Run ```yarn test ``` to execute the test suite.
 
 To ensure the OptimismResolver works correctly we're forking the mainnet and making a proof for a contract that is deployed on optimism mainnet. 
 
-The contract we're creating a proof for is the L2PublicResolver contract deployed at https://optimistic.etherscan.io/address/0x2D2d42a1200d8e3ACDFa45Fe58b47F45ebbbaCd6#readContract
+The contract we're creating a proof for is the L2PublicResolver contract deployed at https://optimistic.etherscan.io/address/0xb20eb9648b4a818aa621053f1aa1103c03f2df57#readContract
 
 The proof we're creating is proofing that the node 
 ``` 0x803156452A647027795BB1EE20480E90E449D61304DF9E9DBAE4047DA37893BA```
