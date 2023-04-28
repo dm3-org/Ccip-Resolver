@@ -32,8 +32,8 @@ contract L2PublicResolver is
         string key,
         string value
     );
-    event AddrChanged(bytes32 indexed node, bytes32 indexed ownNode, address a);
-    event AddressChanged(bytes32 indexed node, bytes32 indexed ownNode, uint256 coinType, bytes newAddress);
+    event AddrChanged(bytes32 indexed node, bytes32 indexed ownedNode, address a);
+    event AddressChanged(bytes32 indexed node, bytes32 indexed ownedNode, uint256 coinType, bytes newAddress);
     event ABIChanged(bytes32 indexed node, bytes32 indexed ownedNode, uint256 indexed contentType);
     event ContenthashChanged(bytes32 indexed node, bytes32 indexed ownedNode, bytes hash);
     event InterfaceChanged(

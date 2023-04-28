@@ -34,14 +34,14 @@ describe("ProofServiceTest", () => {
         const node = ethers.utils.namehash("alex1234.eth");
         const recordName = "empy-slot";
 
-        const ownNode = ethers.utils.keccak256(
+        const ownedNode = ethers.utils.keccak256(
             ethers.utils.defaultAbiCoder.encode(
                 ["bytes32", "address"],
                 [node, "0x99C19AB10b9EC8aC6fcda9586E81f6B73a298870"]
             )
         );
 
-        const slot = EnsResolverService.getStorageSlotForText(7, 0, ownNode, recordName);
+        const slot = EnsResolverService.getStorageSlotForText(7, 0, ownedNode, recordName);
         const { proof, result } = await proofService.createProof("0xb20eb9648b4a818aa621053f1aa1103c03f2df57", slot);
 
         expect(proof.length).to.be.equal(0);
@@ -56,14 +56,14 @@ describe("ProofServiceTest", () => {
         const node = ethers.utils.namehash("alex1234.eth");
         const recordName = "foo";
 
-        const ownNode = ethers.utils.keccak256(
+        const ownedNode = ethers.utils.keccak256(
             ethers.utils.defaultAbiCoder.encode(
                 ["bytes32", "address"],
                 [node, "0x99C19AB10b9EC8aC6fcda9586E81f6B73a298870"]
             )
         );
 
-        const slot = EnsResolverService.getStorageSlotForText(7, 0, ownNode, recordName);
+        const slot = EnsResolverService.getStorageSlotForText(7, 0, ownedNode, recordName);
         const { proof, result } = await proofService.createProof("0xb20eb9648b4a818aa621053f1aa1103c03f2df57", slot);
 
         expect(proof.length).to.be.equal(3);
@@ -77,14 +77,14 @@ describe("ProofServiceTest", () => {
         const node = ethers.utils.namehash("alex1234.eth");
         const recordName = "my-slot";
 
-        const ownNode = ethers.utils.keccak256(
+        const ownedNode = ethers.utils.keccak256(
             ethers.utils.defaultAbiCoder.encode(
                 ["bytes32", "address"],
                 [node, "0x99C19AB10b9EC8aC6fcda9586E81f6B73a298870"]
             )
         );
 
-        const slot = EnsResolverService.getStorageSlotForText(7, 0, ownNode, recordName);
+        const slot = EnsResolverService.getStorageSlotForText(7, 0, ownedNode, recordName);
         const { proof, result } = await proofService.createProof("0xb20eb9648b4a818aa621053f1aa1103c03f2df57", slot);
 
         expect(proof.length).to.be.equal(31);
@@ -97,14 +97,14 @@ describe("ProofServiceTest", () => {
         const node = ethers.utils.namehash("alex1234.eth");
         const recordName = "network.dm3.eth";
 
-        const ownNode = ethers.utils.keccak256(
+        const ownedNode = ethers.utils.keccak256(
             ethers.utils.defaultAbiCoder.encode(
                 ["bytes32", "address"],
                 [node, "0x99C19AB10b9EC8aC6fcda9586E81f6B73a298870"]
             )
         );
 
-        const slot = EnsResolverService.getStorageSlotForText(7, 0, ownNode, recordName);
+        const slot = EnsResolverService.getStorageSlotForText(7, 0, ownedNode, recordName);
         const { proof, result } = await proofService.createProof("0xb20eb9648b4a818aa621053f1aa1103c03f2df57", slot);
 
         const profile = {
