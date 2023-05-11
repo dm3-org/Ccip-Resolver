@@ -32,10 +32,10 @@ describe("L2PublicResolver", () => {
 
             const [textChangedEvent] = receipt.events;
 
-            const [eventNode, eventOwnNode, _, eventKey, eventValue] = textChangedEvent.args;
+            const [eventNode, eventownedNode, _, eventKey, eventValue] = textChangedEvent.args;
 
             expect(eventNode).to.equal(node);
-            expect(eventOwnNode).to.equal(ownedNode);
+            expect(eventownedNode).to.equal(ownedNode);
             expect(eventKey).to.equal("network.dm3.profile");
             expect(eventValue).to.equal("test");
 
@@ -66,17 +66,17 @@ describe("L2PublicResolver", () => {
             const receipt = await tx.wait();
             const [addressChangedEvent, addrChangedEvent] = receipt.events;
 
-            let [eventNode, eventOwnNode, eventCoinType, eventAddress] = addressChangedEvent.args;
+            let [eventNode, eventownedNode, eventCoinType, eventAddress] = addressChangedEvent.args;
 
             expect(eventNode).to.equal(node);
-            expect(eventOwnNode).to.equal(ownedNode);
+            expect(eventownedNode).to.equal(ownedNode);
             expect(eventCoinType).to.equal(60);
             expect(ethers.utils.getAddress(eventAddress)).to.equal(user2.address);
 
-            [eventNode, eventOwnNode, eventAddress] = addrChangedEvent.args;
+            [eventNode, eventownedNode, eventAddress] = addrChangedEvent.args;
 
             expect(eventNode).to.equal(node);
-            expect(eventOwnNode).to.equal(ownedNode);
+            expect(eventownedNode).to.equal(ownedNode);
             expect(ethers.utils.getAddress(eventAddress)).to.equal(user2.address);
 
             // record of the original node shouldn't be touched
@@ -100,10 +100,10 @@ describe("L2PublicResolver", () => {
             const receipt = await tx.wait();
             const [addressChangedEvent] = receipt.events;
 
-            const [eventNode, eventOwnNode, eventContentType] = addressChangedEvent.args;
+            const [eventNode, eventownedNode, eventContentType] = addressChangedEvent.args;
 
             expect(eventNode).to.equal(node);
-            expect(eventOwnNode).to.equal(ownedNode);
+            expect(eventownedNode).to.equal(ownedNode);
             expect(eventContentType).to.equal(1);
 
             const [actualContentType, actualAbi] = await l2PublicResolver.ABI(ownedNode, 1);
@@ -124,10 +124,10 @@ describe("L2PublicResolver", () => {
             const receipt = await tx.wait();
             const [contentHashChangedEvent] = receipt.events;
 
-            const [eventNode, eventOwnNode, eventHash] = contentHashChangedEvent.args;
+            const [eventNode, eventownedNode, eventHash] = contentHashChangedEvent.args;
 
             expect(eventNode).to.equal(node);
-            expect(eventOwnNode).to.equal(ownedNode);
+            expect(eventownedNode).to.equal(ownedNode);
             expect(eventHash).to.equal(eventHash);
 
             const actualContentHash = await l2PublicResolver.contenthash(ownedNode);
@@ -147,10 +147,10 @@ describe("L2PublicResolver", () => {
             const receipt = await tx.wait();
             const [interfaceChangedEvent] = receipt.events;
 
-            const [eventNode, eventOwnNode, eventInterfaceId, eventImplementer] = interfaceChangedEvent.args;
+            const [eventNode, eventownedNode, eventInterfaceId, eventImplementer] = interfaceChangedEvent.args;
 
             expect(eventNode).to.equal(node);
-            expect(eventOwnNode).to.equal(ownedNode);
+            expect(eventownedNode).to.equal(ownedNode);
             expect(eventInterfaceId).to.equal(interfaceId);
             expect(eventImplementer).to.equal(user2.address);
 
@@ -170,10 +170,10 @@ describe("L2PublicResolver", () => {
             const receipt = await tx.wait();
             const [nameChangedEvent] = receipt.events;
 
-            const [eventNode, eventOwnNode, eventNewName] = nameChangedEvent.args;
+            const [eventNode, eventownedNode, eventNewName] = nameChangedEvent.args;
 
             expect(eventNode).to.equal(node);
-            expect(eventOwnNode).to.equal(ownedNode);
+            expect(eventownedNode).to.equal(ownedNode);
             expect(eventNewName).to.equal("foo");
 
             const actualName = await l2PublicResolver.name(ownedNode);
@@ -196,10 +196,10 @@ describe("L2PublicResolver", () => {
             const receipt = await tx.wait();
             const [pubKeyChangedChangedEvent] = receipt.events;
 
-            const [eventNode, eventOwnNode, eventX, eventY] = pubKeyChangedChangedEvent.args;
+            const [eventNode, eventownedNode, eventX, eventY] = pubKeyChangedChangedEvent.args;
 
             expect(eventNode).to.equal(node);
-            expect(eventOwnNode).to.equal(ownedNode);
+            expect(eventownedNode).to.equal(ownedNode);
             expect(eventX).to.eql(x);
             expect(eventY).to.eql(y);
 
