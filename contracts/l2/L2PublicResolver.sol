@@ -25,23 +25,12 @@ contract L2PublicResolver is
     ExtendedResolver
 {
     uint256 private constant COIN_TYPE_ETH = 60;
-    event TextChanged(
-        bytes32 indexed node,
-        bytes32 indexed ownedNode,
-        string indexed indexedKey,
-        string key,
-        string value
-    );
+    event TextChanged(bytes32 indexed node, bytes32 indexed ownedNode, string indexed indexedKey, string key, string value);
     event AddrChanged(bytes32 indexed node, bytes32 indexed ownedNode, address a);
     event AddressChanged(bytes32 indexed node, bytes32 indexed ownedNode, uint256 coinType, bytes newAddress);
     event ABIChanged(bytes32 indexed node, bytes32 indexed ownedNode, uint256 indexed contentType);
     event ContenthashChanged(bytes32 indexed node, bytes32 indexed ownedNode, bytes hash);
-    event InterfaceChanged(
-        bytes32 indexed node,
-        bytes32 indexed ownedNode,
-        bytes4 indexed interfaceID,
-        address implementer
-    );
+    event InterfaceChanged(bytes32 indexed node, bytes32 indexed ownedNode, bytes4 indexed interfaceID, address implementer);
     event NameChanged(bytes32 indexed node, bytes32 indexed ownedNode, string name);
     event PubkeyChanged(bytes32 indexed node, bytes32 indexed ownedNode, bytes32 x, bytes32 y);
 
@@ -49,7 +38,9 @@ contract L2PublicResolver is
         return false;
     }
 
-    function supportsInterface(bytes4 interfaceID)
+    function supportsInterface(
+        bytes4 interfaceID
+    )
         public
         view
         override(
@@ -74,11 +65,7 @@ contract L2PublicResolver is
      * @param key The key to set.
      * @param value The text data value to set.
      */
-    function setText(
-        bytes32 node,
-        string calldata key,
-        string calldata value
-    ) external override {
+    function setText(bytes32 node, string calldata key, string calldata value) external override {
         bytes32 ownedNode = LibOwnedENSNode.getOwnedENSNode(node, msg.sender);
         versionable_texts[recordVersions[ownedNode]][ownedNode][key] = value;
         emit TextChanged(node, ownedNode, key, key, value);
@@ -94,11 +81,7 @@ contract L2PublicResolver is
         setAddr(node, COIN_TYPE_ETH, super.addressToBytes(a));
     }
 
-    function setAddr(
-        bytes32 node,
-        uint256 coinType,
-        bytes memory a
-    ) public override {
+    function setAddr(bytes32 node, uint256 coinType, bytes memory a) public override {
         bytes32 ownedNode = LibOwnedENSNode.getOwnedENSNode(node, msg.sender);
         emit AddressChanged(node, ownedNode, coinType, a);
         if (coinType == COIN_TYPE_ETH) {
@@ -115,11 +98,7 @@ contract L2PublicResolver is
      * @param contentType The content type of the ABI
      * @param data The ABI data.
      */
-    function setABI(
-        bytes32 node,
-        uint256 contentType,
-        bytes calldata data
-    ) external override {
+    function setABI(bytes32 node, uint256 contentType, bytes calldata data) external override {
         // Content types must be powers of 2
         require(((contentType - 1) & contentType) == 0, "contentType unsupported");
         bytes32 ownedNode = LibOwnedENSNode.getOwnedENSNode(node, msg.sender);
@@ -147,11 +126,7 @@ contract L2PublicResolver is
      * @param interfaceID The EIP 165 interface ID.
      * @param implementer The address of a contract that implements this interface for this node.
      */
-    function setInterface(
-        bytes32 node,
-        bytes4 interfaceID,
-        address implementer
-    ) external override {
+    function setInterface(bytes32 node, bytes4 interfaceID, address implementer) external override {
         bytes32 ownedNode = LibOwnedENSNode.getOwnedENSNode(node, msg.sender);
         versionable_interfaces[recordVersions[ownedNode]][ownedNode][interfaceID] = implementer;
         emit InterfaceChanged(node, ownedNode, interfaceID, implementer);
@@ -174,11 +149,7 @@ contract L2PublicResolver is
      * @param x the X coordinate of the curve point for the public key.
      * @param y the Y coordinate of the curve point for the public key.
      */
-    function setPubkey(
-        bytes32 node,
-        bytes32 x,
-        bytes32 y
-    ) external override {
+    function setPubkey(bytes32 node, bytes32 x, bytes32 y) external override {
         bytes32 ownedNode = LibOwnedENSNode.getOwnedENSNode(node, msg.sender);
         versionable_pubkeys[recordVersions[ownedNode]][ownedNode] = PublicKey(x, y);
         emit PubkeyChanged(node, ownedNode, x, y);

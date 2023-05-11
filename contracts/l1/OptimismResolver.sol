@@ -51,11 +51,7 @@ contract OptimismResolver is IExtendedResolver, SupportsInterface, OwnedENSNode 
      * @return The return data, ABI encoded identically to the underlying function.
      */
     function resolve(bytes calldata name, bytes calldata data) external view override returns (bytes memory) {
-        bytes memory callData = abi.encodeWithSelector(
-            IResolverService.resolve.selector,
-            name,
-            replaceNodeWithOwnedNode(data)
-        );
+        bytes memory callData = abi.encodeWithSelector(IResolverService.resolve.selector, name, replaceNodeWithOwnedNode(data));
 
         string[] memory urls = new string[](1);
         urls[0] = url;

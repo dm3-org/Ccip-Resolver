@@ -34,12 +34,7 @@ contract OptimisimProofVerifier is IOptimismProofVerifier, Lib_AddressResolver {
      */
     function isValidStateCommitment(L2StateProof memory proof) private view returns (bool) {
         IStateCommitmentChain ovmStateCommitmentChain = IStateCommitmentChain(resolve("StateCommitmentChain"));
-        return
-            ovmStateCommitmentChain.verifyStateCommitment(
-                proof.stateRoot,
-                proof.stateRootBatchHeader,
-                proof.stateRootProof
-            );
+        return ovmStateCommitmentChain.verifyStateCommitment(proof.stateRoot, proof.stateRootBatchHeader, proof.stateRootProof);
     }
 
     /**
@@ -74,11 +69,7 @@ contract OptimisimProofVerifier is IOptimismProofVerifier, Lib_AddressResolver {
      * @param storageRoot The storage root of the storage trie
      * @param storageProofs The storage proofs for each single storage slot
      */
-    function getMultipleStorageProofs(bytes32 storageRoot, StorageProof[] memory storageProofs)
-        private
-        pure
-        returns (bytes memory)
-    {
+    function getMultipleStorageProofs(bytes32 storageRoot, StorageProof[] memory storageProofs) private pure returns (bytes memory) {
         bytes memory result = new bytes(0);
 
         for (uint256 i = 0; i < storageProofs.length; i++) {
@@ -95,11 +86,7 @@ contract OptimisimProofVerifier is IOptimismProofVerifier, Lib_AddressResolver {
      * @param storageProof The storage proof of the storage key
      * @return  value of the storage slot
      */
-    function getSingleStorageProof(bytes32 storageRoot, StorageProof memory storageProof)
-        private
-        pure
-        returns (bytes memory)
-    {
+    function getSingleStorageProof(bytes32 storageRoot, StorageProof memory storageProof) private pure returns (bytes memory) {
         (bool storageExists, bytes memory retrievedValue) = Lib_SecureMerkleTrie.get(
             abi.encodePacked(storageProof.key),
             storageProof.storageTrieWitness,
