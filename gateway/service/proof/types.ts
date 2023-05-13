@@ -1,5 +1,5 @@
 export interface EthGetProofResponse {
-    accountProof: string[];
+    accountProof: string;
     balance: string;
     codeHash: string;
     nonce: string;
@@ -13,13 +13,15 @@ export interface EthGetProofResponse {
 
 export interface ProofInputObject {
     target: string;
+    length: number;
+    storageHash: string;
+    stateTrieWitness: string;
+    l2OutputIndex: number;
     outputRootProof: OutputRootProof;
     storageProofs: StorageProof[];
-    length: number;
 }
 export interface StorageProof {
     key: string;
-    value: string;
     storageTrieWitness: string;
 }
 

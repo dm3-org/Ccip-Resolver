@@ -61,8 +61,8 @@ contract BedrockProofVerifier is IBedrockProofVerifier {
     }
 
     function getMultipleStorageProofs(BedrockStateProof memory proof) private pure returns (bytes memory) {
-        bytes32 storageRoot = getStorageRoot(proof);
         bytes memory result = new bytes(0);
+        bytes32 storageRoot = getStorageRoot(proof);
 
         for (uint256 i = 0; i < proof.storageProofs.length; i++) {
             StorageProof memory storageProof = proof.storageProofs[i];

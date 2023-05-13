@@ -75,7 +75,8 @@ export class ProofService {
      */
     private async getLatestProposedBlock() {
         //Get the latest ouput from the L2Oracle. We're building the proove with this batch
-        const l2OutputIndex = await this.crossChainMessenger.contracts.l1.L2OutputOracle.latestOutputIndex();
+        //We go 5 batches backwards to avoid erros like delays between nodes
+        const l2OutputIndex = (await this.crossChainMessenger.contracts.l1.L2OutputOracle.latestOutputIndex()).sub(5);
         const output = await this.crossChainMessenger.contracts.l1.L2OutputOracle.getL2Output(l2OutputIndex);
 
         const { stateRoot, hash } = (await this.l2_provider.getBlock(output.l2BlockNumber.toNumber())) as any;
