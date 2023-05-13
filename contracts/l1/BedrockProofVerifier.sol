@@ -1,22 +1,21 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.15;
 
-import {Lib_OVMCodec} from "@eth-optimism/contracts/libraries/codec/Lib_OVMCodec.sol";
-import {Lib_AddressResolver} from "@eth-optimism/contracts/libraries/resolver/Lib_AddressResolver.sol";
-import {Lib_SecureMerkleTrie} from "@eth-optimism/contracts/libraries/trie/Lib_SecureMerkleTrie.sol";
-import {Lib_RLPReader} from "@eth-optimism/contracts/libraries/rlp/Lib_RLPReader.sol";
-import {Lib_BytesUtils} from "@eth-optimism/contracts/libraries/utils/Lib_BytesUtils.sol";
+import {IBedrockProofVerifier, IL2OutputOracle} from "./IBedrockProofVerifier.sol";
+
+import {RLPReader} from "@eth-optimism/contracts-bedrock/contracts/libraries/rlp/RLPReader.sol";
 import {Hashing} from "@eth-optimism/contracts-bedrock/contracts/libraries/Hashing.sol";
-import {IBedrockProofVerifier} from "./IBedrockProofVerifier.sol";
-import {L2OutputOracle} from "@eth-optimism/contracts-bedrock/contracts/L1/L2OutputOracle.sol";
-import "solidity-bytes-utils/contracts/BytesLib.sol";
-import "hardhat/console.sol";
+
+import {Lib_SecureMerkleTrie} from "@eth-optimism/contracts/libraries/trie/Lib_SecureMerkleTrie.sol";
+import {Lib_OVMCodec} from "@eth-optimism/contracts/libraries/codec/Lib_OVMCodec.sol";
+
+import {BytesLib} from "solidity-bytes-utils/contracts/BytesLib.sol";
 
 contract BedrockProofVerifier is IBedrockProofVerifier {
-    L2OutputOracle public immutable l2Oracle;
+    IL2OutputOracle public immutable l2OutputOracle;
 
-    constructor(address _l2Oracle) {
-        l2Oracle = L2OutputOracle(_l2Oracle);
+    constructor(address _l2OutputOracle) {
+        l2OutputOracle = IL2OutputOracle(_l2OutputOracle);
     }
 
     /**
@@ -25,9 +24,8 @@ contract BedrockProofVerifier is IBedrockProofVerifier {
      * @return The value of all included slots concatinated
      */
     function getProofValue(BedrockStateProof memory proof) public view returns (bytes memory) {
-        console.log("start get Proof Value");
         require(
-            l2Oracle.getL2Output(proof.l2OutputIndex).outputRoot == Hashing.hashOutputRootProof(proof.outputRootProof),
+            l2OutputOracle.getL2Output(proof.l2OutputIndex).outputRoot == Hashing.hashOutputRootProof(proof.outputRootProof),
             "Invalid output root"
         );
 
@@ -90,6 +88,6 @@ contract BedrockProofVerifier is IBedrockProofVerifier {
         if (!storageExists) {
             return retrievedValue;
         }
-        return Lib_RLPReader.readBytes(retrievedValue);
+        return RLPReader.readBytes(retrievedValue);
     }
 }

@@ -1,8 +1,6 @@
 // SPDX-License-Identifier: MIT
+pragma solidity ^0.8.15;
 import {Types} from "@eth-optimism/contracts-bedrock/contracts/libraries/Types.sol";
-
-pragma solidity ^0.8.9;
-import {Lib_OVMCodec} from "@eth-optimism/contracts/libraries/codec/Lib_OVMCodec.sol";
 
 interface IBedrockProofVerifier {
     struct BedrockStateProof {
@@ -29,8 +27,11 @@ interface IBedrockProofVerifier {
     }
 
     /// @notice Returns the value of one or more storage slots given the provided proof is correct
-    /// @param proof  BedrockStateProof
+    /// @param proof BedrockStateProof
     /// @return The value of all included slots concatinated
-
     function getProofValue(BedrockStateProof memory proof) external view returns (bytes memory);
+}
+
+interface IL2OutputOracle {
+    function getL2Output(uint256 _l2OutputIndex) external view returns (Types.OutputProposal memory);
 }

@@ -29,18 +29,7 @@ describe("BedrockProofVerifier", () => {
         BedrockProofVerifier = (await BedrockProofVerifierFactory.deploy(l2OutputOracle.address)) as BedrockProofVerifier;
     });
 
-    describe("Validate Output", () => {
-        it("Reverts if the output root does not match the provided block", async () => {
-            const proof = mockProofForWrongOutputRoot;
-            //TODO use OZ test utils
-            try {
-                await expect(BedrockProofVerifier.getProofValue(proof)).to.be.revertedWith("Invalid output root");
-                expect(false);
-            } catch (e) {
-                expect(true);
-            }
-        });
-    });
+
     it("Resolves correct Proof for an empty slot", async () => {
         const proof = mockProofForEmptySlot;
         const responseBytes = await BedrockProofVerifier.getProofValue(proof);
