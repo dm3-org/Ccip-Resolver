@@ -1,11 +1,11 @@
 import { toRpcHexString } from "@eth-optimism/core-utils";
-import { asL2Provider, CrossChainMessenger, L2Provider, makeMerkleTreeProof, StateRoot } from "@eth-optimism/sdk";
+import { asL2Provider, CrossChainMessenger, L2Provider } from "@eth-optimism/sdk";
 import { BigNumber, ethers } from "ethers";
 import { keccak256 } from "ethers/lib/utils";
-import { CreateProofResult, EthGetProofResponse, ProofInputObject, StorageProof } from "./types";
-
+import { CreateProofResult, EthGetProofResponse, StorageProof } from "./types";
 /**
- * The proofService class can be used to calculate proofs for a given target and slot. It's also capable of proofing long types such as mappings or string by using all included slots in the proof.
+ * The proofService class can be used to calculate proofs for a given target and slot on the Optimism Bedrock network. It's also capable of proofing long types such as mappings or string by using all included slots in the proof.
+ *
  */
 export class ProofService {
     private readonly l1_provider: ethers.providers.StaticJsonRpcProvider;
@@ -15,9 +15,10 @@ export class ProofService {
     constructor(l1_provider: ethers.providers.StaticJsonRpcProvider, l2_provider: ethers.providers.JsonRpcProvider) {
         this.l1_provider = l1_provider;
         this.l2_provider = asL2Provider(l2_provider);
+
         this.crossChainMessenger = new CrossChainMessenger({
-            l1ChainId: 1,
-            l2ChainId: 10,
+            l1ChainId: l1_provider.network.chainId,
+            l2ChainId: l2_provider.network.chainId,
             l1SignerOrProvider: this.l1_provider,
             l2SignerOrProvider: this.l2_provider,
         });
@@ -33,48 +34,59 @@ export class ProofService {
      * @param slot The storage slot the proof should be created for
      */
     public async createProof(target: string, slot: string): Promise<CreateProofResult> {
-        /**
-         * At first we need the latest state root of the L2 chain. This root will be used to proof that the stateRoot
-         * was indeed commited to the L1 chain and to ensure that the accountStorage root is part of that particular stateRoot.
-         */
-        const [optimismStateRoot, blockNr] = await this.getStateRoot();
+        //use the most recent block to build the proof posted to L1
+        const { l2OutputIndex, number, stateRoot, hash } = await this.getLatestProposedBlock();
 
-        const { storageProof, accountProof, length } = await this.getProofForSlot(slot, blockNr, target);
+        const { storageProof, storageHash, accountProof, length } = await this.getProofForSlot(slot, number, target);
 
-        const stateRoot = optimismStateRoot.stateRoot;
-        const stateRootBatchHeader = optimismStateRoot.batch.header;
-        const stateRootProof = {
-            index: optimismStateRoot.stateRootIndexInBatch,
-            siblings: makeMerkleTreeProof(optimismStateRoot.batch.stateRoots, optimismStateRoot.stateRootIndexInBatch),
-        };
-        const stateTrieWitness = ethers.utils.RLP.encode(accountProof);
-
-        const result = storageProof
-            .reduce((agg, cur) => agg + cur.value.substring(2), "0x")
-            .substring(0, length * 2 + 2);
+        //The messengePasserStorageRoot is important for the verification on chain
+        const messagePasserStorageRoot = await this.getMessagePasserStorageRoot(number);
 
         const proof = {
+            //The contract address of the slot beeing proofed
             target,
-            stateRoot,
-            storageProofs: storageProof,
-            stateRootBatchHeader,
-            stateRootProof,
-            stateTrieWitness,
+            //The length actual length of the value
             length,
+            //RLP encoded account proof
+            stateTrieWitness: ethers.utils.RLP.encode(accountProof),
+            //The state output the proof is beeing created for
+            l2OutputIndex,
+            //The storage hash of the target
+            storageHash,
+            //Bedrock OutputRootProof type
+            outputRootProof: {
+                version: ethers.constants.HashZero,
+                stateRoot,
+                messagePasserStorageRoot,
+                latestBlockhash: hash,
+            },
+            //RLP encoded storage proof for every slot
+            storageProofs: storageProof,
         };
 
+        //The result is not part of the proof but its convenient to have it i:E in tests
+        const result = storageProof.reduce((agg, cur) => agg + cur.value.substring(2), "0x").substring(0, length * 2 + 2);
         return { result, proof };
     }
-    private async getStateRoot(): Promise<[StateRoot, number]> {
-        const batchIndex = await this.crossChainMessenger.contracts.l1.StateCommitmentChain.getTotalBatches();
-        //
-        const stateRoot = await this.crossChainMessenger.getFirstStateRootInBatch(batchIndex.toNumber() - 2);
+    /**
+     * Retrieves the latest proposed block.
+     * @returns An object containing the state root, hash, number, and L2 output index of the latest proposed block.
+     * @throws An error if the state root for the block is not found.
+     */
+    private async getLatestProposedBlock() {
+        //Get the latest ouput from the L2Oracle. We're building the proove with this batch
+        const l2OutputIndex = await this.crossChainMessenger.contracts.l1.L2OutputOracle.latestOutputIndex();
+        const output = await this.crossChainMessenger.contracts.l1.L2OutputOracle.getL2Output(l2OutputIndex);
+
+        const { stateRoot, hash } = (await this.l2_provider.getBlock(output.l2BlockNumber.toNumber())) as any;
+
         if (!stateRoot) {
-            throw "State root not found";
+            throw new Error(`StateRoot for block ${output.l2BlockNumber.toNumber()} not found`);
         }
-        const blockNr = stateRoot.batch.header.prevTotalElements.add(stateRoot.stateRootIndexInBatch).add(1);
-        return [stateRoot, blockNr.toNumber()];
+
+        return { stateRoot, hash, number: output.l2BlockNumber.toNumber(), l2OutputIndex: l2OutputIndex.toNumber() };
     }
+
     /**
      * Creates the actual proof using the eth_proof RPC method. To get an better understanding how the storage layout looks like visit {@link https://docs.soliditylang.org/en/v0.8.17/internals/layout_in_storage.html}
      */
@@ -82,7 +94,9 @@ export class ProofService {
         initalSlot: string,
         blockNr: number,
         resolverAddr: string
-    ): Promise<{ storageProof: StorageProof[]; accountProof: string[]; length: number }> {
+    ): Promise<{ storageProof: StorageProof[]; accountProof: string[]; storageHash: string; length: number }> {
+        //The initial value. We used it to determine how many slots we need to proof
+        //See https://docs.soliditylang.org/en/v0.8.17/internals/layout_in_storage.html#mappings-and-dynamic-arrays
         const slotValue = await this.l2_provider.getStorageAt(resolverAddr, initalSlot, blockNr);
 
         const length = this.decodeLength(slotValue);
@@ -110,11 +124,12 @@ export class ProofService {
     }
     private async handleShortType(resolverAddr: string, slot: string, blockNr: number, length: number) {
         const res = await this.makeGetProofRpcCall(resolverAddr, [slot], blockNr);
-        const { storageProof, accountProof } = res;
+        const { storageProof, accountProof, storageHash } = res;
 
         return {
             accountProof,
             storageProof: this.mapStorageProof(storageProof),
+            storageHash,
             length,
         };
     }
@@ -125,23 +140,48 @@ export class ProofService {
 
         //The first slot is the keccak256 hash of the initial slot. After that the slots are calculated by adding 1 to the previous slot.
         const firstSlot = keccak256(initialSlot);
+        //Computing the address of every other slot
         const slots = [...Array(totalSlots).keys()].map((i) => BigNumber.from(firstSlot).add(i).toHexString());
         //After we've calculated all slots we can request the proof for all of them for the blockNr the stateRoot is based on
-        const proofResponse = await this.makeGetProofRpcCall(resolverAddr, slots, blocknr);
+        const { accountProof, storageProof, storageHash } = await this.makeGetProofRpcCall(resolverAddr, slots, blocknr);
 
         return {
-            accountProof: proofResponse.accountProof,
-            storageProof: this.mapStorageProof(proofResponse.storageProof),
+            accountProof: accountProof,
+            storageProof: this.mapStorageProof(storageProof),
+            storageHash: storageHash,
             length,
         };
     }
-    private async makeGetProofRpcCall(
-        resolverAddr: string,
-        slots: string[],
-        blocknr: number
-    ): Promise<EthGetProofResponse> {
+    /**
+     * Retrieves the storage hash for the L2ToL1MessagePassercontract. This hash is part of every outputRoot posted by the L2OutputOracle.
+     *To learn more about Bedrock commitments visits @link {https://github.com/ethereum-optimism/optimism/blob/develop/specs/proposals.md#l2-output-commitment-construction}
+     * @param blockNr The block number for which to fetch the storage hash.
+     * @returns A promise that resolves to the storage hash.
+     */
+    private async getMessagePasserStorageRoot(blockNr: number) {
+        const { storageHash } = await this.makeGetProofRpcCall(
+            this.crossChainMessenger.contracts.l2.BedrockMessagePasser.address,
+            [],
+            blockNr
+        );
+
+        return storageHash;
+    }
+    /**
+     * Makes an RPC call to retrieve the proof for the specified resolver address, slots, and block number.
+     * @param resolverAddr The resolver address for which to fetch the proof.
+     * @param slots The slots for which to fetch the proof.
+     * @param blocknr The block number for which to fetch the proof.
+     * @returns A promise that resolves to the proof response.
+     */
+    private async makeGetProofRpcCall(resolverAddr: string, slots: string[], blocknr: number): Promise<EthGetProofResponse> {
         return await this.l2_provider.send("eth_getProof", [resolverAddr, slots, toRpcHexString(blocknr)]);
     }
+    /**
+     * RLP encodes the storage proof
+     * @param storageProofs The storage proofs to be mapped.
+     * @returns An array of mapped storage proofs.
+     */
     private mapStorageProof(storageProofs: EthGetProofResponse["storageProof"]): StorageProof[] {
         return storageProofs.map(({ key, proof, value }) => ({
             key,
