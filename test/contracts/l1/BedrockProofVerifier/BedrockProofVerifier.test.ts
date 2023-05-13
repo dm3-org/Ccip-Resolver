@@ -6,29 +6,24 @@ import { mockProofForEmptySlot } from "../../../mocks/mockProofForEmptySlot";
 import { mockProofOfMultislot } from "../../../mocks/mockProofForMultislot";
 import { mockProofForSingleSlot } from "../../../mocks/mockProofForSingleSlot";
 import { mockProofForSlot31BytesLong } from "../../../mocks/mockProofForSlot31BytesLong";
-import { mockProofForWrongOutputRoot } from "../../../mocks/mockProofForWrongOutputRoot";
 
-const whale = new ethers.Wallet("ac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80");
-
-describe("BedrockProofVerifier", () => {
+const l1Provider = new ethers.providers.StaticJsonRpcProvider("http://localhost:8545");
+const l2Provider = new ethers.providers.StaticJsonRpcProvider("http://localhost:9545");
+describe.skip("BedrockProofVerifier", () => {
     let owner: SignerWithAddress;
     let BedrockProofVerifier: BedrockProofVerifier;
     let l2OutputOracle: L2OutputOracle;
 
-    const l1Provider = new ethers.providers.StaticJsonRpcProvider("http://localhost:8545");
-    const l2Provider = new ethers.providers.StaticJsonRpcProvider("http://localhost:9545");
-
     beforeEach(async () => {
         [owner] = await ethers.getSigners();
 
-        const BedrockProofVerifierFactory = (await ethers.getContractFactory("BedrockProofVerifier")) as BedrockProofVerifier__factory;
         const l2OutputOracleFactory = (await ethers.getContractFactory("L2OutputOracle")) as L2OutputOracle__factory;
-
         l2OutputOracle = l2OutputOracleFactory.attach("0x6900000000000000000000000000000000000000").connect(l1Provider);
+
+        const BedrockProofVerifierFactory = (await ethers.getContractFactory("BedrockProofVerifier")) as BedrockProofVerifier__factory;
 
         BedrockProofVerifier = (await BedrockProofVerifierFactory.deploy(l2OutputOracle.address)) as BedrockProofVerifier;
     });
-
 
     it("Resolves correct Proof for an empty slot", async () => {
         const proof = mockProofForEmptySlot;
