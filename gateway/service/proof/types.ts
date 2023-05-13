@@ -1,5 +1,3 @@
-import { StateRootBatchHeader } from "@eth-optimism/sdk";
-
 export interface EthGetProofResponse {
     accountProof: string[];
     balance: string;
@@ -15,13 +13,7 @@ export interface EthGetProofResponse {
 
 export interface ProofInputObject {
     target: string;
-    stateRoot: string;
-    stateRootBatchHeader: StateRootBatchHeader;
-    stateRootProof: {
-        index: number;
-        siblings: string[];
-    };
-    stateTrieWitness: string;
+    outputRootProof: OutputRootProof;
     storageProofs: StorageProof[];
     length: number;
 }
@@ -34,4 +26,20 @@ export interface StorageProof {
 export interface CreateProofResult {
     proof: ProofInputObject;
     result: string;
+}
+
+type bytes32 = string;
+/**
+ *   struct OutputRootProof {
+        bytes32 version;
+        bytes32 stateRoot;
+        bytes32 messagePasserStorageRoot;
+        bytes32 latestBlockhash;
+    }
+ */
+export interface OutputRootProof {
+    version: bytes32;
+    stateRoot: bytes32;
+    messagePasserStorageRoot: bytes32;
+    latestBlockhash: bytes32;
 }
