@@ -29,11 +29,15 @@ module.exports = {
     networks: {
         hardhat: {
             forking: {
-                url: MAINNET_RPC_URL,
+                url: "http://localhost:8545",
             },
         },
         optimism: {
             url: OPTIMISM_RPC_URL,
+            accounts: [process.env.OPTIMISM_PRIVATE_KEY],
+        },
+        optimismGoerli: {
+            url: "https://goerli.optimism.io",
             accounts: [process.env.OPTIMISM_PRIVATE_KEY],
         },
         localhost: {},
@@ -53,7 +57,7 @@ module.exports = {
     solidity: {
         compilers: [
             {
-                version: "0.8.17",
+                version: "0.8.15",
             },
         ],
     },
