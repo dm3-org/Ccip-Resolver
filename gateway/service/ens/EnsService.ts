@@ -17,13 +17,9 @@ export class EnsResolverService {
         this.proofService = proofService;
     }
     public static async instance() {
-        const l2PublicResolverFactory = (await hreEthers.getContractFactory(
-            "L2PublicResolver"
-        )) as L2PublicResolver__factory;
+        const l2PublicResolverFactory = (await hreEthers.getContractFactory("L2PublicResolver")) as L2PublicResolver__factory;
 
-        const l2PublicResolver = await l2PublicResolverFactory
-            .attach(L2_PUBLIC_RESOLVER_ADDRESS)
-            .connect(global.l2_provider);
+        const l2PublicResolver = await l2PublicResolverFactory.attach(L2_PUBLIC_RESOLVER_ADDRESS).connect(global.l2_provider);
         return new EnsResolverService(l2PublicResolver, ProofService.instance());
     }
 
