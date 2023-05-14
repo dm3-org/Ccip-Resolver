@@ -6,7 +6,7 @@ Storing data on Ethereum Mainnet is expensive hence it is appealing to use other
 Optimism-Resolver is a CCIP Resolver that retrieves data from optimism and validates the integrity of this data in a trustless manner using merkle proofs.
 
 ### Components:
-* **OptimisimProofVerifier [L1]:** 
+* **BedrockProofVerifier [L1]:** 
 Contract on Ethereum Mainnet that can validate whether a sequence of data is stored on a certain optimism contract.
 * **OptimismResolver [L1]:** 
 Contract on Ethereum Mainnet that implements the https://docs.ens.domains/ens-improvement-proposals/ensip-10-wildcard-resolution Flow
@@ -22,9 +22,9 @@ The data integrity of the retrieved data is ensured using merkle proofs.
 
 The flow looks like
 * **[Backend]** Use `eth_getProof` to create a merkle proof for certain slots on a given contract on Optimism
-* **[OptimismProofVerifier]** Call `StateCommitmentChain.verifyStateCommitment()` to check if the `stateRoot` exists on L2
-* **[OptimismProofVerifier]** Get the account of the L2PublicResolver from the state root (This state root proofs that the account is part of that certain state)
-* **[OptimismProofVerifier]** For each slot it is ensured that the proof of this particular slot is part of the account's `storageRoot`
+* **[BedrockProofVerifier]** Call `StateCommitmentChain.verifyStateCommitment()` to check if the `stateRoot` exists on L2
+* **[BedrockProofVerifier]** Get the account of the L2PublicResolver from the state root (This state root proofs that the account is part of that certain state)
+* **[BedrockProofVerifier]** For each slot it is ensured that the proof of this particular slot is part of the account's `storageRoot`
 
 ## Resources
 

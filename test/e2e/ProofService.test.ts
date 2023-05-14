@@ -10,8 +10,9 @@ import {
 } from "typechain";
 import { ProofService } from "../../gateway/service/proof/ProofService";
 import { EnsResolverService } from "../../gateway/service/ens/EnsService";
+import { L2_PUBLIC_RESOLVER_ADDRESS } from "../../gateway/constants";
 
-const PUBLIC_RESOLVER_ADDRESS = "0x5FbDB2315678afecb367f032d93F642f64180aa3";
+const PUBLIC_RESOLVER_ADDRESS = L2_PUBLIC_RESOLVER_ADDRESS;
 describe("ProofServiceTest", () => {
     let l2OutputOracle: L2OutputOracle;
     let BedrockProofVerifier: BedrockProofVerifier;

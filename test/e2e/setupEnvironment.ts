@@ -59,7 +59,6 @@ const setupEnvironment = async () => {
         const value = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
 
         await l2PublicResolver.connect(alice.connect(l2Provider)).setText(node, recordName, value);
-        console.log(`Added record '${recordName}' with value '${value}' at ${node}`);
     };
 
     //await prepareTest31yte();
@@ -76,9 +75,17 @@ const setupEnvironment = async () => {
         await l2PublicResolver.connect(alice.connect(l2Provider)).setText(node, recordName, JSON.stringify(profile));
         console.log(`Added record '${recordName}' with value '${JSON.stringify(profile)}' at ${node}`);
     };
+
+    //Prepare setAddr
+    const prepareSetAddr = async () => {
+        const node = ethers.utils.namehash("alice.eth");
+
+        await l2PublicResolver.connect(alice.connect(l2Provider))["setAddr(bytes32,address)"](node, alice.address);
+    };
     await prepareTestSingleSlot();
     await prepareTest31yte();
     await prepeTestMultipleSlots();
+    await prepareSetAddr();
     console.log("Environment setup complete wait a few minutes until everything is set");
 };
 setupEnvironment();
