@@ -16,8 +16,6 @@ describe("OptimismResolver Test", () => {
     let owner: SignerWithAddress;
     //ENS
     let ensRegistry: FakeContract<ENS>;
-    //OP
-    let l2OutputOracle: L2OutputOracle;
     //Resolver
     let optimismResolver: OptimismResolver;
     let BedrockProofVerifier: BedrockProofVerifier;
@@ -33,12 +31,10 @@ describe("OptimismResolver Test", () => {
         [owner] = await hreEthers.getSigners();
         ensRegistry = await mockEnsRegistry(ethers.utils.namehash("alice.eth"), alice.address);
 
-        const l2OutputOracleFactory = (await hreEthers.getContractFactory("L2OutputOracle")) as L2OutputOracle__factory;
-        //See github.com/ethereum-optimism/optimism/op-bindings/predeploys/dev_addresses.go
-        l2OutputOracle = l2OutputOracleFactory.attach("0x6900000000000000000000000000000000000000").connect(l1Provider);
+  
 
         const BedrockProofVerifierFactory = await hreEthers.getContractFactory("BedrockProofVerifier");
-        BedrockProofVerifier = (await BedrockProofVerifierFactory.deploy(l2OutputOracle.address)) as BedrockProofVerifier;
+        BedrockProofVerifier = (await BedrockProofVerifierFactory.deploy("0x6900000000000000000000000000000000000000")) as BedrockProofVerifier;
 
         const OptimismResolverFactory = await hreEthers.getContractFactory("OptimismResolver");
         optimismResolver = (await OptimismResolverFactory.deploy(

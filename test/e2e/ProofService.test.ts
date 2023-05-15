@@ -1,20 +1,12 @@
 import { expect } from "chai";
 import { ethers } from "hardhat";
-import {
-    L2PublicResolver,
-    L2PublicResolver__factory,
-    LibAddressManager,
-    BedrockProofVerifier,
-    L2OutputOracle__factory,
-    L2OutputOracle,
-} from "typechain";
-import { ProofService } from "../../gateway/service/proof/ProofService";
-import { EnsResolverService } from "../../gateway/service/ens/EnsService";
+import { BedrockProofVerifier, L2PublicResolver, L2PublicResolver__factory } from "typechain";
 import { L2_PUBLIC_RESOLVER_ADDRESS } from "../../gateway/constants";
+import { EnsResolverService } from "../../gateway/service/ens/EnsService";
+import { ProofService } from "../../gateway/service/proof/ProofService";
 
 const PUBLIC_RESOLVER_ADDRESS = L2_PUBLIC_RESOLVER_ADDRESS;
 describe("ProofServiceTest", () => {
-    let l2OutputOracle: L2OutputOracle;
     let BedrockProofVerifier: BedrockProofVerifier;
     let publicResolver: L2PublicResolver;
 
@@ -25,12 +17,12 @@ describe("ProofServiceTest", () => {
     const alice = new ethers.Wallet("0xfd9f3842a10eb01ccf3109d4bd1c4b165721bf8c26db5db7570c146f9fad6014");
 
     beforeEach(async () => {
-        const l2OutputOracleFactory = (await ethers.getContractFactory("L2OutputOracle")) as L2OutputOracle__factory;
         //See github.com/ethereum-optimism/optimism/op-bindings/predeploys/dev_addresses.go
-        l2OutputOracle = l2OutputOracleFactory.attach("0x6900000000000000000000000000000000000000").connect(l1Provider);
 
         const BedrockProofVerifierFactory = await ethers.getContractFactory("BedrockProofVerifier");
-        BedrockProofVerifier = (await BedrockProofVerifierFactory.deploy(l2OutputOracle.address)) as BedrockProofVerifier;
+        BedrockProofVerifier = (await BedrockProofVerifierFactory.deploy(
+            "0x6900000000000000000000000000000000000000"
+        )) as BedrockProofVerifier;
 
         const factory = (await ethers.getContractFactory("L2PublicResolver")) as L2PublicResolver__factory;
         publicResolver = await factory.attach(PUBLIC_RESOLVER_ADDRESS).connect(l2Provider);
