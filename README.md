@@ -64,3 +64,10 @@ Visit https://community.optimism.io/docs/developers/build/dev-node/ for setup in
 3. Run `yarn run e2e:setup` to set up the environment required by the tests. This deploys the contracts and creates the initial data we're later going to prove.
 4. Wait again for a few minutes. The rollup needs to commit the changes made. If you see the error "Account is not part of the provided state root" or "Provided proof is invalid" The commit is still pending
 5. Run the test using `yarn test`
+
+## Deployments
+
+### L1 Goerli
+
+BedrockProofVerifier : 0xA4178AF5847a633dAd8c2A3fC84520F9951489De
+OptimismResolver: 0xa5582e57281E6d4Bc51A3ad3A0F1ec18f37751ca

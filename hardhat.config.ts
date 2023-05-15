@@ -38,15 +38,11 @@ module.exports = {
         localhost: {},
     },
     etherscan: {
-        apiKey: OPTIMISTIC_ETHERSCAN_API_KEY,
+        apiKey: ETHERSCAN_API_KEY,
     },
     namedAccounts: {
         deployer: {
             default: 0, // here this will by default take the first account as deployer
-            1: 0, // similarly on mainnet it will take the first account as deployer.
-        },
-        feeCollector: {
-            default: 1,
         },
     },
     solidity: {
