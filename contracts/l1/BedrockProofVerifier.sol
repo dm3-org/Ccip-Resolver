@@ -19,11 +19,16 @@ contract BedrockProofVerifier is IBedrockProofVerifier {
     }
 
     /**
-     * Takes an L2StateProof and validates that the provided value is valied. If so the value is returned.
-     * @param proof  L2StateProof
+     * Takes an BedrockStateProof and validates that the provided value is valied. If so the value is returned.
+     * @param proof  BedrockStateProof
      * @return The value of all included slots concatinated
      */
     function getProofValue(BedrockStateProof memory proof) public view returns (bytes memory) {
+        /**
+         *Validate the provided output root is valid
+         *see https://github.com/ethereum-optimism/optimism/blob/4611198bf8bfd16563cc6bdf49bb35eed2e46801/packages/contracts-bedrock/contracts/L1/OptimismPortal.sol#L261
+         *
+         */
         require(
             l2OutputOracle.getL2Output(proof.l2OutputIndex).outputRoot == Hashing.hashOutputRootProof(proof.outputRootProof),
             "Invalid output root"
@@ -35,7 +40,7 @@ contract BedrockProofVerifier is IBedrockProofVerifier {
 
     /**
      * Returns the storage root of the account the proof is based on
-     * @param proof The L2StateProof
+     * @param proof The BedrockStateProof
      * @return The storage root of the account the proof is based on
      */
     function getStorageRoot(BedrockStateProof memory proof) private pure returns (bytes32) {
