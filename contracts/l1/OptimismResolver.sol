@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.15;
 
-import "./IExtendedResolver.sol";
-import "./SupportsInterface.sol";
-import "./IBedrockProofVerifier.sol";
-import "./OwnedENSNode.sol";
+import {IExtendedResolver, IResolverService} from "./IExtendedResolver.sol";
+import {SupportsInterface} from "./SupportsInterface.sol";
+import {IBedrockProofVerifier} from "./IBedrockProofVerifier.sol";
+import {OwnedENSNode, ENS} from "./OwnedENSNode.sol";
 
 /**
  * Implements an ENS resolver that directs all queries to a CCIP read gateway.
@@ -13,7 +13,7 @@ import "./OwnedENSNode.sol";
 contract OptimismResolver is IExtendedResolver, SupportsInterface, OwnedENSNode {
     address public owner;
     string public url;
-    IBedrockProofVerifier public BedrockProofVerifier;
+    IBedrockProofVerifier public bedrockProofVerifier;
 
     event NewOwner(address newOwner);
     error OffchainLookup(address sender, string[] urls, bytes callData, bytes4 callbackFunction, bytes extraData);
@@ -21,12 +21,12 @@ contract OptimismResolver is IExtendedResolver, SupportsInterface, OwnedENSNode 
     constructor(
         string memory _url,
         address _owner,
-        IBedrockProofVerifier _BedrockProofVerifier,
+        IBedrockProofVerifier _bedrockProofVerifier,
         ENS _ensRegistry
     ) OwnedENSNode(_ensRegistry) {
         url = _url;
         owner = _owner;
-        BedrockProofVerifier = _BedrockProofVerifier;
+        bedrockProofVerifier = _bedrockProofVerifier;
     }
 
     modifier onlyOwner() {
@@ -67,7 +67,7 @@ contract OptimismResolver is IExtendedResolver, SupportsInterface, OwnedENSNode 
             response,
             (string, IBedrockProofVerifier.BedrockStateProof)
         );
-        return BedrockProofVerifier.getProofValue(proof);
+        return bedrockProofVerifier.getProofValue(proof);
     }
 
     function supportsInterface(bytes4 interfaceID) public pure override returns (bool) {

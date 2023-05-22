@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.9;
-import "@ensdomains/ens-contracts/contracts/registry/ENS.sol";
+import {ENS} from "@ensdomains/ens-contracts/contracts/registry/ENS.sol";
 import {LibOwnedENSNode} from "../lib/LibOwnedENSNode.sol";
 
 contract OwnedENSNode {
