@@ -1,11 +1,12 @@
 import { FakeContract } from "@defi-wonderland/smock";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import bodyParser from "body-parser";
+import { assert } from "chai";
 import { ethers } from "ethers";
 import express from "express";
 import { ethers as hreEthers } from "hardhat";
 import request from "supertest";
-import { BedrockProofVerifier, ENS, L2OutputOracle, L2OutputOracle__factory, OptimismResolver } from "typechain";
+import { BedrockProofVerifier, ENS, OptimismResolver } from "typechain";
 import { ccipGateway } from "../../gateway/http/ccipGateway";
 import { mockEnsRegistry } from "../contracts/l1/OptimismResolver/mockEnsRegistry";
 import { MockProvider } from "../contracts/l1/OptimismResolver/mockProvider";
@@ -31,7 +32,7 @@ describe("OptimismResolver Test", () => {
         [owner] = await hreEthers.getSigners();
         ensRegistry = await mockEnsRegistry(ethers.utils.namehash("alice.eth"), alice.address);
 
-  
+
 
         const BedrockProofVerifierFactory = await hreEthers.getContractFactory("BedrockProofVerifier");
         BedrockProofVerifier = (await BedrockProofVerifierFactory.deploy("0x6900000000000000000000000000000000000000")) as BedrockProofVerifier;
@@ -41,7 +42,8 @@ describe("OptimismResolver Test", () => {
             "http://localhost:8080/{sender}/{data}",
             owner.address,
             BedrockProofVerifier.address,
-            ensRegistry.address
+            ensRegistry.address,
+            "0x5FbDB2315678afecb367f032d93F642f64180aa3"
         )) as OptimismResolver;
 
         ccipApp = express();
@@ -99,6 +101,26 @@ describe("OptimismResolver Test", () => {
             };
             expect(responseString).to.eql(JSON.stringify(profile));
         });
+        it("rejects proofs from contracts other than l2Resolver", async () => {
+            process.env = {
+                ...process.env,
+                L2_PUBLIC_RESOLVER_ADDRESS: "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512"
+            }
+
+            const { callData, sender } = await getGateWayUrl("alice.eth", "network.dm3.eth", optimismResolver);
+            const { body, status } = await request(ccipApp).get(`/${sender}/${callData}`).send();
+
+            await optimismResolver.resolveWithProof(body.data, callData)
+                .then((res) => {
+                    expect.fail("Should have thrown an error")
+                })
+                .catch((e) => {
+                    expect(e.reason).to.equal("proof target does not match resolver");
+                })
+
+
+        });
+
     });
 
     const fetchRecordFromCcipGateway = async (url: string, json?: string) => {

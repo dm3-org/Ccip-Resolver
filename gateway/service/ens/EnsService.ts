@@ -1,9 +1,8 @@
 import { ethers as hreEthers } from "hardhat";
-import { L2_PUBLIC_RESOLVER_ADDRESS } from "./../../constants";
-import { ProofService } from "../proof/ProofService";
-import { CreateProofResult, ProofInputObject } from "../proof/types";
 import { L2PublicResolver, L2PublicResolver__factory } from "typechain";
-import { ethers } from "ethers";
+import { ProofService } from "../proof/ProofService";
+import { CreateProofResult } from "../proof/types";
+import { getPublicResolverAddress } from "./../../constants";
 
 /**
  * This class provides the storage location for different for the particular fiels of the PublicResolverContract
@@ -18,8 +17,8 @@ export class EnsResolverService {
     }
     public static async instance() {
         const l2PublicResolverFactory = (await hreEthers.getContractFactory("L2PublicResolver")) as L2PublicResolver__factory;
-
-        const l2PublicResolver = await l2PublicResolverFactory.attach(L2_PUBLIC_RESOLVER_ADDRESS).connect(global.l2_provider);
+      
+        const l2PublicResolver = await l2PublicResolverFactory.attach(getPublicResolverAddress()).connect(global.l2_provider);
         return new EnsResolverService(l2PublicResolver, ProofService.instance());
     }
 

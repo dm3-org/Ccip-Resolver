@@ -16,7 +16,10 @@ const l1Provider = new ethers.providers.StaticJsonRpcProvider("http://localhost:
 const l2Provider = new ethers.providers.StaticJsonRpcProvider("http://localhost:9545");
 
 const setupEnvironment = async () => {
+    //The resolver that is linked in the OptimismResolver contract
     let l2PublicResolver: L2PublicResolver;
+    //Another resolver contract not related to the OptimismResolver contract
+    let foreignResolver: L2PublicResolver
 
     const l2Whale = whale.connect(l2Provider);
 
@@ -29,8 +32,12 @@ const setupEnvironment = async () => {
     const factory = (await ethers.getContractFactory("L2PublicResolver")) as L2PublicResolver__factory;
     l2PublicResolver = await factory.connect(l2Whale).deploy();
     await l2PublicResolver.deployed();
-
     console.log(`L2 Resolver deployed at ${l2PublicResolver.address}`);
+
+    foreignResolver = await factory.connect(l2Whale).deploy();
+    await foreignResolver.deployed();
+    console.log(`L2 Foreign resolver deployed at ${foreignResolver.address}`);
+
 
     //Fund alice account
     const fundTx = await l2Whale.sendTransaction({
@@ -82,10 +89,17 @@ const setupEnvironment = async () => {
 
         await l2PublicResolver.connect(alice.connect(l2Provider))["setAddr(bytes32,address)"](node, alice.address);
     };
+    //Prepare foreign resolver
+    const prepareForeign = async () => {
+        const node = ethers.utils.namehash("alice.eth");
+
+        await foreignResolver.connect(alice.connect(l2Provider))["setAddr(bytes32,address)"](node, alice.address);
+    };
     await prepareTestSingleSlot();
     await prepareTest31yte();
     await prepeTestMultipleSlots();
     await prepareSetAddr();
+    await prepareForeign();
     console.log("Environment setup complete wait a few minutes until everything is set");
 };
 setupEnvironment();

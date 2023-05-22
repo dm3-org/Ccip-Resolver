@@ -1,11 +1,11 @@
 import { expect } from "chai";
 import { ethers } from "hardhat";
 import { BedrockProofVerifier, L2PublicResolver, L2PublicResolver__factory } from "typechain";
-import { L2_PUBLIC_RESOLVER_ADDRESS } from "../../gateway/constants";
+import { getPublicResolverAddress } from "../../gateway/constants";
 import { EnsResolverService } from "../../gateway/service/ens/EnsService";
 import { ProofService } from "../../gateway/service/proof/ProofService";
 
-const PUBLIC_RESOLVER_ADDRESS = L2_PUBLIC_RESOLVER_ADDRESS;
+const PUBLIC_RESOLVER_ADDRESS = getPublicResolverAddress();
 describe("ProofServiceTest", () => {
     let BedrockProofVerifier: BedrockProofVerifier;
     let publicResolver: L2PublicResolver;

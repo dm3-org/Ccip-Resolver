@@ -14,19 +14,27 @@ contract OptimismResolver is IExtendedResolver, SupportsInterface, OwnedENSNode 
     address public owner;
     string public url;
     IBedrockProofVerifier public bedrockProofVerifier;
+    address public l2Resolver;
 
     event NewOwner(address newOwner);
     error OffchainLookup(address sender, string[] urls, bytes callData, bytes4 callbackFunction, bytes extraData);
 
     constructor(
+        //The CCIP gateway url
         string memory _url,
+        //The owner of the resolver
         address _owner,
+        //The bedrock proof verifier
         IBedrockProofVerifier _bedrockProofVerifier,
-        ENS _ensRegistry
+        //The ENS registry
+        ENS _ensRegistry,
+        //The instance of the L2PublicResolver
+        address _l2Resolver
     ) OwnedENSNode(_ensRegistry) {
         url = _url;
         owner = _owner;
         bedrockProofVerifier = _bedrockProofVerifier;
+        l2Resolver = _l2Resolver;
     }
 
     modifier onlyOwner() {
@@ -36,6 +44,11 @@ contract OptimismResolver is IExtendedResolver, SupportsInterface, OwnedENSNode 
 
     function setOwner(address _newOwner) external onlyOwner {
         owner = _newOwner;
+        emit NewOwner(owner);
+    }
+
+    function setL2Resolver(address _newL2Resolver) external onlyOwner {
+        l2Resolver = _newL2Resolver;
         emit NewOwner(owner);
     }
 
@@ -67,6 +80,7 @@ contract OptimismResolver is IExtendedResolver, SupportsInterface, OwnedENSNode 
             response,
             (string, IBedrockProofVerifier.BedrockStateProof)
         );
+        require(proof.target == l2Resolver, "proof target does not match resolver");
         return bedrockProofVerifier.getProofValue(proof);
     }
 
