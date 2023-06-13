@@ -2,6 +2,7 @@
 pragma solidity ^0.8.15;
 
 import {IExtendedResolver, IResolverService} from "./IExtendedResolver.sol";
+import {IContextResolver} from "./IContextResolver.sol";
 import {SupportsInterface} from "./SupportsInterface.sol";
 import {IBedrockProofVerifier} from "./IBedrockProofVerifier.sol";
 import {OwnedENSNode, ENS} from "./OwnedENSNode.sol";
@@ -10,11 +11,12 @@ import {OwnedENSNode, ENS} from "./OwnedENSNode.sol";
  * Implements an ENS resolver that directs all queries to a CCIP read gateway.
  * Callers must implement EIP 3668 and ENSIP 10.
  */
-contract OptimismResolver is IExtendedResolver, SupportsInterface, OwnedENSNode {
+contract OptimismResolver is IExtendedResolver, IContextResolver, SupportsInterface, OwnedENSNode {
     address public owner;
     string public url;
     IBedrockProofVerifier public bedrockProofVerifier;
     address public l2Resolver;
+    string public graphqlUrl;
 
     event NewOwner(address newOwner);
     error OffchainLookup(address sender, string[] urls, bytes callData, bytes4 callbackFunction, bytes extraData);
@@ -29,12 +31,15 @@ contract OptimismResolver is IExtendedResolver, SupportsInterface, OwnedENSNode 
         //The ENS registry
         ENS _ensRegistry,
         //The instance of the L2PublicResolver
-        address _l2Resolver
+        address _l2Resolver,
+        //The graphQl Url
+        string memory _graphqlUrl
     ) OwnedENSNode(_ensRegistry) {
         url = _url;
         owner = _owner;
         bedrockProofVerifier = _bedrockProofVerifier;
         l2Resolver = _l2Resolver;
+        graphqlUrl = _graphqlUrl;
     }
 
     modifier onlyOwner() {
@@ -52,9 +57,12 @@ contract OptimismResolver is IExtendedResolver, SupportsInterface, OwnedENSNode 
         emit NewOwner(owner);
     }
 
-    //This function only exists during develoopent. Will be removed before releasing prod
     function setUrl(string memory _url) external onlyOwner {
         url = _url;
+    }
+
+    function setGraphUl(string memory _graphqlUrl) external onlyOwner {
+        graphqlUrl = _graphqlUrl;
     }
 
     /**
@@ -86,5 +94,15 @@ contract OptimismResolver is IExtendedResolver, SupportsInterface, OwnedENSNode 
 
     function supportsInterface(bytes4 interfaceID) public pure override returns (bool) {
         return interfaceID == type(IExtendedResolver).interfaceId || super.supportsInterface(interfaceID);
+    }
+
+    function metadata() external view returns (string memory, uint256, string memory, uint8, bytes memory) {
+        return (
+            string("OPTIMISM RESOLVER"), //The name of the resolver
+            uint256(60), //Resolvers coin type => Etheruem
+            graphqlUrl, //The GraphQl Url
+            uint8(0), //Storage Type 0=>EVM
+            bytes(string.concat("OPTIMISM RESOLVER: ", "{NODE_OWNER}"))
+        );
     }
 }
