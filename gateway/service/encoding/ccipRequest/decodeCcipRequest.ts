@@ -7,9 +7,11 @@ export function decodeCcipRequest(calldata: string) {
         const textResolver = getResolverInterface();
 
         //Parse the calldata returned by a contra
-        const [ensName, data] = textResolver.parseTransaction({
+        const [context, data] = textResolver.parseTransaction({
             data: calldata,
         }).args;
+
+
 
         const { signature, args } = textResolver.parseTransaction({
             data,
@@ -17,9 +19,9 @@ export function decodeCcipRequest(calldata: string) {
 
         switch (signature) {
             case "text(bytes32,string)":
-                return { signature, request: decodeText(ensName, args) };
+                return { signature, request: decodeText(context, args) };
             case "addr(bytes32)": {
-                return { signature, request: decodeAddr(ensName, args) };
+                return { signature, request: decodeAddr(context, args) };
             }
 
             default:

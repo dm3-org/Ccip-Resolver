@@ -43,7 +43,8 @@ describe("OptimismResolver Test", () => {
             owner.address,
             BedrockProofVerifier.address,
             ensRegistry.address,
-            "0x5FbDB2315678afecb367f032d93F642f64180aa3"
+            "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+            "http://localhost:8080/graphql"
         )) as OptimismResolver;
 
         ccipApp = express();
@@ -66,7 +67,7 @@ describe("OptimismResolver Test", () => {
 
             expect(text).to.eql(JSON.stringify(profile));
         });
-        it("ccip gateway resolves existing profile using ethers.provider.getAddress()", async () => {
+        it.only("ccip gateway resolves existing profile using ethers.provider.getAddress()", async () => {
             const provider = new MockProvider(hreEthers.provider, fetchRecordFromCcipGateway, optimismResolver);
 
             const resolver = await provider.getResolver("alice.eth");

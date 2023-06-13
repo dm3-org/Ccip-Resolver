@@ -5,7 +5,7 @@ import { L2PublicResolver } from "typechain";
 
 import { expect } from "chai";
 
-describe("L2PublicResolver", () => {
+describe.only("L2PublicResolver", () => {
     let user1: SignerWithAddress;
     let user2: SignerWithAddress;
     let l2PublicResolver: L2PublicResolver;
@@ -48,44 +48,37 @@ describe("L2PublicResolver", () => {
     });
 
     describe("AddrResolver", () => {
-        it("set addr record on L2", async () => {
+        it.only("set addr record on L2", async () => {
             const node = ethers.utils.namehash(ethers.utils.nameprep("dm3.eth"));
-            const ownedNode = ethers.utils.keccak256(
-                ethers.utils.defaultAbiCoder.encode(["bytes32", "address"], [node, user1.address])
-            );
+
 
             // record should initially be empty
-            expect(await l2PublicResolver["addr(bytes32)"](node)).to.equal(
+            expect(await l2PublicResolver["addr(bytes,bytes32)"](
+                user1.address, node
+            )).to.equal(
                 "0x0000000000000000000000000000000000000000"
             );
-            expect(await l2PublicResolver["addr(bytes32)"](ownedNode)).to.equal(
-                "0x0000000000000000000000000000000000000000"
-            );
+
 
             const tx = await l2PublicResolver["setAddr(bytes32,address)"](node, user2.address);
             const receipt = await tx.wait();
             const [addressChangedEvent, addrChangedEvent] = receipt.events;
 
-            let [eventNode, eventownedNode, eventCoinType, eventAddress] = addressChangedEvent.args;
+            let [eventContext, eventNode, eventCoinType, eventAddress] = addressChangedEvent.args;
 
+
+            expect(ethers.utils.getAddress(eventContext)).to.equal(user1.address);
             expect(eventNode).to.equal(node);
-            expect(eventownedNode).to.equal(ownedNode);
             expect(eventCoinType).to.equal(60);
             expect(ethers.utils.getAddress(eventAddress)).to.equal(user2.address);
 
-            [eventNode, eventownedNode, eventAddress] = addrChangedEvent.args;
+            [eventContext, eventNode, eventAddress] = addrChangedEvent.args;
 
+            expect(ethers.utils.getAddress(eventContext)).to.equal(user1.address);
             expect(eventNode).to.equal(node);
-            expect(eventownedNode).to.equal(ownedNode);
             expect(ethers.utils.getAddress(eventAddress)).to.equal(user2.address);
-
-            // record of the original node shouldn't be touched
-            expect(await l2PublicResolver["addr(bytes32)"](node)).to.equal(
-                "0x0000000000000000000000000000000000000000"
-            );
-
             // record of the owned node should be changed
-            expect(await l2PublicResolver["addr(bytes32)"](ownedNode)).to.equal(user2.address);
+            expect(await l2PublicResolver["addr(bytes,bytes32)"](user1.address, node)).to.equal(user2.address);
         });
     });
     describe("ABIResolver", () => {

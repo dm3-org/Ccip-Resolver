@@ -35,9 +35,9 @@ abstract contract AddrResolver is IAddrResolver, IAddressResolver, ResolverBase 
 
     function setAddr(bytes32 node, uint256 coinType, bytes memory a) public virtual {
         bytes memory context = abi.encodePacked(msg.sender);
-        emit AddressChanged(node, coinType, a);
+        emit AddressChanged(context, node, coinType, a);
         if (coinType == COIN_TYPE_ETH) {
-            emit AddrChanged(node, bytesToAddress(a));
+            emit AddrChanged(context,node, bytesToAddress(a));
         }
         versionable_addresses[recordVersions[context][node]][context][node][coinType] = a;
     }

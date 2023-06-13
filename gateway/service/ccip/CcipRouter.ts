@@ -32,7 +32,7 @@ export class CcipRouter {
      */
 
     private async handleText(request: any) {
-        const { proof, result } = await this.ensService.proofText(request.ownedNode, request.record);
+        const { proof, result } = await this.ensService.proofText(request.context, request.node, request.record);
 
         const encodedGetTextResult = encodeText(result);
         const proofParamType = await getProofParamType();
@@ -42,8 +42,8 @@ export class CcipRouter {
 
     private async handleAddr(request: any) {
         const coinType = 60;
-        const { proof, result } = await this.ensService.proofAddr(request.ownedNode, coinType);
-        const encodedGetTextResult = encodeAddr(result);
+        const { proof, result } = await this.ensService.proofAddr(request.context, request.node, coinType);
+        const encodedGetTextResult = encodeAddr(result === "0x" ? ethers.constants.AddressZero : result);
         const proofParamType = await getProofParamType();
         return ethers.utils.defaultAbiCoder.encode(["bytes", proofParamType], [encodedGetTextResult, proof]);
     }
