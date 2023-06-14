@@ -34,11 +34,9 @@ describe("ProofServiceTest", () => {
         const node = ethers.utils.namehash("alice1234.eth");
         const recordName = "empy-slot";
 
-        const ownedNode = ethers.utils.keccak256(
-            ethers.utils.defaultAbiCoder.encode(["bytes32", "address"], [node, publicResolver.address])
-        );
 
-        const slot = EnsResolverService.getStorageSlotForText(7, 0, ownedNode, recordName);
+
+        const slot = EnsResolverService.getStorageSlotForText(2, 0, alice.address, node, recordName);
         const { proof } = await proofService.createProof(PUBLIC_RESOLVER_ADDRESS, slot);
 
         expect(proof.length).to.be.equal(0);
@@ -53,11 +51,9 @@ describe("ProofServiceTest", () => {
 
         const recordName = "foo";
 
-        const ownedNode = ethers.utils.keccak256(
-            ethers.utils.defaultAbiCoder.encode(["bytes32", "address"], [ethers.utils.namehash("alice.eth"), alice.address])
-        );
+        const node = ethers.utils.namehash("alice.eth")
 
-        const slot = EnsResolverService.getStorageSlotForText(7, 0, ownedNode, recordName);
+        const slot = EnsResolverService.getStorageSlotForText(2, 0, alice.address, node, recordName);
         const { proof } = await proofService.createProof(PUBLIC_RESOLVER_ADDRESS, slot);
 
         expect(proof.length).to.be.equal(3);
@@ -72,11 +68,9 @@ describe("ProofServiceTest", () => {
 
         const recordName = "my-slot";
 
-        const ownedNode = ethers.utils.keccak256(
-            ethers.utils.defaultAbiCoder.encode(["bytes32", "address"], [ethers.utils.namehash("alice.eth"), alice.address])
-        );
+        const node = ethers.utils.namehash("alice.eth")
 
-        const slot = EnsResolverService.getStorageSlotForText(7, 0, ownedNode, recordName);
+        const slot = EnsResolverService.getStorageSlotForText(2, 0, alice.address, node, recordName);
         const { proof } = await proofService.createProof(PUBLIC_RESOLVER_ADDRESS, slot);
 
         const responseBytes = await BedrockProofVerifier.getProofValue(proof);
@@ -90,9 +84,7 @@ describe("ProofServiceTest", () => {
         const node = ethers.utils.namehash("alice.eth");
         const recordName = "network.dm3.eth";
 
-        const ownedNode = ethers.utils.keccak256(ethers.utils.defaultAbiCoder.encode(["bytes32", "address"], [node, alice.address]));
-
-        const slot = EnsResolverService.getStorageSlotForText(7, 0, ownedNode, recordName);
+        const slot = EnsResolverService.getStorageSlotForText(2, 0, alice.address, node, recordName);
         const { proof } = await proofService.createProof(PUBLIC_RESOLVER_ADDRESS, slot);
         const responseBytes = await BedrockProofVerifier.getProofValue(proof);
         const profile = {
