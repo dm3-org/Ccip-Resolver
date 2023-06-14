@@ -78,7 +78,7 @@ contract OptimismResolver is IExtendedResolver, IContextResolver, SupportsInterf
         bytes32 node = bytes32(data[4:36]);
         address owner = ensRegistry.owner(node);
 
-        bytes memory context = abi.encode(owner);
+        bytes memory context = abi.encodePacked(owner);
         bytes memory callData = abi.encodeWithSelector(IResolverService.resolve.selector, context, data);
 
         string[] memory urls = new string[](1);

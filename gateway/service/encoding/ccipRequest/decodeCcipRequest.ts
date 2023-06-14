@@ -8,12 +8,11 @@ export function decodeCcipRequest(calldata: string) {
         const textResolver = getResolverInterface();
 
         //Parse the calldata returned by the contract
-        const [rawContext, data] = textResolver.parseTransaction({
+        const [context, data] = textResolver.parseTransaction({
             data: calldata,
         }).args;
 
-        //In this case the context is always just the owner address. Hence we're removing the padding
-        const [context] = ethers.utils.defaultAbiCoder.decode(["address"], rawContext)
+
 
         const { signature, args } = textResolver.parseTransaction({
             data,
