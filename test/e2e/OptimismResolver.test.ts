@@ -67,7 +67,7 @@ describe("OptimismResolver Test", () => {
 
             expect(text).to.eql(JSON.stringify(profile));
         });
-        it.only("ccip gateway resolves existing profile using ethers.provider.getAddress()", async () => {
+        it("ccip gateway resolves existing profile using ethers.provider.getAddress()", async () => {
             const provider = new MockProvider(hreEthers.provider, fetchRecordFromCcipGateway, optimismResolver);
 
             const resolver = await provider.getResolver("alice.eth");

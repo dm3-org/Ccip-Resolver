@@ -5,13 +5,15 @@ import {IExtendedResolver, IResolverService} from "./IExtendedResolver.sol";
 import {IContextResolver} from "./IContextResolver.sol";
 import {SupportsInterface} from "./SupportsInterface.sol";
 import {IBedrockProofVerifier} from "./IBedrockProofVerifier.sol";
-import {OwnedENSNode, ENS} from "./OwnedENSNode.sol";
+import {ENS} from "@ensdomains/ens-contracts/contracts/registry/ENS.sol";
+import "hardhat/console.sol";
 
 /**
  * Implements an ENS resolver that directs all queries to a CCIP read gateway.
  * Callers must implement EIP 3668 and ENSIP 10.
  */
-contract OptimismResolver is IExtendedResolver, IContextResolver, SupportsInterface, OwnedENSNode {
+contract OptimismResolver is IExtendedResolver, IContextResolver, SupportsInterface {
+    ENS public ensRegistry;
     address public owner;
     string public url;
     IBedrockProofVerifier public bedrockProofVerifier;
@@ -34,7 +36,8 @@ contract OptimismResolver is IExtendedResolver, IContextResolver, SupportsInterf
         address _l2Resolver,
         //The graphQl Url
         string memory _graphqlUrl
-    ) OwnedENSNode(_ensRegistry) {
+    ) {
+        ensRegistry = _ensRegistry;
         url = _url;
         owner = _owner;
         bedrockProofVerifier = _bedrockProofVerifier;
@@ -72,7 +75,11 @@ contract OptimismResolver is IExtendedResolver, IContextResolver, SupportsInterf
      * @return The return data, ABI encoded identically to the underlying function.
      */
     function resolve(bytes calldata name, bytes calldata data) external view override returns (bytes memory) {
-        bytes memory callData = abi.encodeWithSelector(IResolverService.resolve.selector, name, replaceNodeWithOwnedNode(data));
+        bytes32 node = bytes32(data[4:36]);
+        address owner = ensRegistry.owner(node);
+
+        bytes memory context = abi.encode(owner);
+        bytes memory callData = abi.encodeWithSelector(IResolverService.resolve.selector, context, data);
 
         string[] memory urls = new string[](1);
         urls[0] = url;

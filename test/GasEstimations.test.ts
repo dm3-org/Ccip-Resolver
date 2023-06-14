@@ -48,7 +48,8 @@ describe("Gas Estimations", () => {
                 deployer.address,
                 ethers.constants.AddressZero,
                 ethers.constants.AddressZero,
-                ethers.constants.AddressZero
+                ethers.constants.AddressZero,
+                ethers.constants.AddressZero,
             );
 
             const deployTxResponse = await deployer.sendTransaction(deployTx);
