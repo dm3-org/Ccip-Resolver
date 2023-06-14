@@ -2,8 +2,8 @@
 pragma solidity >=0.8.4;
 
 import "../ResolverBase.sol";
-import "./IAddrResolver.sol";
-import "./IAddressResolver.sol";
+import {IAddrResolver} from "./IAddrResolver.sol";
+import {IAddressResolver} from "./IAddressResolver.sol";
 
 abstract contract AddrResolver is IAddrResolver, IAddressResolver, ResolverBase {
     uint256 private constant COIN_TYPE_ETH = 60;
@@ -37,7 +37,7 @@ abstract contract AddrResolver is IAddrResolver, IAddressResolver, ResolverBase 
         bytes memory context = abi.encodePacked(msg.sender);
         emit AddressChanged(context, node, coinType, a);
         if (coinType == COIN_TYPE_ETH) {
-            emit AddrChanged(context,node, bytesToAddress(a));
+            emit AddrChanged(context, node, bytesToAddress(a));
         }
         versionable_addresses[recordVersions[context][node]][context][node][coinType] = a;
     }

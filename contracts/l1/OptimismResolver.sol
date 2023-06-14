@@ -6,7 +6,6 @@ import {IContextResolver} from "./IContextResolver.sol";
 import {SupportsInterface} from "./SupportsInterface.sol";
 import {IBedrockProofVerifier} from "./IBedrockProofVerifier.sol";
 import {ENS} from "@ensdomains/ens-contracts/contracts/registry/ENS.sol";
-import "hardhat/console.sol";
 
 /**
  * Implements an ENS resolver that directs all queries to a CCIP read gateway.
@@ -76,9 +75,9 @@ contract OptimismResolver is IExtendedResolver, IContextResolver, SupportsInterf
      */
     function resolve(bytes calldata name, bytes calldata data) external view override returns (bytes memory) {
         bytes32 node = bytes32(data[4:36]);
-        address owner = ensRegistry.owner(node);
+        address nodeOwner = ensRegistry.owner(node);
 
-        bytes memory context = abi.encodePacked(owner);
+        bytes memory context = abi.encodePacked(nodeOwner);
         bytes memory callData = abi.encodeWithSelector(IResolverService.resolve.selector, context, data);
 
         string[] memory urls = new string[](1);
@@ -90,7 +89,7 @@ contract OptimismResolver is IExtendedResolver, IContextResolver, SupportsInterf
      * Callback used by CCIP read compatible clients to verify and parse the response.
      * extraData -> the original call data
      */
-    function resolveWithProof(bytes calldata response, bytes calldata extraData) external view returns (bytes memory) {
+    function resolveWithProof(bytes calldata response, bytes calldata extraData) external view override returns (bytes memory) {
         (string memory result, IBedrockProofVerifier.BedrockStateProof memory proof) = abi.decode(
             response,
             (string, IBedrockProofVerifier.BedrockStateProof)

@@ -5,7 +5,7 @@ import {IBedrockProofVerifier, IL2OutputOracle} from "./IBedrockProofVerifier.so
 
 import {RLPReader} from "@eth-optimism/contracts-bedrock/contracts/libraries/rlp/RLPReader.sol";
 import {Hashing} from "@eth-optimism/contracts-bedrock/contracts/libraries/Hashing.sol";
-//import {Lib_SecureMerkleTrie} from "@eth-optimism/contracts/libraries/trie/Lib_SecureMerkleTrie.sol";
+
 import {Lib_SecureMerkleTrie} from "@eth-optimism/contracts/libraries/trie/Lib_SecureMerkleTrie.sol";
 
 import {BytesLib} from "solidity-bytes-utils/contracts/BytesLib.sol";
