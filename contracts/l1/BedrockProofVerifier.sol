@@ -5,9 +5,8 @@ import {IBedrockProofVerifier, IL2OutputOracle} from "./IBedrockProofVerifier.so
 
 import {RLPReader} from "@eth-optimism/contracts-bedrock/contracts/libraries/rlp/RLPReader.sol";
 import {Hashing} from "@eth-optimism/contracts-bedrock/contracts/libraries/Hashing.sol";
-
+//import {Lib_SecureMerkleTrie} from "@eth-optimism/contracts/libraries/trie/Lib_SecureMerkleTrie.sol";
 import {Lib_SecureMerkleTrie} from "@eth-optimism/contracts/libraries/trie/Lib_SecureMerkleTrie.sol";
-import {Lib_OVMCodec} from "@eth-optimism/contracts/libraries/codec/Lib_OVMCodec.sol";
 
 import {BytesLib} from "solidity-bytes-utils/contracts/BytesLib.sol";
 
@@ -50,7 +49,8 @@ contract BedrockProofVerifier is IBedrockProofVerifier {
             proof.outputRootProof.stateRoot
         );
         require(exists, "Account it not part of the provided state root");
-        return Lib_OVMCodec.decodeEVMAccount(encodedResolverAccount).storageRoot;
+        RLPReader.RLPItem[] memory accountState = RLPReader.readList(encodedResolverAccount);
+        return bytes32(RLPReader.readBytes(accountState[2]));
     }
 
     /**
