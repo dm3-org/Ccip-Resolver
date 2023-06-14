@@ -26,8 +26,12 @@ export class EnsResolverService {
         //The storage slot within the particular contract
         const TEXTS_SLOT_NAME = 2;
 
+        console.log("context", context)
+        console.log("node", node)
+        const txt = await this.l2PublicResolver.text(context, node, recordName);
+        console.log("txt", txt)
         const version = await this.l2PublicResolver.recordVersions(context, node);
-        const slot = EnsResolverService.getStorageSlotForText(TEXTS_SLOT_NAME, version.toNumber(), node, recordName);
+        const slot = EnsResolverService.getStorageSlotForText(TEXTS_SLOT_NAME, version.toNumber(), context, node, recordName);
 
         return this.proofService.createProof(this.l2PublicResolver.address, slot);
     }
@@ -35,19 +39,19 @@ export class EnsResolverService {
         //The storage slot within the particular contract
         const ADDR_SLOT_NAME = 1;
         const version = await this.l2PublicResolver.recordVersions(context, node);
-        //The context has to always be an address
-        const [ownerAddress] = ethers.utils.defaultAbiCoder.decode(["address"], context)
 
-        const slot = EnsResolverService.getStorageSlotForAddr(ADDR_SLOT_NAME, version.toNumber(), ownerAddress, node, coinType);
+
+        const slot = EnsResolverService.getStorageSlotForAddr(ADDR_SLOT_NAME, version.toNumber(), context, node, coinType);
 
         return this.proofService.createProof(this.l2PublicResolver.address, slot);
     }
 
-    public static getStorageSlotForText(slot: number, versionNumber: number, node: string, recordName: string) {
+    public static getStorageSlotForText(slot: number, versionNumber: number, context: string, node: string, recordName: string) {
         //versionable_texts[number][node][key]
         //versionable_texts[inner][middle][outer]
         const innerHash = hreEthers.utils.solidityKeccak256(["uint256", "uint256"], [versionNumber, slot]);
-        const middleHash = hreEthers.utils.solidityKeccak256(["bytes32", "bytes32"], [node, innerHash]);
+        const contextHash = hreEthers.utils.solidityKeccak256(["bytes", "bytes32"], [context, innerHash]);
+        const middleHash = hreEthers.utils.solidityKeccak256(["bytes32", "bytes32"], [node, contextHash]);
         const outerHash = hreEthers.utils.solidityKeccak256(["string", "bytes32"], [recordName, middleHash]);
         return outerHash;
     }

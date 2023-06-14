@@ -17,7 +17,7 @@ abstract contract TextResolver is ITextResolver, ResolverBase {
     function setText(bytes32 node, string calldata key, string calldata value) external virtual {
         bytes memory context = abi.encodePacked(msg.sender);
         versionable_texts[recordVersions[context][node]][context][node][key] = value;
-        emit TextChanged(node, key, key, value);
+        emit TextChanged(context, node, key, key, value);
     }
 
     /**

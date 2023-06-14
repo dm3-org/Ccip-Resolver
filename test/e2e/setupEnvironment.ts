@@ -86,8 +86,12 @@ const setupEnvironment = async () => {
     //Prepare setAddr
     const prepareSetAddr = async () => {
         const node = ethers.utils.namehash("alice.eth");
+        console.log("set alice node ", node)
+        console.log("set alice address ", alice.address)
 
-        await l2PublicResolver.connect(alice.connect(l2Provider))["setAddr(bytes32,address)"](node, alice.address);
+        const tx = await l2PublicResolver.connect(alice.connect(l2Provider))["setAddr(bytes32,address)"](node, alice.
+            address);
+
     };
     //Prepare foreign resolver
     const prepareForeign = async () => {
@@ -99,7 +103,7 @@ const setupEnvironment = async () => {
     await prepareTest31yte();
     await prepeTestMultipleSlots();
     await prepareSetAddr();
-    await prepareForeign();
+    await prepareForeign(); 
     console.log("Environment setup complete wait a few minutes until everything is set");
 };
 setupEnvironment();
