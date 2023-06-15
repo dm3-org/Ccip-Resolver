@@ -12,7 +12,7 @@ describe("Gas Estimations", () => {
             const BedrockProofVerifierFactory = await hreEthers.getContractFactory("BedrockProofVerifier");
 
             const deployTx = BedrockProofVerifierFactory.getDeployTransaction(ethers.constants.AddressZero);
-       
+
             const deployTxResponse = await deployer.sendTransaction(deployTx);
 
             const deployTxReceipt = await deployTxResponse.wait();
@@ -44,9 +44,6 @@ describe("Gas Estimations", () => {
             const BedrockProofVerifierFactory = await hreEthers.getContractFactory("OptimismResolver");
 
             const deployTx = BedrockProofVerifierFactory.getDeployTransaction(
-                "http://localhost:8080/{sender}/{data}",
-                deployer.address,
-                ethers.constants.AddressZero,
                 ethers.constants.AddressZero,
                 ethers.constants.AddressZero,
                 ethers.constants.AddressZero,

@@ -26,10 +26,6 @@ export class EnsResolverService {
         //The storage slot within the particular contract
         const TEXTS_SLOT_NAME = 2;
 
-        console.log("context", context)
-        console.log("node", node)
-        const txt = await this.l2PublicResolver.text(context, node, recordName);
-        console.log("txt", txt)
         const version = await this.l2PublicResolver.recordVersions(context, node);
         const slot = EnsResolverService.getStorageSlotForText(TEXTS_SLOT_NAME, version.toNumber(), context, node, recordName);
 
@@ -39,7 +35,6 @@ export class EnsResolverService {
         //The storage slot within the particular contract
         const ADDR_SLOT_NAME = 1;
         const version = await this.l2PublicResolver.recordVersions(context, node);
-
 
         const slot = EnsResolverService.getStorageSlotForAddr(ADDR_SLOT_NAME, version.toNumber(), context, node, coinType);
 
