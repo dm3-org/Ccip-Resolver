@@ -1,12 +1,11 @@
 import { FakeContract } from "@defi-wonderland/smock";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import bodyParser from "body-parser";
-import { assert } from "chai";
 import { ethers } from "ethers";
 import express from "express";
 import { ethers as hreEthers } from "hardhat";
 import request from "supertest";
-import { BedrockProofVerifier, ENS, OptimismResolver } from "typechain";
+import { BedrockCcipVerifier, BedrockCcipVerifier__factory, BedrockProofVerifier, BedrockProofVerifier__factory, ENS, OptimismResolver } from "typechain";
 import { ccipGateway } from "../../gateway/http/ccipGateway";
 import { mockEnsRegistry } from "../contracts/l1/OptimismResolver/mockEnsRegistry";
 import { MockProvider } from "../contracts/l1/OptimismResolver/mockProvider";
@@ -19,7 +18,10 @@ describe("OptimismResolver Test", () => {
     let ensRegistry: FakeContract<ENS>;
     //Resolver
     let optimismResolver: OptimismResolver;
-    let BedrockProofVerifier: BedrockProofVerifier;
+    //Bedrock Proof Verifier
+    let bedrockProofVerifier: BedrockProofVerifier;
+    //Bedrock CCIP resolver
+    let bedrockCcipVerifier: BedrockCcipVerifier;
     //Gateway
     let ccipApp;
 
@@ -33,19 +35,25 @@ describe("OptimismResolver Test", () => {
         ensRegistry = await mockEnsRegistry(ethers.utils.namehash("alice.eth"), alice.address);
 
 
+        const BedrockProofVerifierFactory = await hreEthers.getContractFactory("BedrockProofVerifier") as BedrockProofVerifier__factory;
+        bedrockProofVerifier = (await BedrockProofVerifierFactory.deploy("0x6900000000000000000000000000000000000000"))
 
-        const BedrockProofVerifierFactory = await hreEthers.getContractFactory("BedrockProofVerifier");
-        BedrockProofVerifier = (await BedrockProofVerifierFactory.deploy("0x6900000000000000000000000000000000000000")) as BedrockProofVerifier;
+        const BedrockCcipVerifierFactory = await hreEthers.getContractFactory("BedrockCcipVerifier") as BedrockCcipVerifier__factory;
+
+        bedrockCcipVerifier = (await BedrockCcipVerifierFactory.deploy(bedrockProofVerifier.address, "0x5FbDB2315678afecb367f032d93F642f64180aa3"))
 
         const OptimismResolverFactory = await hreEthers.getContractFactory("OptimismResolver");
         optimismResolver = (await OptimismResolverFactory.deploy(
-            "http://localhost:8080/{sender}/{data}",
             owner.address,
-            BedrockProofVerifier.address,
             ensRegistry.address,
-            "0x5FbDB2315678afecb367f032d93F642f64180aa3",
             "http://localhost:8080/graphql"
         )) as OptimismResolver;
+
+        optimismResolver.setResolverForDomain(
+            ethers.utils.namehash("alice.eth"),
+            bedrockCcipVerifier.address,
+            "http://localhost:8080/{sender}/{data}"
+        );
 
         ccipApp = express();
         ccipApp.use(bodyParser.json());
@@ -80,7 +88,7 @@ describe("OptimismResolver Test", () => {
         it("Returns empty string if record is empty", async () => {
             const provider = new MockProvider(hreEthers.provider, fetchRecordFromCcipGateway, optimismResolver);
 
-            const resolver = await provider.getResolver("foo.dm3.eth");
+            const resolver = await provider.getResolver("alice.eth");
             const text = await resolver.getText("unknown record");
 
             expect(text).to.be.null;
@@ -123,6 +131,8 @@ describe("OptimismResolver Test", () => {
         });
 
     });
+    //TODO add tests before audit
+    describe("setURl", () => { })
 
     const fetchRecordFromCcipGateway = async (url: string, json?: string) => {
         const [sender, data] = url.split("/").slice(3);

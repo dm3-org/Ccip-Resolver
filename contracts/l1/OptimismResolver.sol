@@ -4,8 +4,10 @@ pragma solidity ^0.8.15;
 import {IExtendedResolver, IResolverService} from "./IExtendedResolver.sol";
 import {IContextResolver} from "./IContextResolver.sol";
 import {SupportsInterface} from "./SupportsInterface.sol";
-import {CcipResponseVerifier} from "./verifier/CcipResponseVerifier.sol";
+import {CcipResponseVerifier, ICcipResponseVerifier} from "./verifier/CcipResponseVerifier.sol";
 import {ENS} from "@ensdomains/ens-contracts/contracts/registry/ENS.sol";
+
+import {BytesLib} from "solidity-bytes-utils/contracts/BytesLib.sol";
 
 /**
  * Implements an ENS resolver that directs all queries to a CCIP read gateway.
@@ -14,57 +16,45 @@ import {ENS} from "@ensdomains/ens-contracts/contracts/registry/ENS.sol";
 contract OptimismResolver is IExtendedResolver, IContextResolver, SupportsInterface {
     ENS public ensRegistry;
     address public owner;
-    string public url;
-    CcipResponseVerifier public bedrockProofVerifier;
-    address public l2Resolver;
     string public graphqlUrl;
 
     event NewOwner(address newOwner);
     error OffchainLookup(address sender, string[] urls, bytes callData, bytes4 callbackFunction, bytes extraData);
 
     constructor(
-        //The CCIP gateway url
-        string memory _url,
         //The owner of the resolver
         address _owner,
-        //The bedrock proof verifier
-        CcipResponseVerifier _bedrockProofVerifier,
         //The ENS registry
         ENS _ensRegistry,
-        //The instance of the L2PublicResolver
-        address _l2Resolver,
         //The graphQl Url
         string memory _graphqlUrl
     ) {
         ensRegistry = _ensRegistry;
-        url = _url;
         owner = _owner;
-        bedrockProofVerifier = _bedrockProofVerifier;
-        l2Resolver = _l2Resolver;
         graphqlUrl = _graphqlUrl;
     }
 
+    //Todo move to OZ ownable
     modifier onlyOwner() {
         require(msg.sender == owner, "only owner");
         _;
     }
 
-    function setOwner(address _newOwner) external onlyOwner {
-        owner = _newOwner;
-        emit NewOwner(owner);
-    }
-
-    function setL2Resolver(address _newL2Resolver) external onlyOwner {
-        l2Resolver = _newL2Resolver;
-        emit NewOwner(owner);
-    }
-
-    function setUrl(string memory _url) external onlyOwner {
-        url = _url;
-    }
-
-    function setGraphUl(string memory _graphqlUrl) external onlyOwner {
+    function setGraphUrl(string memory _graphqlUrl) external onlyOwner {
         graphqlUrl = _graphqlUrl;
+    }
+
+    struct Resolver {
+        string gatewayUrl;
+        ICcipResponseVerifier resolverAddress;
+    }
+    mapping(bytes32 => Resolver) public resolver;
+
+    function setResolverForDomain(bytes32 node, address resolverAddress, string memory url) external {
+        //TODO implement only subdomain owner can set resolver
+
+        Resolver memory _resolver = Resolver(url, ICcipResponseVerifier(resolverAddress));
+        resolver[node] = _resolver;
     }
 
     /**
@@ -80,8 +70,13 @@ contract OptimismResolver is IExtendedResolver, IContextResolver, SupportsInterf
         bytes memory context = abi.encodePacked(nodeOwner);
         bytes memory callData = abi.encodeWithSelector(IResolverService.resolve.selector, context, data);
 
+        Resolver memory _resolver = resolver[node];
+
+        //TODO revert if unknown resolver
+
         string[] memory urls = new string[](1);
-        urls[0] = url;
+        urls[0] = _resolver.gatewayUrl;
+
         revert OffchainLookup(address(this), urls, callData, OptimismResolver.resolveWithProof.selector, callData);
     }
 
@@ -90,7 +85,13 @@ contract OptimismResolver is IExtendedResolver, IContextResolver, SupportsInterf
      * extraData -> the original call data
      */
     function resolveWithProof(bytes calldata response, bytes calldata extraData) external view override returns (bytes memory) {
-        return bedrockProofVerifier.resolveWithProof(l2Resolver, response, extraData);
+        (bytes memory context, bytes memory data) = abi.decode(extraData[4:], (bytes, bytes));
+
+        bytes32 node = bytes32(BytesLib.slice(data, 4, 32));
+        Resolver memory _resolver = resolver[node];
+
+        //TODO revert if unknown resolver
+        return ICcipResponseVerifier(_resolver.resolverAddress).resolveWithProof(response, extraData);
     }
 
     function supportsInterface(bytes4 interfaceID) public pure override returns (bool) {
