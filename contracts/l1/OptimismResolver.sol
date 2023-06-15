@@ -4,7 +4,7 @@ pragma solidity ^0.8.15;
 import {IExtendedResolver, IResolverService} from "./IExtendedResolver.sol";
 import {IContextResolver} from "./IContextResolver.sol";
 import {SupportsInterface} from "./SupportsInterface.sol";
-import {IBedrockProofVerifier} from "./verifier/optimism-bedrock/IBedrockProofVerifier.sol";
+import {CcipResponseVerifier} from "./verifier/CcipResponseVerifier.sol";
 import {ENS} from "@ensdomains/ens-contracts/contracts/registry/ENS.sol";
 
 /**
@@ -15,7 +15,7 @@ contract OptimismResolver is IExtendedResolver, IContextResolver, SupportsInterf
     ENS public ensRegistry;
     address public owner;
     string public url;
-    IBedrockProofVerifier public bedrockProofVerifier;
+    CcipResponseVerifier public bedrockProofVerifier;
     address public l2Resolver;
     string public graphqlUrl;
 
@@ -28,7 +28,7 @@ contract OptimismResolver is IExtendedResolver, IContextResolver, SupportsInterf
         //The owner of the resolver
         address _owner,
         //The bedrock proof verifier
-        IBedrockProofVerifier _bedrockProofVerifier,
+        CcipResponseVerifier _bedrockProofVerifier,
         //The ENS registry
         ENS _ensRegistry,
         //The instance of the L2PublicResolver
@@ -90,12 +90,7 @@ contract OptimismResolver is IExtendedResolver, IContextResolver, SupportsInterf
      * extraData -> the original call data
      */
     function resolveWithProof(bytes calldata response, bytes calldata extraData) external view override returns (bytes memory) {
-        (string memory result, IBedrockProofVerifier.BedrockStateProof memory proof) = abi.decode(
-            response,
-            (string, IBedrockProofVerifier.BedrockStateProof)
-        );
-        require(proof.target == l2Resolver, "proof target does not match resolver");
-        return bedrockProofVerifier.getProofValue(proof);
+        return bedrockProofVerifier.resolveWithProof(l2Resolver, response, extraData);
     }
 
     function supportsInterface(bytes4 interfaceID) public pure override returns (bool) {
