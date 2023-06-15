@@ -4,7 +4,7 @@ pragma solidity ^0.8.15;
 import {IExtendedResolver, IResolverService} from "./IExtendedResolver.sol";
 import {IContextResolver} from "./IContextResolver.sol";
 import {SupportsInterface} from "./SupportsInterface.sol";
-import {IBedrockProofVerifier} from "./IBedrockProofVerifier.sol";
+import {IBedrockProofVerifier} from "./verifier/optimism-bedrock/IBedrockProofVerifier.sol";
 import {ENS} from "@ensdomains/ens-contracts/contracts/registry/ENS.sol";
 
 /**
