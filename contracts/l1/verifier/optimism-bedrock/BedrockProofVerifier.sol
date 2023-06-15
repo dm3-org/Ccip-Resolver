@@ -2,7 +2,6 @@
 pragma solidity ^0.8.15;
 
 import {IBedrockProofVerifier, IL2OutputOracle} from "./IBedrockProofVerifier.sol";
-import {CcipResponseVerifier} from "../CcipResponseVerifier.sol";
 
 import {RLPReader} from "@eth-optimism/contracts-bedrock/contracts/libraries/rlp/RLPReader.sol";
 import {Hashing} from "@eth-optimism/contracts-bedrock/contracts/libraries/Hashing.sol";
@@ -11,20 +10,11 @@ import {Lib_SecureMerkleTrie} from "@eth-optimism/contracts/libraries/trie/Lib_S
 
 import {BytesLib} from "solidity-bytes-utils/contracts/BytesLib.sol";
 
-contract BedrockProofVerifier is IBedrockProofVerifier, CcipResponseVerifier {
+contract BedrockProofVerifier is IBedrockProofVerifier {
     IL2OutputOracle public immutable l2OutputOracle;
 
     constructor(address _l2OutputOracle) {
         l2OutputOracle = IL2OutputOracle(_l2OutputOracle);
-    }
-
-    function resolveWithProof(address target, bytes calldata response, bytes calldata extraData) external view returns (bytes memory) {
-        (string memory result, IBedrockProofVerifier.BedrockStateProof memory proof) = abi.decode(
-            response,
-            (string, IBedrockProofVerifier.BedrockStateProof)
-        );
-        require(proof.target == target, "proof target does not match resolver");
-        return getProofValue(proof);
     }
 
     /**
