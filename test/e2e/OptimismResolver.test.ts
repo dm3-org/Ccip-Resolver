@@ -1,7 +1,7 @@
 import { FakeContract } from "@defi-wonderland/smock";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import bodyParser from "body-parser";
-import { ethers } from "ethers";
+import { ethers, getDefaultProvider } from "ethers";
 import express from "express";
 import { ethers as hreEthers } from "hardhat";
 import request from "supertest";
@@ -24,11 +24,13 @@ describe("OptimismResolver Test", () => {
     let bedrockCcipVerifier: BedrockCcipVerifier;
     //Gateway
     let ccipApp;
-
     //0x8111DfD23B99233a7ae871b7c09cCF0722847d89
-    const alice = new ethers.Wallet("0xfd9f3842a10eb01ccf3109d4bd1c4b165721bf8c26db5db7570c146f9fad6014");
+    const alice = new ethers.Wallet("0xfd9f3842a10eb01ccf3109d4bd1c4b165721bf8c26db5db7570c146f9fad6014")
+
+
 
     beforeEach(async () => {
+
         const l1Provider = new ethers.providers.StaticJsonRpcProvider("http://localhost:8545");
         const l2Provider = new ethers.providers.StaticJsonRpcProvider("http://localhost:9545");
         [owner] = await hreEthers.getSigners();
@@ -49,7 +51,7 @@ describe("OptimismResolver Test", () => {
             "http://localhost:8080/graphql"
         )) as OptimismResolver;
 
-        optimismResolver.setResolverForDomain(
+        await optimismResolver.connect(alice.connect(hreEthers.provider)).setResolverForDomain(
             ethers.utils.namehash("alice.eth"),
             bedrockCcipVerifier.address,
             "http://localhost:8080/{sender}/{data}"
@@ -132,7 +134,26 @@ describe("OptimismResolver Test", () => {
 
     });
     //TODO add tests before audit
-    describe("setURl", () => { })
+    describe("setResolverForDomain", () => {
+        describe("Legacy ENS name", () => {
+            it("reverts if msg.sender is not the profile owner", async () => {
+
+                await optimismResolver.setResolverForDomain(
+                    ethers.utils.namehash("vitalik.eth"),
+                    bedrockCcipVerifier.address,
+                    "http://localhost:8080/{sender}/{data}")
+                    .then((res) => {
+                        expect.fail("Should have thrown an error")
+                    })
+                    .catch((e) => {
+                        expect(e.message).to.contains("only subdomain owner");
+                    })
+
+            })
+
+
+        })
+    })
 
     const fetchRecordFromCcipGateway = async (url: string, json?: string) => {
         const [sender, data] = url.split("/").slice(3);
@@ -140,3 +161,4 @@ describe("OptimismResolver Test", () => {
         return response;
     };
 });
+

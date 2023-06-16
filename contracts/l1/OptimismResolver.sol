@@ -9,9 +9,16 @@ import {ENS} from "@ensdomains/ens-contracts/contracts/registry/ENS.sol";
 
 import {BytesLib} from "solidity-bytes-utils/contracts/BytesLib.sol";
 
+import "hardhat/console.sol";
+
 /**
  * Implements an ENS resolver that directs all queries to a CCIP read gateway.
  * Callers must implement EIP 3668 and ENSIP 10.
+ */
+
+/**
+ * TODO Use OZ for auth
+ * TODO Add onlyDomainOwner modifier
  */
 contract OptimismResolver is IExtendedResolver, IContextResolver, SupportsInterface {
     ENS public ensRegistry;
@@ -40,6 +47,11 @@ contract OptimismResolver is IExtendedResolver, IContextResolver, SupportsInterf
         _;
     }
 
+    modifier onlySubdomainOwner(bytes32 node) {
+        require(msg.sender == ensRegistry.owner(node), "only subdomain owner");
+        _;
+    }
+
     function setGraphUrl(string memory _graphqlUrl) external onlyOwner {
         graphqlUrl = _graphqlUrl;
     }
@@ -50,8 +62,15 @@ contract OptimismResolver is IExtendedResolver, IContextResolver, SupportsInterf
     }
     mapping(bytes32 => Resolver) public resolver;
 
-    function setResolverForDomain(bytes32 node, address resolverAddress, string memory url) external {
-        //TODO implement only subdomain owner can set resolver
+    function setResolverForDomain(bytes32 node, address resolverAddress, string memory url) external onlySubdomainOwner(node) {
+     
+        //TODO implement only subdomain owner can set resolver. Use modifier for that
+
+        //TODO revert if node is 0x0
+        //TODO revert if resolverAddress is 0x0
+        //TODO revert if url is 0x0
+
+        //TODO check if resolverAddress is a valid CCIP resolver via use interface
 
         Resolver memory _resolver = Resolver(url, ICcipResponseVerifier(resolverAddress));
         resolver[node] = _resolver;
@@ -64,16 +83,20 @@ contract OptimismResolver is IExtendedResolver, IContextResolver, SupportsInterf
      * @return The return data, ABI encoded identically to the underlying function.
      */
     function resolve(bytes calldata name, bytes calldata data) external view override returns (bytes memory) {
+ 
         bytes32 node = bytes32(data[4:36]);
+        //TODO support nameWrapper
         address nodeOwner = ensRegistry.owner(node);
+
+        //TODO revert if node is 0x0
+        //TODO revert if nodeOwner is 0x0
 
         bytes memory context = abi.encodePacked(nodeOwner);
         bytes memory callData = abi.encodeWithSelector(IResolverService.resolve.selector, context, data);
 
         Resolver memory _resolver = resolver[node];
 
-        //TODO revert if unknown resolver
-
+        //TODO revert if resolver is 0
         string[] memory urls = new string[](1);
         urls[0] = _resolver.gatewayUrl;
 
@@ -103,7 +126,7 @@ contract OptimismResolver is IExtendedResolver, IContextResolver, SupportsInterf
             string("OPTIMISM RESOLVER"), //The name of the resolver
             uint256(60), //Resolvers coin type => Etheruem
             graphqlUrl, //The GraphQl Url
-            uint8(0), //Storage Type 0=>EVM
+            uint8(0), //Storage Type 0 => EVM
             bytes(string.concat("OPTIMISM RESOLVER: ", "{NODE_OWNER}"))
         );
     }
