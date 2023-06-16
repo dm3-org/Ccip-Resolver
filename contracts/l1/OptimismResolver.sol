@@ -47,12 +47,6 @@ contract OptimismResolver is IExtendedResolver, IContextResolver, SupportsInterf
         _;
     }
 
-    modifier onlySubdomainOwner(bytes32 node) {
-        require(node != bytes32(0), "node is 0x0");
-        require(msg.sender == ensRegistry.owner(node), "only subdomain owner");
-        _;
-    }
-
     function setGraphUrl(string memory _graphqlUrl) external onlyOwner {
         graphqlUrl = _graphqlUrl;
     }
@@ -63,12 +57,17 @@ contract OptimismResolver is IExtendedResolver, IContextResolver, SupportsInterf
     }
     mapping(bytes32 => Resolver) public resolver;
 
-    function setResolverForDomain(bytes32 node, address resolverAddress, string memory url) external onlySubdomainOwner(node) {
-        //TODO implement only subdomain owner can set resolver. Use modifier for that
+    function setResolverForDomain(bytes32 node, address resolverAddress, string memory url) external {
+        require(node != bytes32(0), "node is 0x0");
+        require(resolverAddress != address(0), "resolverAddress is 0x0");
 
-        //TODO revert if node is 0x0
-        //TODO revert if resolverAddress is 0x0
-        //TODO revert if url is 0x0
+        require(msg.sender == ensRegistry.owner(node), "only subdomain owner");
+
+        (bool success, bytes memory response) = resolverAddress.staticcall(
+            abi.encodeWithSignature("supportsInterface(bytes4)", ICcipResponseVerifier.resolveWithProof.selector)
+        );
+
+        require(success && response.length == 32 && (response[response.length - 1] & 0x01) == 0x01, "resolverAddress is not CCIP Resolver");
 
         //TODO check if resolverAddress is a valid CCIP resolver via use interface
 

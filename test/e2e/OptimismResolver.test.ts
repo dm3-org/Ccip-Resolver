@@ -25,7 +25,7 @@ describe("OptimismResolver Test", () => {
     //Gateway
     let ccipApp;
     //0x8111DfD23B99233a7ae871b7c09cCF0722847d89
-    const alice = new ethers.Wallet("0xfd9f3842a10eb01ccf3109d4bd1c4b165721bf8c26db5db7570c146f9fad6014")
+    const alice = new ethers.Wallet("0xfd9f3842a10eb01ccf3109d4bd1c4b165721bf8c26db5db7570c146f9fad6014").connect(hreEthers.provider)
 
 
 
@@ -51,7 +51,7 @@ describe("OptimismResolver Test", () => {
             "http://localhost:8080/graphql"
         )) as OptimismResolver;
 
-        await optimismResolver.connect(alice.connect(hreEthers.provider)).setResolverForDomain(
+        await optimismResolver.connect(alice).setResolverForDomain(
             ethers.utils.namehash("alice.eth"),
             bedrockCcipVerifier.address,
             "http://localhost:8080/{sender}/{data}"
@@ -133,8 +133,7 @@ describe("OptimismResolver Test", () => {
         });
 
     });
-    //TODO add tests before audit
-    describe.only("onlySubdomainOwner", () => {
+    describe.only("setResolverForDomain", () => {
         it("reverts if node is 0x0", async () => {
             await optimismResolver.setResolverForDomain(
                 ethers.constants.HashZero,
@@ -148,6 +147,35 @@ describe("OptimismResolver Test", () => {
                 })
 
         })
+        it("reverts if resolverAddress is 0x0", async () => {
+            await optimismResolver.connect(alice).setResolverForDomain(
+                ethers.utils.namehash("alice.eth"),
+                ethers.constants.AddressZero,
+                "http://localhost:8080/{sender}/{data}")
+                .then((res) => {
+                    expect.fail("Should have thrown an error")
+                })
+                .catch((e) => {
+                    expect(e.message).to.contains("resolverAddress is 0x0");
+                })
+
+        })
+        it("reverts if resolverAddress does not support resolveWithProofInterface", async () => {
+            await optimismResolver.connect(alice).setResolverForDomain(
+                ethers.utils.namehash("alice.eth"),
+                //Alice is an EOA, so this is not a valid resolver  
+                alice.address,
+                "http://localhost:8080/{sender}/{data}")
+                .then((res) => {
+                    expect.fail("Should have thrown an error")
+                })
+                .catch((e) => {
+                    console.log(e)
+                    expect(e.message).to.contains("resolverAddress is not CCIP Resolver");
+                })
+
+        })
+
         describe("Legacy ENS name", () => {
             it("reverts if msg.sender is not the profile owner", async () => {
 
