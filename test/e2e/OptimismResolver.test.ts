@@ -134,7 +134,20 @@ describe("OptimismResolver Test", () => {
 
     });
     //TODO add tests before audit
-    describe("setResolverForDomain", () => {
+    describe.only("onlySubdomainOwner", () => {
+        it("reverts if node is 0x0", async () => {
+            await optimismResolver.setResolverForDomain(
+                ethers.constants.HashZero,
+                bedrockCcipVerifier.address,
+                "http://localhost:8080/{sender}/{data}")
+                .then((res) => {
+                    expect.fail("Should have thrown an error")
+                })
+                .catch((e) => {
+                    expect(e.message).to.contains("node is 0x0");
+                })
+
+        })
         describe("Legacy ENS name", () => {
             it("reverts if msg.sender is not the profile owner", async () => {
 

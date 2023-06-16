@@ -48,6 +48,7 @@ contract OptimismResolver is IExtendedResolver, IContextResolver, SupportsInterf
     }
 
     modifier onlySubdomainOwner(bytes32 node) {
+        require(node != bytes32(0), "node is 0x0");
         require(msg.sender == ensRegistry.owner(node), "only subdomain owner");
         _;
     }
@@ -63,7 +64,6 @@ contract OptimismResolver is IExtendedResolver, IContextResolver, SupportsInterf
     mapping(bytes32 => Resolver) public resolver;
 
     function setResolverForDomain(bytes32 node, address resolverAddress, string memory url) external onlySubdomainOwner(node) {
-     
         //TODO implement only subdomain owner can set resolver. Use modifier for that
 
         //TODO revert if node is 0x0
@@ -83,7 +83,6 @@ contract OptimismResolver is IExtendedResolver, IContextResolver, SupportsInterf
      * @return The return data, ABI encoded identically to the underlying function.
      */
     function resolve(bytes calldata name, bytes calldata data) external view override returns (bytes memory) {
- 
         bytes32 node = bytes32(data[4:36]);
         //TODO support nameWrapper
         address nodeOwner = ensRegistry.owner(node);
