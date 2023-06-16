@@ -53,6 +53,12 @@ describe("OptimismResolver Test", () => {
 
 
 
+        await owner.sendTransaction({
+            to: alice.address,
+            value: ethers.utils.parseEther("1")
+        })
+
+
         ccipApp = express();
         ccipApp.use(bodyParser.json());
         ccipApp.use(ccipGateway(l1Provider, l2Provider));
@@ -61,6 +67,7 @@ describe("OptimismResolver Test", () => {
     describe("resolve", () => {
         it("ccip gateway resolves existing profile using ethers.provider.getText()", async () => {
             const provider = new MockProvider(hreEthers.provider, fetchRecordFromCcipGateway, optimismResolver);
+
             await optimismResolver.connect(alice).setResolverForDomain(
                 ethers.utils.namehash("alice.eth"),
                 bedrockCcipVerifier.address,
@@ -74,6 +81,7 @@ describe("OptimismResolver Test", () => {
                 publicEncryptionKey: "Vrd/eTAk/jZb/w5L408yDjOO5upNFDGdt0lyWRjfBEk=",
                 deliveryServices: ["foo.dm3"],
             };
+
 
             expect(text).to.eql(JSON.stringify(profile));
         });
@@ -103,6 +111,20 @@ describe("OptimismResolver Test", () => {
 
             expect(text).to.be.null;
         });
+        it.only("use parents resolver if node has no subdomain", async () => {
+            const provider = new MockProvider(hreEthers.provider, fetchRecordFromCcipGateway, optimismResolver);
+            await optimismResolver.connect(alice).setResolverForDomain(
+                ethers.utils.namehash("alice.eth"),
+                bedrockCcipVerifier.address,
+                "http://localhost:8080/{sender}/{data}"
+            );
+
+            const resolver = await provider.getResolver("a.b.c.alice.eth");
+
+            const text = await resolver.getText("my-slot");
+
+            expect(text).to.equal("my-subdomain-record");
+        })
     });
 
     describe("resolveWithProof", () => {

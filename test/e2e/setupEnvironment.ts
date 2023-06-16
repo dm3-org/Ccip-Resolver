@@ -68,7 +68,7 @@ const setupEnvironment = async () => {
         await l2PublicResolver.connect(alice.connect(l2Provider)).setText(node, recordName, value);
     };
 
-    //await prepareTest31yte();
+    //Prepare test multiple slots
     const prepeTestMultipleSlots = async () => {
         const node = ethers.utils.namehash("alice.eth");
         const recordName = "network.dm3.eth";
@@ -93,6 +93,13 @@ const setupEnvironment = async () => {
             address);
 
     };
+    const prepareTestSubdomain = async () => {
+        const node = ethers.utils.namehash("a.b.c.alice.eth");
+        const recordName = "my-slot";
+        const value = "my-subdomain-record";
+
+        await l2PublicResolver.connect(alice.connect(l2Provider)).setText(node, recordName, value);
+    };
     //Prepare foreign resolver
     const prepareForeign = async () => {
         const node = ethers.utils.namehash("alice.eth");
@@ -103,7 +110,8 @@ const setupEnvironment = async () => {
     await prepareTest31yte();
     await prepeTestMultipleSlots();
     await prepareSetAddr();
-    await prepareForeign(); 
+    await prepareTestSubdomain();
+    await prepareForeign();
     console.log("Environment setup complete wait a few minutes until everything is set");
 };
 setupEnvironment();

@@ -9,6 +9,8 @@ import {ENS} from "@ensdomains/ens-contracts/contracts/registry/ENS.sol";
 
 import {BytesLib} from "solidity-bytes-utils/contracts/BytesLib.sol";
 
+import {BytesUtils} from "./BytesUtils.sol";
+
 import "hardhat/console.sol";
 
 /**
@@ -21,14 +23,23 @@ import "hardhat/console.sol";
  * TODO Add onlyDomainOwner modifier
  */
 contract OptimismResolver is IExtendedResolver, IContextResolver, SupportsInterface {
+    using BytesUtils for bytes;
     ENS public ensRegistry;
     address public owner;
     string public graphqlUrl;
+
+    mapping(bytes32 => Resolver) public resolver;
 
     event NewOwner(address newOwner);
     event ResolverAdded(bytes32 indexed node, string gatewayUrl, address resolverAddress);
 
     error OffchainLookup(address sender, string[] urls, bytes callData, bytes4 callbackFunction, bytes extraData);
+    error InvalidOperation();
+
+    struct Resolver {
+        string gatewayUrl;
+        ICcipResponseVerifier resolverAddress;
+    }
 
     constructor(
         //The owner of the resolver
@@ -43,7 +54,6 @@ contract OptimismResolver is IExtendedResolver, IContextResolver, SupportsInterf
         graphqlUrl = _graphqlUrl;
     }
 
-    //Todo move to OZ ownable
     modifier onlyOwner() {
         require(msg.sender == owner, "only owner");
         _;
@@ -52,12 +62,6 @@ contract OptimismResolver is IExtendedResolver, IContextResolver, SupportsInterf
     function setGraphUrl(string memory _graphqlUrl) external onlyOwner {
         graphqlUrl = _graphqlUrl;
     }
-
-    struct Resolver {
-        string gatewayUrl;
-        ICcipResponseVerifier resolverAddress;
-    }
-    mapping(bytes32 => Resolver) public resolver;
 
     function setResolverForDomain(bytes32 node, address resolverAddress, string memory url) external {
         require(node != bytes32(0), "node is 0x0");
@@ -90,8 +94,10 @@ contract OptimismResolver is IExtendedResolver, IContextResolver, SupportsInterf
      */
     function resolve(bytes calldata name, bytes calldata data) external view override returns (bytes memory) {
         bytes32 node = bytes32(data[4:36]);
-        //TODO support nameWrapper
+        //TODO Who is going to be the owner of an nested domain?
         address nodeOwner = ensRegistry.owner(node);
+
+        //TODO support nameWrapper
 
         //TODO revert if node is 0x0
         //TODO revert if nodeOwner is 0x0
@@ -99,13 +105,26 @@ contract OptimismResolver is IExtendedResolver, IContextResolver, SupportsInterf
         bytes memory context = abi.encodePacked(nodeOwner);
         bytes memory callData = abi.encodeWithSelector(IResolverService.resolve.selector, context, data);
 
-        Resolver memory _resolver = resolver[node];
-
-        //TODO revert if resolver is 0
+        Resolver memory _resolver = getResolverOfDomain(name);
         string[] memory urls = new string[](1);
         urls[0] = _resolver.gatewayUrl;
 
         revert OffchainLookup(address(this), urls, callData, OptimismResolver.resolveWithProof.selector, callData);
+    }
+
+    function getResolverOfDomain(bytes calldata name) public view returns (Resolver memory) {
+        uint offset = 0;
+
+        while (offset < name.length - 1) {
+            bytes32 node = name.namehash(offset);
+
+            Resolver memory _resolver = resolver[node];
+            if (address(_resolver.resolverAddress) != address(0)) {
+                return _resolver;
+            }
+            (, offset) = name.readLabel(offset);
+        }
+        revert InvalidOperation();
     }
 
     /**
