@@ -26,6 +26,8 @@ contract OptimismResolver is IExtendedResolver, IContextResolver, SupportsInterf
     string public graphqlUrl;
 
     event NewOwner(address newOwner);
+    event ResolverAdded(bytes32 indexed node, string gatewayUrl, address resolverAddress);
+
     error OffchainLookup(address sender, string[] urls, bytes callData, bytes4 callbackFunction, bytes extraData);
 
     constructor(
@@ -67,12 +69,17 @@ contract OptimismResolver is IExtendedResolver, IContextResolver, SupportsInterf
             abi.encodeWithSignature("supportsInterface(bytes4)", ICcipResponseVerifier.resolveWithProof.selector)
         );
 
-        require(success && response.length == 32 && (response[response.length - 1] & 0x01) == 0x01, "resolverAddress is not CCIP Resolver");
+        require(
+            success && response.length == 32 && (response[response.length - 1] & 0x01) == 0x01,
+            "resolverAddress is not a CCIP Resolver"
+        );
 
-        //TODO check if resolverAddress is a valid CCIP resolver via use interface
+        require(bytes(url).length > 0, "url is empty");
 
         Resolver memory _resolver = Resolver(url, ICcipResponseVerifier(resolverAddress));
         resolver[node] = _resolver;
+
+        emit ResolverAdded(node, url, resolverAddress);
     }
 
     /**

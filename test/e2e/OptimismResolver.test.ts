@@ -133,7 +133,7 @@ describe("OptimismResolver Test", () => {
         });
 
     });
-    describe.only("setResolverForDomain", () => {
+    describe("setResolverForDomain", () => {
         it("reverts if node is 0x0", async () => {
             await optimismResolver.setResolverForDomain(
                 ethers.constants.HashZero,
@@ -171,10 +171,46 @@ describe("OptimismResolver Test", () => {
                 })
                 .catch((e) => {
                     console.log(e)
-                    expect(e.message).to.contains("resolverAddress is not CCIP Resolver");
+                    expect(e.message).to.contains("resolverAddress is not a CCIP Resolver");
                 })
 
         })
+        it("reverts if url string is empty", async () => {
+            await optimismResolver.connect(alice).setResolverForDomain(
+                ethers.utils.namehash("alice.eth"),
+                //Alice is an EOA, so this is not a valid resolver  
+                bedrockCcipVerifier.address,
+                "")
+                .then((res) => {
+                    expect.fail("Should have thrown an error")
+                })
+                .catch((e) => {
+                    console.log(e)
+                    expect(e.message).to.contains("url is empty");
+                })
+
+        })
+        it("event contains node, url, and resolverAddress", async () => {
+            const tx = await optimismResolver.connect(alice).setResolverForDomain(
+                ethers.utils.namehash("alice.eth"),
+                //Alice is an EOA, so this is not a valid resolver  
+                bedrockCcipVerifier.address,
+                "http://localhost:8080/{sender}/{data}")
+
+
+            const receipt = await tx.wait();
+
+            const [ResolverAddedEvent] = receipt.events
+
+            const [node, gatewayUrl, resolverAddress] = ResolverAddedEvent.args
+
+            expect(node).to.equal(ethers.utils.namehash("alice.eth"))
+            expect(gatewayUrl).to.equal("http://localhost:8080/{sender}/{data}")
+            expect(resolverAddress).to.equal(bedrockCcipVerifier.address)
+
+
+        })
+
 
         describe("Legacy ENS name", () => {
             it("reverts if msg.sender is not the profile owner", async () => {
