@@ -51,11 +51,7 @@ describe("OptimismResolver Test", () => {
             "http://localhost:8080/graphql"
         )) as OptimismResolver;
 
-        await optimismResolver.connect(alice).setResolverForDomain(
-            ethers.utils.namehash("alice.eth"),
-            bedrockCcipVerifier.address,
-            "http://localhost:8080/{sender}/{data}"
-        );
+
 
         ccipApp = express();
         ccipApp.use(bodyParser.json());
@@ -65,7 +61,11 @@ describe("OptimismResolver Test", () => {
     describe("resolve", () => {
         it("ccip gateway resolves existing profile using ethers.provider.getText()", async () => {
             const provider = new MockProvider(hreEthers.provider, fetchRecordFromCcipGateway, optimismResolver);
-
+            await optimismResolver.connect(alice).setResolverForDomain(
+                ethers.utils.namehash("alice.eth"),
+                bedrockCcipVerifier.address,
+                "http://localhost:8080/{sender}/{data}"
+            );
             const resolver = await provider.getResolver("alice.eth");
 
             const text = await resolver.getText("network.dm3.eth");
@@ -79,7 +79,11 @@ describe("OptimismResolver Test", () => {
         });
         it("ccip gateway resolves existing profile using ethers.provider.getAddress()", async () => {
             const provider = new MockProvider(hreEthers.provider, fetchRecordFromCcipGateway, optimismResolver);
-
+            await optimismResolver.connect(alice).setResolverForDomain(
+                ethers.utils.namehash("alice.eth"),
+                bedrockCcipVerifier.address,
+                "http://localhost:8080/{sender}/{data}"
+            );
             const resolver = await provider.getResolver("alice.eth");
 
             const addr = await resolver.getAddress();
@@ -89,7 +93,11 @@ describe("OptimismResolver Test", () => {
 
         it("Returns empty string if record is empty", async () => {
             const provider = new MockProvider(hreEthers.provider, fetchRecordFromCcipGateway, optimismResolver);
-
+            await optimismResolver.connect(alice).setResolverForDomain(
+                ethers.utils.namehash("alice.eth"),
+                bedrockCcipVerifier.address,
+                "http://localhost:8080/{sender}/{data}"
+            );
             const resolver = await provider.getResolver("alice.eth");
             const text = await resolver.getText("unknown record");
 
@@ -99,6 +107,11 @@ describe("OptimismResolver Test", () => {
 
     describe("resolveWithProof", () => {
         it("proof is valid onchain", async () => {
+            await optimismResolver.connect(alice).setResolverForDomain(
+                ethers.utils.namehash("alice.eth"),
+                bedrockCcipVerifier.address,
+                "http://localhost:8080/{sender}/{data}"
+            );
             const { callData, sender } = await getGateWayUrl("alice.eth", "network.dm3.eth", optimismResolver);
             const { body, status } = await request(ccipApp).get(`/${sender}/${callData}`).send();
 
@@ -117,6 +130,11 @@ describe("OptimismResolver Test", () => {
                 ...process.env,
                 L2_PUBLIC_RESOLVER_ADDRESS: "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512"
             }
+            await optimismResolver.connect(alice).setResolverForDomain(
+                ethers.utils.namehash("alice.eth"),
+                bedrockCcipVerifier.address,
+                "http://localhost:8080/{sender}/{data}"
+            );
 
             const { callData, sender } = await getGateWayUrl("alice.eth", "network.dm3.eth", optimismResolver);
             const { body, status } = await request(ccipApp).get(`/${sender}/${callData}`).send();
