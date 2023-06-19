@@ -75,25 +75,23 @@ describe("L2PublicResolver", () => {
             expect(await l2PublicResolver["addr(bytes,bytes32)"](user1.address, node)).to.equal(user2.address);
         });
     });
-    describe.skip("ABIResolver", () => {
+    describe("ABIResolver", () => {
         it("set abi record on L2", async () => {
             const node = ethers.utils.namehash(ethers.utils.nameprep("dm3.eth"));
-            const ownedNode = ethers.utils.keccak256(
-                ethers.utils.defaultAbiCoder.encode(["bytes32", "address"], [node, user1.address])
-            );
+
             const abi = l2PublicResolver.interface.format(ethers.utils.FormatTypes.json);
-            const tx = await l2PublicResolver.setABI(node, 1, ethers.utils.toUtf8Bytes(abi.toString()));
+            const tx = await l2PublicResolver.connect(user1).setABI(node, 1, ethers.utils.toUtf8Bytes(abi.toString()));
 
             const receipt = await tx.wait();
             const [addressChangedEvent] = receipt.events;
 
-            const [eventNode, eventownedNode, eventContentType] = addressChangedEvent.args;
+            const [context, eventNode, eventContentType] = addressChangedEvent.args;
 
+            expect(ethers.utils.getAddress(context)).to.equal(user1.address);
             expect(eventNode).to.equal(node);
-            expect(eventownedNode).to.equal(ownedNode);
             expect(eventContentType).to.equal(1);
 
-            const [actualContentType, actualAbi] = await l2PublicResolver.ABI(ownedNode, 1);
+            const [actualContentType, actualAbi] = await l2PublicResolver.ABI(user1.address, node, 1);
 
             expect(actualContentType).to.equal(1);
             expect(Buffer.from(actualAbi.slice(2), "hex").toString()).to.equal(abi.toString());
