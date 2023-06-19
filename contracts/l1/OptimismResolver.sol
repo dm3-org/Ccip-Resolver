@@ -28,7 +28,7 @@ contract OptimismResolver is IExtendedResolver, IContextResolver, SupportsInterf
     address public owner;
     string public graphqlUrl;
 
-    mapping(bytes32 => Resolver) public resolver;
+    mapping(bytes32 => Resolver) public resolvers;
 
     event NewOwner(address newOwner);
     event ResolverAdded(bytes32 indexed node, string gatewayUrl, address resolverAddress);
@@ -80,8 +80,8 @@ contract OptimismResolver is IExtendedResolver, IContextResolver, SupportsInterf
 
         require(bytes(url).length > 0, "url is empty");
 
-        Resolver memory _resolver = Resolver(url, ICcipResponseVerifier(resolverAddress));
-        resolver[node] = _resolver;
+        Resolver memory resolver = Resolver(url, ICcipResponseVerifier(resolverAddress));
+        resolvers[node] = resolver;
 
         emit ResolverAdded(node, url, resolverAddress);
     }
@@ -114,12 +114,13 @@ contract OptimismResolver is IExtendedResolver, IContextResolver, SupportsInterf
         while (offset < name.length - 1) {
             bytes32 node = name.namehash(offset);
 
-            Resolver memory _resolver = resolver[node];
-            if (address(_resolver.resolverAddress) != address(0)) {
-                return (_resolver, node);
+            Resolver memory resolver = resolvers[node];
+            if (address(resolver.resolverAddress) != address(0)) {
+                return (resolver, node);
             }
             (, offset) = name.readLabel(offset);
         }
+
         revert InvalidOperation();
     }
 
@@ -128,13 +129,13 @@ contract OptimismResolver is IExtendedResolver, IContextResolver, SupportsInterf
      * extraData -> the original call data
      */
     function resolveWithProof(bytes calldata response, bytes calldata extraData) external view override returns (bytes memory) {
-        (bytes memory context, bytes memory data) = abi.decode(extraData[4:], (bytes, bytes));
+        (, bytes memory data) = abi.decode(extraData[4:], (bytes, bytes));
 
         bytes32 node = bytes32(BytesLib.slice(data, 4, 32));
-        Resolver memory _resolver = resolver[node];
+        Resolver memory resolver = resolvers[node];
 
         //TODO revert if unknown resolver
-        return ICcipResponseVerifier(_resolver.resolverAddress).resolveWithProof(response, extraData);
+        return ICcipResponseVerifier(resolver.resolverAddress).resolveWithProof(response, extraData);
     }
 
     function supportsInterface(bytes4 interfaceID) public pure override returns (bool) {

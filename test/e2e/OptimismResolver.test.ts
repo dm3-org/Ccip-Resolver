@@ -125,6 +125,28 @@ describe("OptimismResolver Test", () => {
 
             expect(text).to.equal("my-subdomain-record");
         })
+        it("reverts if resolver is unknown", async () => {
+            const provider = new MockProvider(hreEthers.provider, fetchRecordFromCcipGateway, optimismResolver);
+            await optimismResolver.connect(alice).setResolverForDomain(
+                ethers.utils.namehash("alice.eth"),
+                bedrockCcipVerifier.address,
+                "http://localhost:8080/{sender}/{data}"
+            );
+
+            const resolver = await provider.getResolver("bob.eth");
+
+            const text = await resolver.getText("my-slot")
+                .then((res) => {
+                    expect.fail("Should have thrown an error")
+                })
+                .catch((e) => {
+                    expect(e).to.be.instanceOf(Error);
+                    
+                })
+
+            
+        })
+
     });
 
     describe("resolveWithProof", () => {
