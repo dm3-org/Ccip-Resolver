@@ -12,8 +12,6 @@ export function decodeCcipRequest(calldata: string) {
             data: calldata,
         }).args;
 
-
-
         const { signature, args } = textResolver.parseTransaction({
             data,
         });
