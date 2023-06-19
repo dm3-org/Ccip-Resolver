@@ -155,10 +155,10 @@ contract OptimismResolver is IExtendedResolver, IContextResolver, SupportsInterf
         );
     }
 
-    function getNodeOwner(bytes32 node) internal view returns (address owner) {
-        owner = ensRegistry.owner(node);
-        if (owner == address(nameWrapper)) {
-            owner = nameWrapper.ownerOf(uint256(node));
+    function getNodeOwner(bytes32 node) internal view returns (address nodeOwner) {
+        nodeOwner = ensRegistry.owner(node);
+        if (nodeOwner == address(nameWrapper)) {
+            nodeOwner = nameWrapper.ownerOf(uint256(node));
         }
     }
 }
