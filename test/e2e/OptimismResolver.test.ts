@@ -1,11 +1,11 @@
-import { FakeContract } from "@defi-wonderland/smock";
+import { FakeContract, smock } from "@defi-wonderland/smock";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import bodyParser from "body-parser";
 import { ethers, getDefaultProvider } from "ethers";
 import express from "express";
 import { ethers as hreEthers } from "hardhat";
 import request from "supertest";
-import { BedrockCcipVerifier, BedrockCcipVerifier__factory, BedrockProofVerifier, BedrockProofVerifier__factory, ENS, OptimismResolver } from "typechain";
+import { BedrockCcipVerifier, BedrockCcipVerifier__factory, BedrockProofVerifier, BedrockProofVerifier__factory, ENS, INameWrapper, OptimismResolver } from "typechain";
 import { ccipGateway } from "../../gateway/http/ccipGateway";
 import { mockEnsRegistry } from "../contracts/l1/OptimismResolver/mockEnsRegistry";
 import { MockProvider } from "../contracts/l1/OptimismResolver/mockProvider";
@@ -16,6 +16,8 @@ describe("OptimismResolver Test", () => {
     let owner: SignerWithAddress;
     //ENS
     let ensRegistry: FakeContract<ENS>;
+    //NameWrapper
+    let nameWrapper: FakeContract<INameWrapper>;
     //Resolver
     let optimismResolver: OptimismResolver;
     //Bedrock Proof Verifier
@@ -34,7 +36,18 @@ describe("OptimismResolver Test", () => {
         const l1Provider = new ethers.providers.StaticJsonRpcProvider("http://localhost:8545");
         const l2Provider = new ethers.providers.StaticJsonRpcProvider("http://localhost:9545");
         [owner] = await hreEthers.getSigners();
-        ensRegistry = await mockEnsRegistry(ethers.utils.namehash("alice.eth"), alice.address);
+        /**
+         * MOCK ENS Registry  
+         */
+        ensRegistry = (await smock.fake("@ensdomains/ens-contracts/contracts/registry/ENS.sol:ENS")) as FakeContract<ENS>;
+        ensRegistry.owner.whenCalledWith(ethers.utils.namehash("alice.eth")).returns(alice.address);
+        /**
+         * MOCK NameWrapper
+        */
+        nameWrapper = (await smock.fake("@ensdomains/ens-contracts/contracts/wrapper/INameWrapper.sol:INameWrapper")) as FakeContract<INameWrapper>;
+        ensRegistry.owner.whenCalledWith(ethers.utils.namehash("namewrapper.alice.eth")).returns(nameWrapper.address);
+        nameWrapper.ownerOf.whenCalledWith(ethers.utils.namehash("namewrapper.alice.eth")).returns(alice.address);
+        console.log("nameWrapper.address", nameWrapper.address)
 
 
         const BedrockProofVerifierFactory = await hreEthers.getContractFactory("BedrockProofVerifier") as BedrockProofVerifier__factory;
@@ -48,6 +61,7 @@ describe("OptimismResolver Test", () => {
         optimismResolver = (await OptimismResolverFactory.deploy(
             owner.address,
             ensRegistry.address,
+            nameWrapper.address,
             "http://localhost:8080/graphql"
         )) as OptimismResolver;
 
@@ -135,18 +149,29 @@ describe("OptimismResolver Test", () => {
 
             const resolver = await provider.getResolver("bob.eth");
 
-            const text = await resolver.getText("my-slot")
+            await resolver.getText("my-slot")
                 .then((res) => {
                     expect.fail("Should have thrown an error")
                 })
                 .catch((e) => {
                     expect(e).to.be.instanceOf(Error);
-                    
+
                 })
-
-            
         })
+        it("resolves namewrapper profile", async () => {
+            const provider = new MockProvider(hreEthers.provider, fetchRecordFromCcipGateway, optimismResolver);
+            await optimismResolver.connect(alice).setResolverForDomain(
+                ethers.utils.namehash("namewrapper.alice.eth"),
+                bedrockCcipVerifier.address,
+                "http://localhost:8080/{sender}/{data}"
+            );
 
+            const resolver = await provider.getResolver("namewrapper.alice.eth");
+
+            const text = await resolver.getText("namewrapper-slot");
+
+            expect(text).to.equal("namewrapper-subdomain-record");
+        })
     });
 
     describe("resolveWithProof", () => {
@@ -252,7 +277,7 @@ describe("OptimismResolver Test", () => {
                 })
 
         })
-        it("event contains node, url, and resolverAddress", async () => {
+        it("adds resolver + event contains node, url, and resolverAddress", async () => {
             const tx = await optimismResolver.connect(alice).setResolverForDomain(
                 ethers.utils.namehash("alice.eth"),
                 //Alice is an EOA, so this is not a valid resolver  
@@ -276,7 +301,6 @@ describe("OptimismResolver Test", () => {
 
         describe("Legacy ENS name", () => {
             it("reverts if msg.sender is not the profile owner", async () => {
-
                 await optimismResolver.setResolverForDomain(
                     ethers.utils.namehash("vitalik.eth"),
                     bedrockCcipVerifier.address,

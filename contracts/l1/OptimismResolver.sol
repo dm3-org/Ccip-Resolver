@@ -1,11 +1,12 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.15;
+pragma solidity ^0.8.17;
 
 import {IExtendedResolver, IResolverService} from "./IExtendedResolver.sol";
 import {IContextResolver} from "./IContextResolver.sol";
 import {SupportsInterface} from "./SupportsInterface.sol";
 import {CcipResponseVerifier, ICcipResponseVerifier} from "./verifier/CcipResponseVerifier.sol";
 import {ENS} from "@ensdomains/ens-contracts/contracts/registry/ENS.sol";
+import {INameWrapper} from "@ensdomains/ens-contracts/contracts/wrapper/INameWrapper.sol";
 
 import {BytesLib} from "solidity-bytes-utils/contracts/BytesLib.sol";
 
@@ -17,14 +18,12 @@ import "hardhat/console.sol";
  * Implements an ENS resolver that directs all queries to a CCIP read gateway.
  * Callers must implement EIP 3668 and ENSIP 10.
  */
-
-/**
- * TODO Use OZ for auth
- * TODO Add onlyDomainOwner modifier
- */
 contract OptimismResolver is IExtendedResolver, IContextResolver, SupportsInterface {
     using BytesUtils for bytes;
+
     ENS public ensRegistry;
+    INameWrapper public nameWrapper;
+
     address public owner;
     string public graphqlUrl;
 
@@ -46,11 +45,13 @@ contract OptimismResolver is IExtendedResolver, IContextResolver, SupportsInterf
         address _owner,
         //The ENS registry
         ENS _ensRegistry,
+        INameWrapper _nameWrapper,
         //The graphQl Url
         string memory _graphqlUrl
     ) {
-        ensRegistry = _ensRegistry;
         owner = _owner;
+        ensRegistry = _ensRegistry;
+        nameWrapper = _nameWrapper;
         graphqlUrl = _graphqlUrl;
     }
 
@@ -67,7 +68,7 @@ contract OptimismResolver is IExtendedResolver, IContextResolver, SupportsInterf
         require(node != bytes32(0), "node is 0x0");
         require(resolverAddress != address(0), "resolverAddress is 0x0");
 
-        require(msg.sender == ensRegistry.owner(node), "only subdomain owner");
+        require(msg.sender == getNodeOwner(node), "only subdomain owner");
 
         (bool success, bytes memory response) = resolverAddress.staticcall(
             abi.encodeWithSignature("supportsInterface(bytes4)", ICcipResponseVerifier.resolveWithProof.selector)
@@ -95,9 +96,7 @@ contract OptimismResolver is IExtendedResolver, IContextResolver, SupportsInterf
     function resolve(bytes calldata name, bytes calldata data) external view override returns (bytes memory) {
         (Resolver memory _resolver, bytes32 node) = getResolverOfDomain(name);
 
-        address nodeOwner = ensRegistry.owner(node);
-
-        //TODO support nameWrapper
+        address nodeOwner = getNodeOwner(node);
 
         bytes memory context = abi.encodePacked(nodeOwner);
         bytes memory callData = abi.encodeWithSelector(IResolverService.resolve.selector, context, data);
@@ -150,5 +149,12 @@ contract OptimismResolver is IExtendedResolver, IContextResolver, SupportsInterf
             uint8(0), //Storage Type 0 => EVM
             bytes(string.concat("OPTIMISM RESOLVER: ", "{NODE_OWNER}"))
         );
+    }
+
+    function getNodeOwner(bytes32 node) internal view returns (address owner) {
+        owner = ensRegistry.owner(node);
+        if (owner == address(nameWrapper)) {
+            owner = nameWrapper.ownerOf(uint256(node));
+        }
     }
 }
