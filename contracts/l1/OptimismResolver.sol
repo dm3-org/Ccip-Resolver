@@ -93,26 +93,22 @@ contract OptimismResolver is IExtendedResolver, IContextResolver, SupportsInterf
      * @return The return data, ABI encoded identically to the underlying function.
      */
     function resolve(bytes calldata name, bytes calldata data) external view override returns (bytes memory) {
-        bytes32 node = bytes32(data[4:36]);
-        //TODO Who is going to be the owner of an nested domain?
+        (Resolver memory _resolver, bytes32 node) = getResolverOfDomain(name);
+
         address nodeOwner = ensRegistry.owner(node);
 
         //TODO support nameWrapper
 
-        //TODO revert if node is 0x0
-        //TODO revert if nodeOwner is 0x0
-
         bytes memory context = abi.encodePacked(nodeOwner);
         bytes memory callData = abi.encodeWithSelector(IResolverService.resolve.selector, context, data);
 
-        Resolver memory _resolver = getResolverOfDomain(name);
         string[] memory urls = new string[](1);
         urls[0] = _resolver.gatewayUrl;
 
         revert OffchainLookup(address(this), urls, callData, OptimismResolver.resolveWithProof.selector, callData);
     }
 
-    function getResolverOfDomain(bytes calldata name) public view returns (Resolver memory) {
+    function getResolverOfDomain(bytes calldata name) public view returns (Resolver memory, bytes32) {
         uint offset = 0;
 
         while (offset < name.length - 1) {
@@ -120,7 +116,7 @@ contract OptimismResolver is IExtendedResolver, IContextResolver, SupportsInterf
 
             Resolver memory _resolver = resolver[node];
             if (address(_resolver.resolverAddress) != address(0)) {
-                return _resolver;
+                return (_resolver, node);
             }
             (, offset) = name.readLabel(offset);
         }

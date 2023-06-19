@@ -111,7 +111,7 @@ describe("OptimismResolver Test", () => {
 
             expect(text).to.be.null;
         });
-        it.only("use parents resolver if node has no subdomain", async () => {
+        it("use parents resolver if node has no subdomain", async () => {
             const provider = new MockProvider(hreEthers.provider, fetchRecordFromCcipGateway, optimismResolver);
             await optimismResolver.connect(alice).setResolverForDomain(
                 ethers.utils.namehash("alice.eth"),
