@@ -12,8 +12,6 @@ import {BytesLib} from "solidity-bytes-utils/contracts/BytesLib.sol";
 
 import {BytesUtils} from "./BytesUtils.sol";
 
-import "hardhat/console.sol";
-
 /**
  * Implements an ENS resolver that directs all queries to a CCIP read gateway.
  * Callers must implement EIP 3668 and ENSIP 10.
@@ -29,7 +27,8 @@ contract OptimismResolver is IExtendedResolver, IContextResolver, SupportsInterf
 
     mapping(bytes32 => Resolver) public resolvers;
 
-    event NewOwner(address newOwner);
+    event GraphQlUrlChanged(string newGraphQlUrl);
+    event OwnerChanged(address newOwner);
     event ResolverAdded(bytes32 indexed node, string gatewayUrl, address resolverAddress);
 
     error OffchainLookup(address sender, string[] urls, bytes callData, bytes4 callbackFunction, bytes extraData);
@@ -62,6 +61,12 @@ contract OptimismResolver is IExtendedResolver, IContextResolver, SupportsInterf
 
     function setGraphUrl(string memory _graphqlUrl) external onlyOwner {
         graphqlUrl = _graphqlUrl;
+        emit GraphQlUrlChanged(_graphqlUrl);
+    }
+
+    function setOwner(address _owner) external onlyOwner {
+        owner = _owner;
+        emit OwnerChanged(_owner);
     }
 
     function setResolverForDomain(bytes32 node, address resolverAddress, string memory url) external {
