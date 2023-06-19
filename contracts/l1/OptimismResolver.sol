@@ -7,10 +7,9 @@ import {SupportsInterface} from "./SupportsInterface.sol";
 import {CcipResponseVerifier, ICcipResponseVerifier} from "./verifier/CcipResponseVerifier.sol";
 import {ENS} from "@ensdomains/ens-contracts/contracts/registry/ENS.sol";
 import {INameWrapper} from "@ensdomains/ens-contracts/contracts/wrapper/INameWrapper.sol";
+import {BytesUtils} from "@ensdomains/ens-contracts/contracts/wrapper/BytesUtils.sol";
 
 import {BytesLib} from "solidity-bytes-utils/contracts/BytesLib.sol";
-
-import {BytesUtils} from "./BytesUtils.sol";
 
 /**
  * Implements an ENS resolver that directs all queries to a CCIP read gateway.
