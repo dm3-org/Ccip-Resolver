@@ -2,7 +2,7 @@
 pragma solidity >=0.8.4;
 
 import {ResolverBase} from "../ResolverBase.sol";
-import {ITextResolver}from "./ITextResolver.sol";
+import {ITextResolver} from "./ITextResolver.sol";
 
 abstract contract TextResolver is ITextResolver, ResolverBase {
     mapping(uint64 => mapping(bytes => mapping(bytes32 => mapping(string => string)))) versionable_texts;
