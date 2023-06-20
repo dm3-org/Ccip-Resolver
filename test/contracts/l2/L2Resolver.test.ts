@@ -97,25 +97,23 @@ describe("L2PublicResolver", () => {
             expect(Buffer.from(actualAbi.slice(2), "hex").toString()).to.equal(abi.toString());
         });
     });
-    describe.skip("ContentHash", () => {
+    describe("ContentHash", () => {
         it("set contentHash on L2", async () => {
             const node = ethers.utils.namehash(ethers.utils.nameprep("dm3.eth"));
-            const ownedNode = ethers.utils.keccak256(
-                ethers.utils.defaultAbiCoder.encode(["bytes32", "address"], [node, user1.address])
-            );
+
             const contentHash = ethers.utils.keccak256(ethers.utils.toUtf8Bytes("test"));
-            const tx = await l2PublicResolver.setContenthash(node, contentHash);
+            const tx = await l2PublicResolver.connect(user1).setContenthash(node, contentHash);
 
             const receipt = await tx.wait();
             const [contentHashChangedEvent] = receipt.events;
 
-            const [eventNode, eventownedNode, eventHash] = contentHashChangedEvent.args;
+            const [eventContext, eventNode, eventHash] = contentHashChangedEvent.args;
 
+            expect(ethers.utils.getAddress(eventContext)).to.equal(user1.address);
             expect(eventNode).to.equal(node);
-            expect(eventownedNode).to.equal(ownedNode);
             expect(eventHash).to.equal(eventHash);
 
-            const actualContentHash = await l2PublicResolver.contenthash(ownedNode);
+            const actualContentHash = await l2PublicResolver.contenthash(user1.address, node);
 
             expect(actualContentHash).to.equal(contentHash);
         });
