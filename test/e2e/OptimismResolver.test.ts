@@ -5,7 +5,7 @@ import { ethers, getDefaultProvider } from "ethers";
 import express from "express";
 import { ethers as hreEthers } from "hardhat";
 import request from "supertest";
-import { BedrockCcipVerifier, BedrockCcipVerifier__factory, BedrockProofVerifier, BedrockProofVerifier__factory, ENS, INameWrapper, OptimismResolver } from "typechain";
+import { BedrockCcipVerifier, BedrockCcipVerifier__factory, BedrockProofVerifier, BedrockProofVerifier__factory, ENS, INameWrapper, OptimismResolver, L2PublicResolver } from "typechain";
 import { ccipGateway } from "../../gateway/http/ccipGateway";
 import { mockEnsRegistry } from "../contracts/l1/OptimismResolver/mockEnsRegistry";
 import { MockProvider } from "../contracts/l1/OptimismResolver/mockProvider";
@@ -111,6 +111,32 @@ describe("OptimismResolver Test", () => {
             const addr = await resolver.getAddress();
 
             expect(addr).to.equal(alice.address);
+        })
+        
+        it("ccip gateway resolves existing abi using ethers.provider.getABI", async () => {
+            const provider = new MockProvider(hreEthers.provider, fetchRecordFromCcipGateway, optimismResolver);
+            await optimismResolver.connect(alice).setResolverForDomain(
+                ethers.utils.namehash("alice.eth"),
+                bedrockCcipVerifier.address,
+                "http://localhost:8080/{sender}/{data}"
+            );
+            const resolver = await provider.getResolver("alice.eth");
+
+            const l2PublicResolverFactory = await hreEthers.getContractFactory("L2PublicResolver");
+            const sig = l2PublicResolverFactory.interface.encodeFunctionData("ABI",
+                [alice.address, ethers.utils.namehash("alice.eth"), 1]
+            )
+
+            const res = await resolver._fetch(sig);
+            const [actualContextType, actualAbi] = l2PublicResolverFactory.interface.decodeFunctionResult("ABI", res);
+
+
+            const expectedAbi = l2PublicResolverFactory.interface.format(ethers.utils.FormatTypes.json).toString();
+
+
+            console.log(actualContextType)
+            expect(actualContextType).to.equal(1)
+            expect(Buffer.from(actualAbi.slice(2), "hex").toString()).to.equal(expectedAbi);
         });
 
         it("Returns empty string if record is empty", async () => {

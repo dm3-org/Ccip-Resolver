@@ -7,5 +7,6 @@ export function getResolverInterface() {
         // eslint-disable-next-line max-len
         "function resolveWithProof(bytes calldata response, bytes calldata extraData) external view returns (bytes memory)",
         "function addr(bytes32 node) external view returns (address)",
+        " function ABI(bytes calldata context,bytes32 node,uint256 contentTypes) external view returns(uint256, bytes memory)"
     ]);
 }

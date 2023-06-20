@@ -1,6 +1,7 @@
 import { ethers } from "hardhat";
 import { encodeText } from "./../encoding/text/encodeText";
 import { encodeAddr } from "./../encoding/addr/encodeAddr";
+import { encodeAbi } from "./../encoding/abi/encodeAbi";
 import { EnsResolverService } from "../ens/EnsService";
 import { getProofParamType } from "../encoding/proof/getProofParamType";
 export class CcipRouter {
@@ -19,6 +20,8 @@ export class CcipRouter {
                 return await this.handleText(request);
             case "addr(bytes32)":
                 return await this.handleAddr(request);
+            case "ABI(bytes,bytes32,uint256)":
+                return await this.handleABI(request);
             default:
                 return null;
         }
@@ -45,6 +48,17 @@ export class CcipRouter {
         const { proof, result } = await this.ensService.proofAddr(request.context, request.node, coinType);
         const encodedGetTextResult = encodeAddr(result === "0x" ? ethers.constants.AddressZero : result);
         const proofParamType = await getProofParamType();
+        return ethers.utils.defaultAbiCoder.encode(["bytes", proofParamType], [encodedGetTextResult, proof]);
+    }
+    private async handleABI(request: any) {
+        const { proof, result } = await this.ensService.proofAbi(request.context, request.node, request.contentTypes);
+
+        //If the resut is 0x the content type shall be 0 
+        const contentTypes = result === "0x" ? 0 : request.contentTypes
+
+        const encodedGetTextResult = encodeAbi(result, contentTypes);
+        const proofParamType = await getProofParamType();
+
         return ethers.utils.defaultAbiCoder.encode(["bytes", proofParamType], [encodedGetTextResult, proof]);
     }
 }
