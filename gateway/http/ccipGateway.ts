@@ -29,7 +29,7 @@ export function ccipGateway(
             const response = await router.handleRequest(signature, request);
 
             if (!response) {
-                console.log("no req");
+                console.log("no res");
                 return res.status(404).send({ message: `unable to process request` });
             }
 

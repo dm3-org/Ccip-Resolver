@@ -113,6 +113,13 @@ const setupEnvironment = async () => {
         const tx = await l2PublicResolver.connect(alice.connect(l2Provider)).setABI(node, 1, ethers.utils.toUtf8Bytes(abi.toString()));
         const rec = await tx.wait();
     }
+    const prepareSetContentHash = async () => {
+        const node = ethers.utils.namehash("alice.eth");
+        console.log("set alice node ", node)
+
+        const tx = await l2PublicResolver.connect(alice.connect(l2Provider)).setContenthash(node, "0xe3010170122029f2d17be6139079dc48696d1f582a8530eb9805b561eda517e22a892c7e3f1f")
+        const rec = await tx.wait();
+    }
     const prepareTestSubdomain = async () => {
         const node = ethers.utils.namehash("a.b.c.alice.eth");
         const recordName = "my-slot";
@@ -148,6 +155,7 @@ const setupEnvironment = async () => {
     await prepeTestMultipleSlots();
     await prepareSetAddr();
     await prepareSetAbi();
+    await prepareSetContentHash();
     await prepareTestSubdomain();
     await prepareTestSubdomain2();
     await nameWrapperProfile();

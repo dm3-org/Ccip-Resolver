@@ -2,7 +2,7 @@ import { getResolverInterface } from "../../../utils/getResolverInterface";
 import { decodeText } from "../text/decodeText";
 import { decodeAddr } from "../addr/decodeAddr";
 import { decodeAbi } from "../abi/decodeAbi";
-import { ethers } from "ethers";
+import { decodeContentHash } from "../contenthash/decodeContentHash";
 
 export function decodeCcipRequest(calldata: string) {
     try {
@@ -20,12 +20,12 @@ export function decodeCcipRequest(calldata: string) {
         switch (signature) {
             case "text(bytes32,string)":
                 return { signature, request: decodeText(context, args) };
-            case "addr(bytes32)": {
+            case "addr(bytes32)":
                 return { signature, request: decodeAddr(context, args) };
-            }
             case "ABI(bytes,bytes32,uint256)":
                 return { signature, request: decodeAbi(context, args) };
-
+            case "contenthash(bytes32)":
+                return { signature, request: decodeContentHash(context, args) };
             default:
                 return { signature, request: null };
         }

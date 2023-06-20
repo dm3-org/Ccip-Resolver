@@ -112,7 +112,7 @@ describe("OptimismResolver Test", () => {
 
             expect(addr).to.equal(alice.address);
         })
-        
+
         it("ccip gateway resolves existing abi using ethers.provider.getABI", async () => {
             const provider = new MockProvider(hreEthers.provider, fetchRecordFromCcipGateway, optimismResolver);
             await optimismResolver.connect(alice).setResolverForDomain(
@@ -133,10 +133,26 @@ describe("OptimismResolver Test", () => {
 
             const expectedAbi = l2PublicResolverFactory.interface.format(ethers.utils.FormatTypes.json).toString();
 
-
-            console.log(actualContextType)
             expect(actualContextType).to.equal(1)
             expect(Buffer.from(actualAbi.slice(2), "hex").toString()).to.equal(expectedAbi);
+        });
+        it("ccip gateway resolves existing contenthash ethers.provider.getContenthash", async () => {
+            const provider = new MockProvider(hreEthers.provider, fetchRecordFromCcipGateway, optimismResolver);
+            await optimismResolver.connect(alice).setResolverForDomain(
+                ethers.utils.namehash("alice.eth"),
+                bedrockCcipVerifier.address,
+                "http://localhost:8080/{sender}/{data}"
+            );
+            const resolver = await provider.getResolver("alice.eth");
+
+            const l2PublicResolverFactory = await hreEthers.getContractFactory("L2PublicResolver");
+            const sig = l2PublicResolverFactory.interface.encodeFunctionData("ABI",
+                [alice.address, ethers.utils.namehash("alice.eth"), 1]
+            )
+            const achtualhash = await resolver.getContentHash()
+
+
+            expect(achtualhash).to.equal("ipfs://QmRAQB6YaCyidP37UdDnjFY5vQuiBrcqdyoW1CuDgwxkD4");
         });
 
         it("Returns empty string if record is empty", async () => {
