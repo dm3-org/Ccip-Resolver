@@ -157,27 +157,25 @@ describe("L2PublicResolver", () => {
             const actualImplementer = await l2PublicResolver.interfaceImplementer(user1.address, node, interfaceId);
 
             expect(actualImplementer).to.equal(user2.address);
-          //  await require("hardhat").storageLayout.export()
+            //  await require("hardhat").storageLayout.export()
         });
     });
-    describe.skip("Name", () => {
+    describe.only("Name", () => {
         it("set name on L2", async () => {
             const node = ethers.utils.namehash(ethers.utils.nameprep("dm3.eth"));
-            const ownedNode = ethers.utils.keccak256(
-                ethers.utils.defaultAbiCoder.encode(["bytes32", "address"], [node, user1.address])
-            );
-            const tx = await l2PublicResolver.setName(node, "foo");
+
+            const tx = await l2PublicResolver.connect(user1).setName(node, "foo");
 
             const receipt = await tx.wait();
             const [nameChangedEvent] = receipt.events;
 
-            const [eventNode, eventownedNode, eventNewName] = nameChangedEvent.args;
+            const [eventContext, eventNode, eventNewName] = nameChangedEvent.args;
 
+            expect(ethers.utils.getAddress(eventContext)).to.equal(user1.address);
             expect(eventNode).to.equal(node);
-            expect(eventownedNode).to.equal(ownedNode);
             expect(eventNewName).to.equal("foo");
 
-            const actualName = await l2PublicResolver.name(ownedNode);
+            const actualName = await l2PublicResolver.name(user1.address,node);
 
             expect(actualName).to.equal("foo");
         });
