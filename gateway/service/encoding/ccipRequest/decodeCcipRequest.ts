@@ -5,6 +5,7 @@ import { decodeAbi } from "../abi/decodeAbi";
 import { decodeContentHash } from "../contenthash/decodeContentHash";
 import { decodeInterface } from "../interface/decodeInterface";
 import { decodeName } from "../name/decodeName";
+import { decodePubkey } from "../pubkey/decodePubKey";
 
 export function decodeCcipRequest(calldata: string) {
     try {
@@ -31,6 +32,8 @@ export function decodeCcipRequest(calldata: string) {
                 return { signature, request: decodeInterface(context, args) };
             case "name(bytes,bytes32)":
                 return { signature, request: decodeName(context, args) };
+            case "pubkey(bytes,bytes32)":
+                return { signature, request: decodePubkey(context, args) };
             default:
                 return { signature, request: null };
         }

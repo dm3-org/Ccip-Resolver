@@ -5,6 +5,7 @@ import { encodeAbi } from "./../encoding/abi/encodeAbi";
 import { encodeContentHash } from "./../encoding/contenthash/encodeContentHash";
 import { encodeInterface } from "./../encoding/interface/encodeInterface";
 import { encodeName } from "./../encoding/name/encodeName";
+import { encodePubkey } from "./../encoding/pubkey/encodePubkey";
 
 import { EnsResolverService } from "../ens/EnsService";
 import { getProofParamType } from "../encoding/proof/getProofParamType";
@@ -32,6 +33,8 @@ export class CcipRouter {
                 return await this.handleInterface(request);
             case "name(bytes,bytes32)":
                 return await this.handleName(request);
+            case "pubkey(bytes,bytes32)":
+                return await this.handlePubkey(request);
             default:
                 return null;
         }
@@ -74,7 +77,6 @@ export class CcipRouter {
     private async handleContentHash(request: any) {
         const { proof, result } = await this.ensService.proofContentHash(request.context, request.node);
 
-
         const encodedGetTextResult = encodeContentHash(result);
         const proofParamType = await getProofParamType();
 
@@ -83,7 +85,6 @@ export class CcipRouter {
     }
     private async handleInterface(request: any) {
         const { proof, result } = await this.ensService.proofInterface(request.context, request.node, request.interfaceID);
-        console.log("result", result);
 
         const encodedGetTextResult = encodeInterface(result === "0x" ? ethers.constants.AddressZero : result);
         const proofParamType = await getProofParamType();
@@ -94,6 +95,16 @@ export class CcipRouter {
     private async handleName(request: any) {
         const { proof, result } = await this.ensService.proofName(request.context, request.node);
         const encodedGetTextResult = encodeName(result);
+        const proofParamType = await getProofParamType();
+
+        return ethers.utils.defaultAbiCoder.encode(["bytes", proofParamType], [encodedGetTextResult, proof]);
+
+    }
+    private async handlePubkey(request: any) {
+        const { proof, result } = await this.ensService.proofPubkey(request.context, request.node);
+
+        const [x, y] = result
+        const encodedGetTextResult = encodePubkey(x, y);
         const proofParamType = await getProofParamType();
 
         return ethers.utils.defaultAbiCoder.encode(["bytes", proofParamType], [encodedGetTextResult, proof]);

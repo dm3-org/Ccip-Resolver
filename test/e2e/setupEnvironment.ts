@@ -138,6 +138,15 @@ const setupEnvironment = async () => {
         const rec = await tx.wait();
 
     }
+    const prepareSetPubkey = async () => {
+        const node = ethers.utils.namehash("alice.eth");
+
+        const x = ethers.utils.formatBytes32String("foo");
+        const y = ethers.utils.formatBytes32String("bar");
+
+        const tx = await l2PublicResolver.connect(alice.connect(l2Provider)).setPubkey(node, x, y)
+        const rec = await tx.wait();
+    }
 
     const prepareTestSubdomain = async () => {
         const node = ethers.utils.namehash("a.b.c.alice.eth");
@@ -177,6 +186,7 @@ const setupEnvironment = async () => {
     await prepareSetContentHash();
     await prepareSetInterface();
     await prepareSetName();
+    await prepareSetPubkey();
     await prepareTestSubdomain();
     await prepareTestSubdomain2();
     await nameWrapperProfile();

@@ -192,6 +192,25 @@ describe("OptimismResolver Test", () => {
 
             expect(responseString).to.equal("alice");
         });
+        it("ccip gateway resolves existing pubkey ", async () => {
+            const provider = new MockProvider(hreEthers.provider, fetchRecordFromCcipGateway, optimismResolver);
+            await optimismResolver.connect(alice).setResolverForDomain(
+                ethers.utils.namehash("alice.eth"),
+                bedrockCcipVerifier.address,
+                "http://localhost:8080/{sender}/{data}"
+            );
+            const resolver = await provider.getResolver("alice.eth");
+            const l2PublicResolverFactory = await hreEthers.getContractFactory("L2PublicResolver");
+
+            const sig = l2PublicResolverFactory.interface.encodeFunctionData("pubkey",
+                [alice.address, ethers.utils.namehash("alice.eth")]
+            )
+
+            const [x, y] = l2PublicResolverFactory.interface.decodeFunctionResult("pubkey", await resolver._fetch(sig));
+           // await require("hardhat").storageLayout.export()
+            expect(x).to.equal(ethers.utils.formatBytes32String("foo"))
+            expect(y).to.equal(ethers.utils.formatBytes32String("bar"))
+        });
 
         it("Returns empty string if record is empty", async () => {
             const provider = new MockProvider(hreEthers.provider, fetchRecordFromCcipGateway, optimismResolver);
