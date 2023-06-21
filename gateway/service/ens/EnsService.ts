@@ -47,15 +47,27 @@ export class EnsResolverService {
 
         const slot = EnsResolverService.getStorageSlotForAbi(ABI_SLOT_NAME, version.toNumber(), context, node, contentType);
 
-
         return this.proofService.createProof(this.l2PublicResolver.address, slot);
     }
     public async proofContentHash(context: string, node: string): Promise<CreateProofResult> {
         //The storage slot within the particular contract
-        const ABI_SLOT_NAME = 4;
+        const CONTENTHASH_SLOT_NAME = 4;
         const version = await this.l2PublicResolver.recordVersions(context, node);
 
-        const slot = EnsResolverService.getStorageSlotForContentType(ABI_SLOT_NAME, version.toNumber(), context, node);
+        const slot = EnsResolverService.getStorageSlotForContentType(CONTENTHASH_SLOT_NAME, version.toNumber(), context, node);
+        return this.proofService.createProof(this.l2PublicResolver.address, slot);
+    }
+    //TODO figure out how to deal with view function that performs delegate calls
+    public async proofInterface(context: string, node: string, interfaceId: string): Promise<CreateProofResult> {
+        //The storage slot within the particular contract
+        const INTERFACE_SLOT_NAME = 8;
+        const version = await this.l2PublicResolver.recordVersions(context, node);
+
+        const slot = EnsResolverService.getStorageSlotForInterface(INTERFACE_SLOT_NAME, version.toNumber(), context, node, interfaceId);
+
+        const val = await this.l2PublicResolver.provider.getStorageAt(this.l2PublicResolver.address, slot)
+
+
         return this.proofService.createProof(this.l2PublicResolver.address, slot);
     }
 
@@ -84,6 +96,13 @@ export class EnsResolverService {
         const innerHash = hreEthers.utils.solidityKeccak256(["uint256", "uint256"], [versionNumber, slot]);
         const contextHash = hreEthers.utils.solidityKeccak256(["bytes", "bytes32"], [context, innerHash]);
         const outerHash = hreEthers.utils.solidityKeccak256(["bytes32", "bytes32"], [node, contextHash]);
+        return outerHash;
+    }
+    public static getStorageSlotForInterface(slot: number, versionNumber: number, context: string, node: string, interfaceId: string) {
+        const innerHash = hreEthers.utils.solidityKeccak256(["uint256", "uint256"], [versionNumber, slot]);
+        const contextHash = hreEthers.utils.solidityKeccak256(["bytes", "bytes32"], [context, innerHash]);
+        const nodeHash = hreEthers.utils.solidityKeccak256(["bytes32", "bytes32"], [node, contextHash]);
+        const outerHash = hreEthers.utils.solidityKeccak256(["bytes4", "bytes32"], [interfaceId, nodeHash]);
         return outerHash;
     }
 

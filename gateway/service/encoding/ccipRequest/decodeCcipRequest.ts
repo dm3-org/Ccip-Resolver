@@ -3,6 +3,7 @@ import { decodeText } from "../text/decodeText";
 import { decodeAddr } from "../addr/decodeAddr";
 import { decodeAbi } from "../abi/decodeAbi";
 import { decodeContentHash } from "../contenthash/decodeContentHash";
+import { decodeInterface } from "../interface/decodeInterface";
 
 export function decodeCcipRequest(calldata: string) {
     try {
@@ -16,7 +17,6 @@ export function decodeCcipRequest(calldata: string) {
         const { signature, args } = textResolver.parseTransaction({
             data,
         });
-
         switch (signature) {
             case "text(bytes32,string)":
                 return { signature, request: decodeText(context, args) };
@@ -26,6 +26,8 @@ export function decodeCcipRequest(calldata: string) {
                 return { signature, request: decodeAbi(context, args) };
             case "contenthash(bytes32)":
                 return { signature, request: decodeContentHash(context, args) };
+            case "interfaceImplementer(bytes,bytes32,bytes4)":
+                return { signature, request: decodeInterface(context, args) };
             default:
                 return { signature, request: null };
         }

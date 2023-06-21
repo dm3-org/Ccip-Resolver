@@ -118,28 +118,46 @@ describe("L2PublicResolver", () => {
             expect(actualContentHash).to.equal(contentHash);
         });
     });
-    describe.skip("Interface", () => {
+    describe("DNS", () => {
+        it("set record on L2", async () => {
+            const node = ethers.utils.namehash(ethers.utils.nameprep("dm3.eth"));
+            const tx = await l2PublicResolver.connect(user1).setDNSRecords(node, ethers.utils.arrayify(ethers.utils.toUtf8Bytes("0x123401000001000000000161076578616d706c6503636f6d000000010001")));
+            const receipt = await tx.wait();
+            const [dnsChangedEvent] = receipt.events;
+
+            const [eventContext, eventNode, eventKey, eventValue] = dnsChangedEvent.args;
+
+            expect(ethers.utils.getAddress(eventContext)).to.equal(user1.address);
+            expect(eventNode).to.equal(node);
+            expect(eventKey).to.equal("test");
+            expect(eventValue).to.equal("test");
+
+            const actualValue = await l2PublicResolver.dnsRecord(user1.address, node, "a.example.com", 0);
+
+            expect(actualValue).to.equal("test");
+        })
+    })
+    describe("Interface", () => {
         it("set interface on L2", async () => {
             const node = ethers.utils.namehash(ethers.utils.nameprep("dm3.eth"));
-            const ownedNode = ethers.utils.keccak256(
-                ethers.utils.defaultAbiCoder.encode(["bytes32", "address"], [node, user1.address])
-            );
+
             const interfaceId = "0x9061b923";
-            const tx = await l2PublicResolver.setInterface(node, interfaceId, user2.address);
+            const tx = await l2PublicResolver.connect(user1).setInterface(node, interfaceId, user2.address);
 
             const receipt = await tx.wait();
             const [interfaceChangedEvent] = receipt.events;
 
-            const [eventNode, eventownedNode, eventInterfaceId, eventImplementer] = interfaceChangedEvent.args;
+            const [eventContext, eventNode, eventInterfaceId, eventImplementer] = interfaceChangedEvent.args;
 
+            expect(ethers.utils.getAddress(eventContext)).to.equal(user1.address);
             expect(eventNode).to.equal(node);
-            expect(eventownedNode).to.equal(ownedNode);
             expect(eventInterfaceId).to.equal(interfaceId);
             expect(eventImplementer).to.equal(user2.address);
 
-            const actualImplementer = await l2PublicResolver.interfaceImplementer(ownedNode, interfaceId);
+            const actualImplementer = await l2PublicResolver.interfaceImplementer(user1.address, node, interfaceId);
 
             expect(actualImplementer).to.equal(user2.address);
+          //  await require("hardhat").storageLayout.export()
         });
     });
     describe.skip("Name", () => {

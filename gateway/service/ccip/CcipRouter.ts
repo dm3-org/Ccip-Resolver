@@ -3,6 +3,7 @@ import { encodeText } from "./../encoding/text/encodeText";
 import { encodeAddr } from "./../encoding/addr/encodeAddr";
 import { encodeAbi } from "./../encoding/abi/encodeAbi";
 import { encodeContentHash } from "./../encoding/contenthash/encodeContentHash";
+import { encodeInterface } from "./../encoding/interface/encodeInterface";
 
 import { EnsResolverService } from "../ens/EnsService";
 import { getProofParamType } from "../encoding/proof/getProofParamType";
@@ -26,6 +27,8 @@ export class CcipRouter {
                 return await this.handleABI(request);
             case "contenthash(bytes32)":
                 return await this.handleContentHash(request);
+            case "interfaceImplementer(bytes,bytes32,bytes4)":
+                return await this.handleInterface(request);
             default:
                 return null;
         }
@@ -67,11 +70,22 @@ export class CcipRouter {
     }
     private async handleContentHash(request: any) {
         const { proof, result } = await this.ensService.proofContentHash(request.context, request.node);
-        console.log("result", result);
+
 
         const encodedGetTextResult = encodeContentHash(result);
         const proofParamType = await getProofParamType();
 
         return ethers.utils.defaultAbiCoder.encode(["bytes", proofParamType], [encodedGetTextResult, proof]);
+
+    }
+    private async handleInterface(request: any) {
+        const { proof, result } = await this.ensService.proofInterface(request.context, request.node, request.interfaceID);
+        console.log("result", result);
+
+        const encodedGetTextResult = encodeInterface(result === "0x" ? ethers.constants.AddressZero : result);
+        const proofParamType = await getProofParamType();
+
+        return ethers.utils.defaultAbiCoder.encode(["bytes", proofParamType], [encodedGetTextResult, proof]);
+
     }
 }
