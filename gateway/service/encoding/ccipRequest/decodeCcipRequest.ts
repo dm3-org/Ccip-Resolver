@@ -4,6 +4,7 @@ import { decodeAddr } from "../addr/decodeAddr";
 import { decodeAbi } from "../abi/decodeAbi";
 import { decodeContentHash } from "../contenthash/decodeContentHash";
 import { decodeInterface } from "../interface/decodeInterface";
+import { decodeName } from "../name/decodeName";
 
 export function decodeCcipRequest(calldata: string) {
     try {
@@ -28,6 +29,8 @@ export function decodeCcipRequest(calldata: string) {
                 return { signature, request: decodeContentHash(context, args) };
             case "interfaceImplementer(bytes,bytes32,bytes4)":
                 return { signature, request: decodeInterface(context, args) };
+            case "name(bytes,bytes32)":
+                return { signature, request: decodeName(context, args) };
             default:
                 return { signature, request: null };
         }

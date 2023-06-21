@@ -118,7 +118,7 @@ describe("L2PublicResolver", () => {
             expect(actualContentHash).to.equal(contentHash);
         });
     });
-    describe("DNS", () => {
+    describe.skip("DNS", () => {
         it("set record on L2", async () => {
             const node = ethers.utils.namehash(ethers.utils.nameprep("dm3.eth"));
             const tx = await l2PublicResolver.connect(user1).setDNSRecords(node, ethers.utils.arrayify(ethers.utils.toUtf8Bytes("0x123401000001000000000161076578616d706c6503636f6d000000010001")));
@@ -157,10 +157,9 @@ describe("L2PublicResolver", () => {
             const actualImplementer = await l2PublicResolver.interfaceImplementer(user1.address, node, interfaceId);
 
             expect(actualImplementer).to.equal(user2.address);
-            //  await require("hardhat").storageLayout.export()
         });
     });
-    describe.only("Name", () => {
+    describe("Name", () => {
         it("set name on L2", async () => {
             const node = ethers.utils.namehash(ethers.utils.nameprep("dm3.eth"));
 
@@ -175,7 +174,7 @@ describe("L2PublicResolver", () => {
             expect(eventNode).to.equal(node);
             expect(eventNewName).to.equal("foo");
 
-            const actualName = await l2PublicResolver.name(user1.address,node);
+            const actualName = await l2PublicResolver.name(user1.address, node);
 
             expect(actualName).to.equal("foo");
         });

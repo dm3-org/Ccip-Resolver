@@ -127,8 +127,18 @@ const setupEnvironment = async () => {
 
         const tx = await l2PublicResolver.connect(alice.connect(l2Provider)).setInterface(node, interfaceId, alice.address)
         const rec = await tx.wait();
-        console.log("set interface",rec.events[0].args)
+
     }
+    const prepareSetName = async () => {
+        const node = ethers.utils.namehash("alice.eth");
+        console.log("set alice node ", node)
+        const name = "alice";
+
+        const tx = await l2PublicResolver.connect(alice.connect(l2Provider)).setName(node, name)
+        const rec = await tx.wait();
+
+    }
+
     const prepareTestSubdomain = async () => {
         const node = ethers.utils.namehash("a.b.c.alice.eth");
         const recordName = "my-slot";
@@ -166,6 +176,7 @@ const setupEnvironment = async () => {
     await prepareSetAbi();
     await prepareSetContentHash();
     await prepareSetInterface();
+    await prepareSetName();
     await prepareTestSubdomain();
     await prepareTestSubdomain2();
     await nameWrapperProfile();

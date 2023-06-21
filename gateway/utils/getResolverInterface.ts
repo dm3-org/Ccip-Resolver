@@ -12,7 +12,9 @@ export function getResolverInterface() {
         "function contenthash(bytes calldata context, bytes32 node) external view returns (bytes memory)",
         "function contenthash(bytes32 node) external view returns (bytes memory)",
         //Interface
-        "function interfaceImplementer (bytes calldata context, bytes32 node, bytes4 interfaceID) external view returns (address)"
+        "function interfaceImplementer (bytes calldata context, bytes32 node, bytes4 interfaceID) external view returns (address)",
+        //Name
+        "function name(bytes calldata context ,bytes32 node) external view returns (string memory)"
 
     ]);
 }

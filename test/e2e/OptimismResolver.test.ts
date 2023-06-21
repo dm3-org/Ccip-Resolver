@@ -1,13 +1,12 @@
 import { FakeContract, smock } from "@defi-wonderland/smock";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import bodyParser from "body-parser";
-import { ethers, getDefaultProvider } from "ethers";
+import { ethers } from "ethers";
 import express from "express";
 import { ethers as hreEthers } from "hardhat";
 import request from "supertest";
-import { BedrockCcipVerifier, BedrockCcipVerifier__factory, BedrockProofVerifier, BedrockProofVerifier__factory, ENS, INameWrapper, OptimismResolver, L2PublicResolver } from "typechain";
+import { BedrockCcipVerifier, BedrockCcipVerifier__factory, BedrockProofVerifier, BedrockProofVerifier__factory, ENS, INameWrapper, OptimismResolver } from "typechain";
 import { ccipGateway } from "../../gateway/http/ccipGateway";
-import { mockEnsRegistry } from "../contracts/l1/OptimismResolver/mockEnsRegistry";
 import { MockProvider } from "../contracts/l1/OptimismResolver/mockProvider";
 import { getGateWayUrl } from "../helper/getGatewayUrl";
 const { expect } = require("chai");
@@ -47,7 +46,6 @@ describe("OptimismResolver Test", () => {
         nameWrapper = (await smock.fake("@ensdomains/ens-contracts/contracts/wrapper/INameWrapper.sol:INameWrapper")) as FakeContract<INameWrapper>;
         ensRegistry.owner.whenCalledWith(ethers.utils.namehash("namewrapper.alice.eth")).returns(nameWrapper.address);
         nameWrapper.ownerOf.whenCalledWith(ethers.utils.namehash("namewrapper.alice.eth")).returns(alice.address);
-        console.log("nameWrapper.address", nameWrapper.address)
 
 
         const BedrockProofVerifierFactory = await hreEthers.getContractFactory("BedrockProofVerifier") as BedrockProofVerifier__factory;
@@ -168,9 +166,31 @@ describe("OptimismResolver Test", () => {
 
             const res = await resolver._fetch(sig);
 
-//            await require("hardhat").storageLayout.export()
+            //          await require("hardhat").storageLayout.export()
             expect(res).to.equal(alice.address);
 
+        });
+        it("ccip gateway resolves existing name ", async () => {
+            const provider = new MockProvider(hreEthers.provider, fetchRecordFromCcipGateway, optimismResolver);
+            await optimismResolver.connect(alice).setResolverForDomain(
+                ethers.utils.namehash("alice.eth"),
+                bedrockCcipVerifier.address,
+                "http://localhost:8080/{sender}/{data}"
+            );
+            const resolver = await provider.getResolver("alice.eth");
+            const l2PublicResolverFactory = await hreEthers.getContractFactory("L2PublicResolver");
+
+            const sig = l2PublicResolverFactory.interface.encodeFunctionData("name",
+                [alice.address, ethers.utils.namehash("alice.eth")]
+            )
+
+
+            const [responseBytes] = l2PublicResolverFactory.interface.decodeFunctionResult("name", await resolver._fetch(sig));
+
+            const responseString = Buffer.from(responseBytes.slice(2), "hex").toString();
+
+
+            expect(responseString).to.equal("alice");
         });
 
         it("Returns empty string if record is empty", async () => {
