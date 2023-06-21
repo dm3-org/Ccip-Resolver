@@ -5,10 +5,11 @@ import {Multicallable} from "@ensdomains/ens-contracts/contracts/resolvers/Multi
 import {AddrResolver} from "./profiles/addr/AddrResolver.sol";
 import {TextResolver} from "./profiles/text/TextResolver.sol";
 import {ABIResolver} from "./profiles/abi/ABIResolver.sol";
-import {DNSResolver} from "./profiles/dns/DNSResolver.sol";
-import {InterfaceResolver} from "./profiles/interface/InterfaceResolver.sol";
 import {ContentHashResolver} from "./profiles/contentHash/ContentHashResolver.sol";
+import {DNSResolver} from "./profiles/dns/DNSResolver.sol";
 import {NameResolver} from "./profiles/name/NameResolver.sol";
+import {PubkeyResolver} from "./profiles/pubkey/PubkeyResolver.sol";
+import {InterfaceResolver} from "./profiles/interface/InterfaceResolver.sol";
 
 contract L2PublicResolver is
     Multicallable,
@@ -18,6 +19,7 @@ contract L2PublicResolver is
     ContentHashResolver,
     DNSResolver,
     NameResolver,
+    PubkeyResolver,
     InterfaceResolver
 {
     function supportsInterface(
@@ -25,7 +27,17 @@ contract L2PublicResolver is
     )
         public
         view
-        override(Multicallable, AddrResolver, TextResolver, ABIResolver, ContentHashResolver, DNSResolver, NameResolver, InterfaceResolver)
+        override(
+            Multicallable,
+            AddrResolver,
+            TextResolver,
+            ABIResolver,
+            ContentHashResolver,
+            DNSResolver,
+            NameResolver,
+            PubkeyResolver,
+            InterfaceResolver
+        )
         returns (bool)
     {
         return super.supportsInterface(interfaceID);
