@@ -11,7 +11,7 @@ abstract contract NameResolver is INameResolver, ResolverBase {
     /**
      * Sets the name associated with an ENS node, for reverse records.
      * May only be called by the owner of that node in the ENS registry.
-     * @param nodeName The node to update.
+     * @param nodeName The name to update.
      */
     function setName(bytes calldata nodeName, string calldata newName) external virtual {
         bytes32 node = nodeName.namehash(0);

@@ -12,7 +12,7 @@ abstract contract ABIResolver is IABIResolver, ResolverBase {
      * Sets the ABI associated with an ENS node.
      * Nodes may have one ABI of each content type. To remove an ABI, set it to
      * the empty string.
-     * @param name The node to update.
+     * @param name The name to update.
      * @param contentType The content type of the ABI
      * @param data The ABI data.
      */

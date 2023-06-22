@@ -11,7 +11,7 @@ abstract contract ContentHashResolver is IContentHashResolver, ResolverBase {
     /**
      * Sets the contenthash associated with an ENS node.
      * May only be called by the owner of that node in the ENS registry.
-     * @param name  The node to update.
+     * @param name  The name to update.
      * @param hash The contenthash to set
      */
     function setContenthash(bytes calldata name, bytes calldata hash) external virtual {

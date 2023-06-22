@@ -14,7 +14,7 @@ abstract contract AddrResolver is IAddrResolver, IAddressResolver, ResolverBase 
     /**
      * Sets the address associated with an ENS node.
      * May only be called by the owner of that node in the ENS registry.
-     * @param name The node to update.
+     * @param name The name to update.
      * @param a The address to set.
      */
     function setAddr(bytes calldata name, address a) external virtual {

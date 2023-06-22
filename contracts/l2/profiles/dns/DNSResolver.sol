@@ -107,7 +107,7 @@ abstract contract DNSResolver is IDNSRecordResolver, IDNSZoneResolver, ResolverB
     /**
      * setZonehash sets the hash for the zone.
      * May only be called by the owner of that node in the ENS registry.
-     * @param node The node to update.
+     * @param node The name to update.
      * @param hash The zonehash to set
      */
     function setZonehash(bytes32 node, bytes calldata hash) external virtual {

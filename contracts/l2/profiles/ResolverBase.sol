@@ -17,7 +17,7 @@ abstract contract ResolverBase is ERC165, IVersionableResolver {
     /**
      * Increments the record version associated with an ENS node.
      * May only be called by the owner of that node in the ENS registry.
-     * @param name The node to update.
+     * @param name The name to update.
      */
     function clearRecords(bytes calldata name) public virtual {
         bytes32 node = name.namehash(0);
