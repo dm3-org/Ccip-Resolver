@@ -6,17 +6,18 @@ import { decodeContentHash } from "../contenthash/decodeContentHash";
 import { decodeInterface } from "../interface/decodeInterface";
 import { decodeName } from "../name/decodeName";
 import { decodePubkey } from "../pubkey/decodePubKey";
+import { decodeDNSRecord } from "../dns/decodeDnsRecord";
 
 export function decodeCcipRequest(calldata: string) {
     try {
-        const textResolver = getResolverInterface();
+        const l2Resolverinterface = getResolverInterface();
 
         //Parse the calldata returned by the contract
-        const [context, data] = textResolver.parseTransaction({
+        const [context, data] = l2Resolverinterface.parseTransaction({
             data: calldata,
         }).args;
 
-        const { signature, args } = textResolver.parseTransaction({
+        const { signature, args } = l2Resolverinterface.parseTransaction({
             data,
         });
         switch (signature) {
@@ -34,6 +35,8 @@ export function decodeCcipRequest(calldata: string) {
                 return { signature, request: decodeName(context, args) };
             case "pubkey(bytes,bytes32)":
                 return { signature, request: decodePubkey(context, args) };
+            case "dnsRecord(bytes,bytes32,bytes32,uint16)":
+                return { signature, request: decodeDNSRecord(context, args) };
             default:
                 return { signature, request: null };
         }

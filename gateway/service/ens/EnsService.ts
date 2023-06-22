@@ -3,7 +3,7 @@ import { L2PublicResolver, L2PublicResolver__factory } from "typechain";
 import { ProofService } from "../proof/ProofService";
 import { CreateProofResult } from "../proof/types";
 import { getPublicResolverAddress } from "./../../constants";
-import { keccak256 } from "ethers/lib/utils";
+import { keccak256, namehash } from "ethers/lib/utils";
 
 /**
  * This class provides the storage location for different for the particular fiels of the PublicResolverContract
@@ -72,12 +72,7 @@ export class EnsResolverService {
         const version = await this.l2PublicResolver.recordVersions(context, node);
         const slot = EnsResolverService.getStorageSlotForPubkey(PUBKEY_SLOT_NAME, version.toNumber(), context, node)
 
-        console.log("s x", await this.l2PublicResolver.provider.getStorageAt(this.l2PublicResolver.address, slot))
-
         const slotY = ethers.BigNumber.from(slot).add(1).toHexString();
-        console.log("s y", await this.l2PublicResolver.provider.getStorageAt(this.l2PublicResolver.address, slotY))
-
-        console.log(slot)
 
         const proofx = await this.proofService.createProof(this.l2PublicResolver.address, slot);
         const proofy = await this.proofService.createProof(this.l2PublicResolver.address, slotY);
@@ -89,6 +84,15 @@ export class EnsResolverService {
         }
     }
 
+    public async proofDnsRecord(context: string, node: string, name: string, resource: string): Promise<CreateProofResult> {
+        //The storage slot within the particular contract
+        const NAME_SLOT_NAME = 6;
+        const version = await this.l2PublicResolver.recordVersions(context, node);
+        const slot = EnsResolverService.getStorageSlotForDnsRecord(NAME_SLOT_NAME, version.toNumber(), context, node, name, resource);
+
+        return this.proofService.createProof(this.l2PublicResolver.address, slot);
+    }
+
     //TODO figure out how to deal with view function that performs delegate calls
     public async proofInterface(context: string, node: string, interfaceId: string): Promise<CreateProofResult> {
         //The storage slot within the particular contract
@@ -97,7 +101,6 @@ export class EnsResolverService {
 
         const slot = EnsResolverService.getStorageSlotForInterface(INTERFACE_SLOT_NAME, version.toNumber(), context, node, interfaceId);
 
-        const val = await this.l2PublicResolver.provider.getStorageAt(this.l2PublicResolver.address, slot)
 
 
         return this.proofService.createProof(this.l2PublicResolver.address, slot);
@@ -150,6 +153,14 @@ export class EnsResolverService {
         const contextHash = hreEthers.utils.solidityKeccak256(["bytes", "bytes32"], [context, innerHash]);
         const nodeHash = hreEthers.utils.solidityKeccak256(["bytes32", "bytes32"], [node, contextHash]);
         return nodeHash;
+    }
+    public static getStorageSlotForDnsRecord(slot: number, versionNumber: number, context: string, node: string, name: string, resource: string) {
+        const innerHash = hreEthers.utils.solidityKeccak256(["uint256", "uint256"], [versionNumber, slot]);
+        const contextHash = hreEthers.utils.solidityKeccak256(["bytes", "bytes32"], [context, innerHash]);
+        const nodeHash = hreEthers.utils.solidityKeccak256(["bytes32", "bytes32"], [node, contextHash]);
+        const nameHash = hreEthers.utils.solidityKeccak256(["bytes32", "bytes32"], [name, nodeHash]);
+        const resourceHash = hreEthers.utils.solidityKeccak256(["uint256", "bytes32"], [resource, nameHash]);
+        return resourceHash;
     }
 
 }

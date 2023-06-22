@@ -122,26 +122,19 @@ describe("L2PublicResolver", () => {
     });
     describe("DNS", () => {
         it("set DNS record on L2", async () => {
-
-     
             const record = dnsWireFormat("a.example.com", 3600, 1, 1, "1.2.3.4")
-
-
             const node = ethers.utils.namehash(ethers.utils.nameprep("dm3.eth"));
-
             const tx = await l2PublicResolver.connect(user1).setDNSRecords(
                 node,
                 "0x" + record
             )
+
             const receipt = await tx.wait();
             const [dnsRecordChangedEvent] = receipt.events;
 
             const [eventContext, eventNode,] = dnsRecordChangedEvent.args;
-
-
             expect(ethers.utils.getAddress(eventContext)).to.equal(user1.address);
             expect(eventNode).to.equal(node);
-
 
             const actualValue = await l2PublicResolver.dnsRecord(
                 user1.address,

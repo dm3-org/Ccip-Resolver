@@ -15,8 +15,6 @@ export function ccipGateway(
     router.get("/:resolverAddr/:calldata", async (req: express.Request, res: express.Response) => {
         const { resolverAddr, calldata } = req.params;
 
-        console.info(`GET ${resolverAddr}`);
-
         try {
             const { request, signature } = decodeCcipRequest(calldata);
 
