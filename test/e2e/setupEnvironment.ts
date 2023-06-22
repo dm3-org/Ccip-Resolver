@@ -1,4 +1,5 @@
 import { ethers } from "hardhat";
+import { dnsWireFormat } from "../helper/encodednsWireFormat";
 import { L2PublicResolver, L2PublicResolver__factory } from "typechain";
 /**
  * This script is used to setup the environment for the e2e tests.
@@ -147,6 +148,18 @@ const setupEnvironment = async () => {
         const tx = await l2PublicResolver.connect(alice.connect(l2Provider)).setPubkey(node, x, y)
         const rec = await tx.wait();
     }
+    const prepareSetDNS = async () => {
+        const node = ethers.utils.namehash("alice.eth");
+
+        const record = dnsWireFormat("a.example.com", 3600, 1, 1, "1.2.3.4")
+
+        const tx = await l2PublicResolver.connect(alice.connect(l2Provider)).setDNSRecords(
+            node,
+            "0x" + record
+        )
+        const rec = await tx.wait();
+        console.log("set dns rec", rec.events)
+    }
 
     const prepareTestSubdomain = async () => {
         const node = ethers.utils.namehash("a.b.c.alice.eth");
@@ -187,6 +200,7 @@ const setupEnvironment = async () => {
     await prepareSetInterface();
     await prepareSetName();
     await prepareSetPubkey();
+    await prepareSetDNS();
     await prepareTestSubdomain();
     await prepareTestSubdomain2();
     await nameWrapperProfile();

@@ -4,6 +4,8 @@ import { ethers } from "hardhat";
 import { L2PublicResolver } from "typechain";
 
 import { expect } from "chai";
+import { keccak256 } from "ethers/lib/utils";
+import { dnsWireFormat } from "../../helper/encodednsWireFormat";
 
 describe("L2PublicResolver", () => {
     let user1: SignerWithAddress;
@@ -118,23 +120,37 @@ describe("L2PublicResolver", () => {
             expect(actualContentHash).to.equal(contentHash);
         });
     });
-    describe.skip("DNS", () => {
-        it("set record on L2", async () => {
-            const node = ethers.utils.namehash(ethers.utils.nameprep("dm3.eth"));
-            const tx = await l2PublicResolver.connect(user1).setDNSRecords(node, ethers.utils.arrayify(ethers.utils.toUtf8Bytes("0x123401000001000000000161076578616d706c6503636f6d000000010001")));
-            const receipt = await tx.wait();
-            const [dnsChangedEvent] = receipt.events;
+    describe("DNS", () => {
+        it("set DNS record on L2", async () => {
 
-            const [eventContext, eventNode, eventKey, eventValue] = dnsChangedEvent.args;
+     
+            const record = dnsWireFormat("a.example.com", 3600, 1, 1, "1.2.3.4")
+
+
+            const node = ethers.utils.namehash(ethers.utils.nameprep("dm3.eth"));
+
+            const tx = await l2PublicResolver.connect(user1).setDNSRecords(
+                node,
+                "0x" + record
+            )
+            const receipt = await tx.wait();
+            const [dnsRecordChangedEvent] = receipt.events;
+
+            const [eventContext, eventNode,] = dnsRecordChangedEvent.args;
+
 
             expect(ethers.utils.getAddress(eventContext)).to.equal(user1.address);
             expect(eventNode).to.equal(node);
-            expect(eventKey).to.equal("test");
-            expect(eventValue).to.equal("test");
 
-            const actualValue = await l2PublicResolver.dnsRecord(user1.address, node, "a.example.com", 0);
 
-            expect(actualValue).to.equal("test");
+            const actualValue = await l2PublicResolver.dnsRecord(
+                user1.address,
+                node,
+                keccak256("0x" + record.substring(0, 30)),
+                1
+            );
+
+            expect(actualValue).to.equal("0x" + record);
         })
     })
     describe("Interface", () => {

@@ -6,6 +6,8 @@ import {RRUtils, BytesUtils} from "@ensdomains/ens-contracts/contracts/dnssec-or
 import {IDNSRecordResolver} from "./IDNSRecordResolver.sol";
 import {IDNSZoneResolver} from "./IDNSZoneResolver.sol";
 
+import "hardhat/console.sol";
+
 abstract contract DNSResolver is IDNSRecordResolver, IDNSZoneResolver, ResolverBase {
     using RRUtils for *;
     using BytesUtils for bytes;
@@ -53,11 +55,13 @@ abstract contract DNSResolver is IDNSRecordResolver, IDNSZoneResolver, ResolverB
 
         bytes memory context = abi.encodePacked(msg.sender);
         uint64 version = recordVersions[context][node];
+
         // Iterate over the data to add the resource records
         for (RRUtils.RRIterator memory iter = data.iterateRRs(0); !iter.done(); iter.next()) {
             if (resource == 0) {
                 resource = iter.dnstype;
                 name = iter.name();
+
                 nameHash = keccak256(abi.encodePacked(name));
                 value = bytes(iter.rdata());
             } else {
@@ -144,18 +148,19 @@ abstract contract DNSResolver is IDNSRecordResolver, IDNSZoneResolver, ResolverB
         bytes memory context = abi.encodePacked(msg.sender);
         bytes32 nameHash = keccak256(name);
         bytes memory rrData = data.substring(offset, size);
+
         if (deleteRecord) {
             if (versionable_records[version][context][node][nameHash][resource].length != 0) {
                 versionable_nameEntriesCount[version][context][node][nameHash]--;
             }
             delete (versionable_records[version][context][node][nameHash][resource]);
-            emit DNSRecordDeleted(node, name, resource);
+            emit DNSRecordDeleted(context, node, name, resource);
         } else {
             if (versionable_records[version][context][node][nameHash][resource].length == 0) {
                 versionable_nameEntriesCount[version][context][node][nameHash]++;
             }
             versionable_records[version][context][node][nameHash][resource] = rrData;
-            emit DNSRecordChanged(node, name, resource, rrData);
+            emit DNSRecordChanged(context, node, name, resource, rrData);
         }
     }
 }
