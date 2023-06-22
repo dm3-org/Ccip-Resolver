@@ -17,6 +17,33 @@ describe("L2PublicResolver", () => {
         const l2PublicResolverFactory = await ethers.getContractFactory("L2PublicResolver", user1);
         l2PublicResolver = (await l2PublicResolverFactory.deploy()) as L2PublicResolver;
     });
+    describe("Clear records", async () => {
+        it("can clear records", async () => {
+
+            const name = "dm3.eth"
+            const node = ethers.utils.namehash("dm3.eth")
+            // record should initially be empty
+            console.log("addr", user1.address)
+            expect(await l2PublicResolver.recordVersions(user1.address, node)).to.equal(0);
+
+            const tx = await l2PublicResolver.connect(user1).clearRecords(dnsEncode(name));
+            const receipt = await tx.wait();
+
+            const [textChangedEvent] = receipt.events;
+
+            const [context, eventName, eventNode, recordVersion] = textChangedEvent.args;
+
+            expect(ethers.utils.getAddress(context)).to.equal(user1.address);
+
+            expect(eventName).to.equal(dnsEncode(name));
+            expect(eventNode).to.equal(node);
+            expect(recordVersion).to.equal(1);
+
+            // record of the owned node should be changed
+            expect(await l2PublicResolver.recordVersions(user1.address, node)).to.equal(1);
+        }
+        )
+    })
 
     describe("TextResolver", () => {
         it("set text record on L2", async () => {
