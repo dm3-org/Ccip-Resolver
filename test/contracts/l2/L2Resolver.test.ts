@@ -177,7 +177,7 @@ describe("L2PublicResolver", () => {
         })
     })
 
-    describe.only("Name", () => {
+    describe("Name", () => {
         it("set name on L2", async () => {
             const name = "dm3.eth";
             const node = ethers.utils.namehash(name);
@@ -199,7 +199,7 @@ describe("L2PublicResolver", () => {
             expect(actualName).to.equal("foo");
         });
     });
-    describe.only("PubKey", () => {
+    describe("PubKey", () => {
         it("set pubKey on L2", async () => {
             const name = "dm3.eth";
             const node = ethers.utils.namehash(name);

@@ -149,7 +149,7 @@ describe("OptimismResolver Test", () => {
 
             expect(achtualhash).to.equal("ipfs://QmRAQB6YaCyidP37UdDnjFY5vQuiBrcqdyoW1CuDgwxkD4");
         });
-    
+
         it("ccip gateway resolves existing name ", async () => {
             const provider = new MockProvider(hreEthers.provider, fetchRecordFromCcipGateway, optimismResolver);
             await optimismResolver.connect(alice).setResolverForDomain(
