@@ -68,7 +68,6 @@ export class ProofService {
 
         //The result is not part of the proof but its convenient to have it i:E in tests
         const result = storageProof.reduce((agg, cur) => agg + cur.value.substring(2), "0x").substring(0, length * 2 + 2);
-        console.log(result)
         return { result, proof };
     }
     /**

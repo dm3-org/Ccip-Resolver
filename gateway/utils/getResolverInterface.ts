@@ -21,8 +21,8 @@ export function getResolverInterface() {
         //Pubkey
         "function pubkey(bytes calldata context ,bytes32 node) external view returns (bytes memory x, bytes memory y)",
         //DNS
-        "function dnsRecord(bytes calldata context,bytes32 node,bytes32 name,uint16 resource) public view virtual override returns(bytes memory)",
-        "function hasDNSRecords(bytes calldata context, bytes32 node, bytes32 name) public view virtual returns (bool)",
-        "function zonehash(bytes calldata context, bytes32 node) external view virtual override returns (bytes memory)"
+        "function dnsRecord(bytes calldata context,bytes32 node,bytes32 name,uint16 resource) public view  returns(bytes memory)",
+        "function hasDNSRecords(bytes calldata context, bytes32 node, bytes32 name) public view  returns (bool)",
+        "function zonehash(bytes calldata context, bytes32 node) external view  returns (bytes memory)"
     ]);
 }
