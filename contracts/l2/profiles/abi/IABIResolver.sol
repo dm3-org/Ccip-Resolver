@@ -2,7 +2,7 @@
 pragma solidity >=0.8.4;
 
 interface IABIResolver {
-    event ABIChanged(bytes context, bytes32 indexed node, uint256 indexed contentType);
+    event ABIChanged(bytes context, bytes name, bytes32 indexed node, uint256 indexed contentType);
 
     /**
      * Returns the ABI associated with an ENS node.

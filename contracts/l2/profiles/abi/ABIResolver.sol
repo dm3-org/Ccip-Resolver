@@ -2,25 +2,27 @@
 pragma solidity >=0.8.4;
 
 import {IABIResolver} from "./IABIResolver.sol";
-import {ResolverBase} from "../ResolverBase.sol";
+import {ResolverBase, BytesUtils} from "../ResolverBase.sol";
 
 abstract contract ABIResolver is IABIResolver, ResolverBase {
+    using BytesUtils for bytes;
     mapping(uint64 => mapping(bytes => mapping(bytes32 => mapping(uint256 => bytes)))) versionable_abis;
 
     /**
      * Sets the ABI associated with an ENS node.
      * Nodes may have one ABI of each content type. To remove an ABI, set it to
      * the empty string.
-     * @param node The node to update.
+     * @param name The node to update.
      * @param contentType The content type of the ABI
      * @param data The ABI data.
      */
-    function setABI(bytes32 node, uint256 contentType, bytes calldata data) external virtual {
+    function setABI(bytes calldata name, uint256 contentType, bytes calldata data) external virtual {
         // Content types must be powers of 2
         require(((contentType - 1) & contentType) == 0);
+        bytes32 node = name.namehash(0);
         bytes memory context = abi.encodePacked(msg.sender);
         versionable_abis[recordVersions[context][node]][context][node][contentType] = data;
-        emit ABIChanged(context, node, contentType);
+        emit ABIChanged(context, name, node, contentType);
     }
 
     /**

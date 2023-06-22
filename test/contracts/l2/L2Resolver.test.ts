@@ -80,17 +80,19 @@ describe("L2PublicResolver", () => {
     });
     describe("ABIResolver", () => {
         it("set abi record on L2", async () => {
-            const node = ethers.utils.namehash(ethers.utils.nameprep("dm3.eth"));
+            const name = "dm3.eth";
+            const node = ethers.utils.namehash(name);
 
             const abi = l2PublicResolver.interface.format(ethers.utils.FormatTypes.json);
-            const tx = await l2PublicResolver.connect(user1).setABI(node, 1, ethers.utils.toUtf8Bytes(abi.toString()));
+            const tx = await l2PublicResolver.connect(user1).setABI(dnsEncode(name), 1, ethers.utils.toUtf8Bytes(abi.toString()));
 
             const receipt = await tx.wait();
             const [addressChangedEvent] = receipt.events;
 
-            const [context, eventNode, eventContentType] = addressChangedEvent.args;
+            const [context, eventName, eventNode, eventContentType] = addressChangedEvent.args;
 
             expect(ethers.utils.getAddress(context)).to.equal(user1.address);
+            expect(eventName).to.equal(dnsEncode(name));
             expect(eventNode).to.equal(node);
             expect(eventContentType).to.equal(1);
 
