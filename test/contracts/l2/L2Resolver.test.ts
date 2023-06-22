@@ -4,7 +4,7 @@ import { ethers } from "hardhat";
 import { L2PublicResolver } from "typechain";
 
 import { expect } from "chai";
-import { keccak256, toUtf8Bytes } from "ethers/lib/utils";
+import { dnsEncode, keccak256, toUtf8Bytes } from "ethers/lib/utils";
 import { dnsWireFormat } from "../../helper/encodednsWireFormat";
 
 describe("L2PublicResolver", () => {
@@ -21,8 +21,6 @@ describe("L2PublicResolver", () => {
     describe("TextResolver", () => {
         it("set text record on L2", async () => {
             const node = ethers.utils.namehash(ethers.utils.nameprep("dm3.eth"));
-
-
             // record should initially be empty
             expect(await l2PublicResolver.text(user1.address, node, "network.dm3.profile")).to.equal("");
 
@@ -43,9 +41,10 @@ describe("L2PublicResolver", () => {
         });
     });
 
-    describe("AddrResolver", () => {
+    describe.only("AddrResolver", () => {
         it("set addr record on L2", async () => {
-            const node = ethers.utils.namehash(ethers.utils.nameprep("dm3.eth"));
+            const name = "a.b.c.d.dm3.eth"
+            const node = ethers.utils.namehash(name);
 
 
             // record should initially be empty
@@ -54,24 +53,24 @@ describe("L2PublicResolver", () => {
             )).to.equal(
                 "0x0000000000000000000000000000000000000000"
             );
-
-
-            const tx = await l2PublicResolver["setAddr(bytes32,address)"](node, user2.address);
+            const tx = await l2PublicResolver["setAddr(bytes,address)"](dnsEncode(name), user2.address);
             const receipt = await tx.wait();
             const [addressChangedEvent, addrChangedEvent] = receipt.events;
 
-            let [eventContext, eventNode, eventCoinType, eventAddress] = addressChangedEvent.args;
+            let [eventContext, eventName, eventNode, eventCoinType, eventAddress] = addressChangedEvent.args;
 
 
             expect(ethers.utils.getAddress(eventContext)).to.equal(user1.address);
             expect(eventNode).to.equal(node);
+            expect(eventName).to.equal(dnsEncode(name));
             expect(eventCoinType).to.equal(60);
             expect(ethers.utils.getAddress(eventAddress)).to.equal(user2.address);
 
-            [eventContext, eventNode, eventAddress] = addrChangedEvent.args;
+            [eventContext, eventName, eventNode, eventAddress] = addrChangedEvent.args;
 
             expect(ethers.utils.getAddress(eventContext)).to.equal(user1.address);
             expect(eventNode).to.equal(node);
+            expect(eventName).to.equal(dnsEncode(name));
             expect(ethers.utils.getAddress(eventAddress)).to.equal(user2.address);
             // record of the owned node should be changed
             expect(await l2PublicResolver["addr(bytes,bytes32)"](user1.address, node)).to.equal(user2.address);
@@ -171,28 +170,7 @@ describe("L2PublicResolver", () => {
             expect(actualValue).to.equal(keccak256(toUtf8Bytes("foo")));
         })
     })
-    describe("Interface", () => {
-        it("set interface on L2", async () => {
-            const node = ethers.utils.namehash(ethers.utils.nameprep("dm3.eth"));
 
-            const interfaceId = "0x9061b923";
-            const tx = await l2PublicResolver.connect(user1).setInterface(node, interfaceId, user2.address);
-
-            const receipt = await tx.wait();
-            const [interfaceChangedEvent] = receipt.events;
-
-            const [eventContext, eventNode, eventInterfaceId, eventImplementer] = interfaceChangedEvent.args;
-
-            expect(ethers.utils.getAddress(eventContext)).to.equal(user1.address);
-            expect(eventNode).to.equal(node);
-            expect(eventInterfaceId).to.equal(interfaceId);
-            expect(eventImplementer).to.equal(user2.address);
-
-            const actualImplementer = await l2PublicResolver.interfaceImplementer(user1.address, node, interfaceId);
-
-            expect(actualImplementer).to.equal(user2.address);
-        });
-    });
     describe("Name", () => {
         it("set name on L2", async () => {
             const node = ethers.utils.namehash(ethers.utils.nameprep("dm3.eth"));

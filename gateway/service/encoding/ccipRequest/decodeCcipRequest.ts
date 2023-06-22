@@ -3,7 +3,6 @@ import { decodeText } from "../text/decodeText";
 import { decodeAddr } from "../addr/decodeAddr";
 import { decodeAbi } from "../abi/decodeAbi";
 import { decodeContentHash } from "../contenthash/decodeContentHash";
-import { decodeInterface } from "../interface/decodeInterface";
 import { decodeName } from "../name/decodeName";
 import { decodePubkey } from "../pubkey/decodePubKey";
 import { decodeDNSRecord } from "../dns/decodeDnsRecord";
@@ -30,9 +29,7 @@ export function decodeCcipRequest(calldata: string) {
             case "ABI(bytes,bytes32,uint256)":
                 return { signature, request: decodeAbi(context, args) };
             case "contenthash(bytes32)":
-                return { signature, request: decodeContentHash(context, args) };
-            case "interfaceImplementer(bytes,bytes32,bytes4)":
-                return { signature, request: decodeInterface(context, args) };
+                return { signature, request: decodeContentHash(context, args) };;
             case "name(bytes,bytes32)":
                 return { signature, request: decodeName(context, args) };
             case "pubkey(bytes,bytes32)":

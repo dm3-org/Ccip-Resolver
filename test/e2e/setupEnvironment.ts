@@ -122,15 +122,6 @@ const setupEnvironment = async () => {
         const tx = await l2PublicResolver.connect(alice.connect(l2Provider)).setContenthash(node, "0xe3010170122029f2d17be6139079dc48696d1f582a8530eb9805b561eda517e22a892c7e3f1f")
         const rec = await tx.wait();
     }
-    const prepareSetInterface = async () => {
-        const node = ethers.utils.namehash("alice.eth");
-        console.log("set alice node ", node)
-        const interfaceId = "0x9061b923";
-
-        const tx = await l2PublicResolver.connect(alice.connect(l2Provider)).setInterface(node, interfaceId, alice.address)
-        const rec = await tx.wait();
-
-    }
     const prepareSetName = async () => {
         const node = ethers.utils.namehash("alice.eth");
         console.log("set alice node ", node)
@@ -209,7 +200,6 @@ const setupEnvironment = async () => {
     await prepareSetAddr();
     await prepareSetAbi();
     await prepareSetContentHash();
-    await prepareSetInterface();
     await prepareSetName();
     await prepareSetPubkey();
     await prepareSetDNS();

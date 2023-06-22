@@ -32,8 +32,6 @@ export class CcipRouter {
                 return await this.handleABI(request);
             case "contenthash(bytes32)":
                 return await this.handleContentHash(request);
-            case "interfaceImplementer(bytes,bytes32,bytes4)":
-                return await this.handleInterface(request);
             case "name(bytes,bytes32)":
                 return await this.handleName(request);
             case "pubkey(bytes,bytes32)":
@@ -92,15 +90,7 @@ export class CcipRouter {
         return ethers.utils.defaultAbiCoder.encode(["bytes", proofParamType], [encodedGetTextResult, proof]);
 
     }
-    private async handleInterface(request: any) {
-        const { proof, result } = await this.ensService.proofInterface(request.context, request.node, request.interfaceID);
 
-        const encodedGetTextResult = encodeInterface(result === "0x" ? ethers.constants.AddressZero : result);
-        const proofParamType = await getProofParamType();
-
-        return ethers.utils.defaultAbiCoder.encode(["bytes", proofParamType], [encodedGetTextResult, proof]);
-
-    }
     private async handleName(request: any) {
         const { proof, result } = await this.ensService.proofName(request.context, request.node);
         const encodedGetTextResult = encodeName(result);

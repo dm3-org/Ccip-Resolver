@@ -149,29 +149,7 @@ describe("OptimismResolver Test", () => {
 
             expect(achtualhash).to.equal("ipfs://QmRAQB6YaCyidP37UdDnjFY5vQuiBrcqdyoW1CuDgwxkD4");
         });
-        it.skip("ccip gateway resolves existing interface resolver", async () => {
-            const provider = new MockProvider(hreEthers.provider, fetchRecordFromCcipGateway, optimismResolver);
-            await optimismResolver.connect(alice).setResolverForDomain(
-                ethers.utils.namehash("alice.eth"),
-                bedrockCcipVerifier.address,
-                "http://localhost:8080/{sender}/{data}"
-            );
-            const resolver = await provider.getResolver("alice.eth");
-
-
-            const l2PublicResolverFactory = await hreEthers.getContractFactory("L2PublicResolver");
-
-            const interfaceId = "0x9061b923";
-            const sig = l2PublicResolverFactory.interface.encodeFunctionData("interfaceImplementer",
-                [alice.address, ethers.utils.namehash("alice.eth"), interfaceId]
-            )
-
-            const res = await resolver._fetch(sig);
-
-            //          await require("hardhat").storageLayout.export()
-            expect(res).to.equal(alice.address);
-
-        });
+    
         it("ccip gateway resolves existing name ", async () => {
             const provider = new MockProvider(hreEthers.provider, fetchRecordFromCcipGateway, optimismResolver);
             await optimismResolver.connect(alice).setResolverForDomain(

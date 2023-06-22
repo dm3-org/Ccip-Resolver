@@ -9,7 +9,6 @@ import {ContentHashResolver} from "./profiles/contentHash/ContentHashResolver.so
 import {DNSResolver} from "./profiles/dns/DNSResolver.sol";
 import {NameResolver} from "./profiles/name/NameResolver.sol";
 import {PubkeyResolver} from "./profiles/pubkey/PubkeyResolver.sol";
-import {InterfaceResolver} from "./profiles/interface/InterfaceResolver.sol";
 
 contract L2PublicResolver is
     Multicallable,
@@ -19,8 +18,7 @@ contract L2PublicResolver is
     ContentHashResolver,
     DNSResolver,
     NameResolver,
-    PubkeyResolver,
-    InterfaceResolver
+    PubkeyResolver
 {
     function supportsInterface(
         bytes4 interfaceID
@@ -35,8 +33,7 @@ contract L2PublicResolver is
             ContentHashResolver,
             DNSResolver,
             NameResolver,
-            PubkeyResolver,
-            InterfaceResolver
+            PubkeyResolver
         )
         returns (bool)
     {
