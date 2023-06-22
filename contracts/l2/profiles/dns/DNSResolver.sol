@@ -6,8 +6,6 @@ import {RRUtils, BytesUtils} from "@ensdomains/ens-contracts/contracts/dnssec-or
 import {IDNSRecordResolver} from "./IDNSRecordResolver.sol";
 import {IDNSZoneResolver} from "./IDNSZoneResolver.sol";
 
-import "hardhat/console.sol";
-
 abstract contract DNSResolver is IDNSRecordResolver, IDNSZoneResolver, ResolverBase {
     using RRUtils for *;
     using BytesUtils for bytes;
