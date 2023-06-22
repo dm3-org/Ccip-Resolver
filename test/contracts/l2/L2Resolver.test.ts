@@ -4,7 +4,7 @@ import { ethers } from "hardhat";
 import { L2PublicResolver } from "typechain";
 
 import { expect } from "chai";
-import { keccak256 } from "ethers/lib/utils";
+import { keccak256, toUtf8Bytes } from "ethers/lib/utils";
 import { dnsWireFormat } from "../../helper/encodednsWireFormat";
 
 describe("L2PublicResolver", () => {
@@ -144,6 +144,31 @@ describe("L2PublicResolver", () => {
             );
 
             expect(actualValue).to.equal("0x" + record);
+        })
+        it("set zonehash on L2", async () => {
+            const record = dnsWireFormat("a.example.com", 3600, 1, 1, "1.2.3.4")
+            const node = ethers.utils.namehash(ethers.utils.nameprep("dm3.eth"));
+            const tx = await l2PublicResolver.connect(user1).setZonehash(
+                node,
+                keccak256(toUtf8Bytes("foo"))
+
+            )
+
+            const receipt = await tx.wait();
+            const [dnsRecordChangedEvent] = receipt.events;
+
+            const [eventContext, eventNode, oldHash, newHash] = dnsRecordChangedEvent.args;
+            expect(ethers.utils.getAddress(eventContext)).to.equal(user1.address);
+            expect(eventNode).to.equal(node);
+            expect(oldHash).to.equal("0x");
+            expect(newHash).to.equal(keccak256(toUtf8Bytes("foo")));
+
+            const actualValue = await l2PublicResolver.zonehash(
+                user1.address,
+                node,
+            );
+
+            expect(actualValue).to.equal(keccak256(toUtf8Bytes("foo")));
         })
     })
     describe("Interface", () => {

@@ -100,6 +100,14 @@ export class EnsResolverService {
 
         return this.proofService.createProof(this.l2PublicResolver.address, slot);
     }
+    public async proofZonehash(context: string, node: string, name: string,): Promise<CreateProofResult> {
+        //The storage slot within the particular contract
+        const NAME_SLOT_NAME = 5;
+        const version = await this.l2PublicResolver.recordVersions(context, node);
+        const slot = EnsResolverService.getStorageSlotForZonehash(NAME_SLOT_NAME, version.toNumber(), context, node, name);
+
+        return this.proofService.createProof(this.l2PublicResolver.address, slot);
+    }
 
     //TODO figure out how to deal with view function that performs delegate calls
     public async proofInterface(context: string, node: string, interfaceId: string): Promise<CreateProofResult> {
@@ -176,6 +184,12 @@ export class EnsResolverService {
         const nodeHash = hreEthers.utils.solidityKeccak256(["bytes32", "bytes32"], [node, contextHash]);
         const nameHash = hreEthers.utils.solidityKeccak256(["bytes32", "bytes32"], [name, nodeHash]);
         return nameHash;
+    }
+    public static getStorageSlotForZonehash(slot: number, versionNumber: number, context: string, node: string, name: string) {
+        const innerHash = hreEthers.utils.solidityKeccak256(["uint256", "uint256"], [versionNumber, slot]);
+        const contextHash = hreEthers.utils.solidityKeccak256(["bytes", "bytes32"], [context, innerHash]);
+        const nodeHash = hreEthers.utils.solidityKeccak256(["bytes32", "bytes32"], [node, contextHash]);
+        return nodeHash;
     }
 
 }

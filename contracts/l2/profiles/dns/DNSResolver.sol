@@ -112,11 +112,12 @@ abstract contract DNSResolver is IDNSRecordResolver, IDNSZoneResolver, ResolverB
      * @param node The node to update.
      * @param hash The zonehash to set
      */
-    function setZonehash(bytes calldata context, bytes32 node, bytes calldata hash) external virtual {
+    function setZonehash(bytes32 node, bytes calldata hash) external virtual {
+        bytes memory context = abi.encodePacked(msg.sender);
         uint64 currentRecordVersion = recordVersions[context][node];
         bytes memory oldhash = versionable_zonehashes[currentRecordVersion][context][node];
         versionable_zonehashes[currentRecordVersion][context][node] = hash;
-        emit DNSZonehashChanged(node, oldhash, hash);
+        emit DNSZonehashChanged(context, node, oldhash, hash);
     }
 
     /**

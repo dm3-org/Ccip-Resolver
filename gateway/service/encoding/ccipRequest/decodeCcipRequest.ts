@@ -8,6 +8,7 @@ import { decodeName } from "../name/decodeName";
 import { decodePubkey } from "../pubkey/decodePubKey";
 import { decodeDNSRecord } from "../dns/decodeDnsRecord";
 import { decodeHasDNSRecords } from "../dns/decodeHasDnsRecords";
+import { decodeZonehash } from "../dns/decodeZonehash";
 
 export function decodeCcipRequest(calldata: string) {
     try {
@@ -39,7 +40,9 @@ export function decodeCcipRequest(calldata: string) {
             case "dnsRecord(bytes,bytes32,bytes32,uint16)":
                 return { signature, request: decodeDNSRecord(context, args) };
             case "hasDNSRecords(bytes,bytes32,bytes32)":
-                return { signature, request: decodeHasDNSRecords(context, args) };
+                return { signature, request: decodeHasDNSRecords(context, args) }
+            case "zonehash(bytes,bytes32)":
+                return { signature, request: decodeZonehash(context, args) }
             default:
                 return { signature, request: null };
         }

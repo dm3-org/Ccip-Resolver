@@ -1,6 +1,7 @@
 import { ethers } from "hardhat";
 import { dnsWireFormat } from "../helper/encodednsWireFormat";
 import { L2PublicResolver, L2PublicResolver__factory } from "typechain";
+import { keccak256, toUtf8Bytes } from "ethers/lib/utils";
 /**
  * This script is used to setup the environment for the e2e tests.
  * It asumes that you've set up the local development environment for OP bedrock
@@ -158,7 +159,18 @@ const setupEnvironment = async () => {
             "0x" + record
         )
         const rec = await tx.wait();
-        console.log("set dns rec", rec.events)
+    }
+    const prepareSetZonehash = async () => {
+        const node = ethers.utils.namehash("alice.eth");
+
+        const record = dnsWireFormat("a.example.com", 3600, 1, 1, "1.2.3.4")
+
+        const tx = await l2PublicResolver.connect(alice.connect(l2Provider)).setZonehash(
+            node,
+            keccak256(toUtf8Bytes("foo"))
+        )
+        const rec = await tx.wait();
+        console.log("set dns zh", rec.events)
     }
 
     const prepareTestSubdomain = async () => {
@@ -201,6 +213,7 @@ const setupEnvironment = async () => {
     await prepareSetName();
     await prepareSetPubkey();
     await prepareSetDNS();
+    await prepareSetZonehash();
     await prepareTestSubdomain();
     await prepareTestSubdomain2();
     await nameWrapperProfile();
