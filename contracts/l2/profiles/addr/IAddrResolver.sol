@@ -5,7 +5,7 @@ pragma solidity >=0.8.4;
  * Interface for the legacy (ETH-only) addr function.
  */
 interface IAddrResolver {
-    event AddrChanged(bytes context, bytes32 indexed node, address a);
+    event AddrChanged(bytes context, bytes name, bytes32 indexed node, address a);
 
     /**
      * Returns the address associated with an ENS node.
