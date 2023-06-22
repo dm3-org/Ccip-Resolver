@@ -199,23 +199,25 @@ describe("L2PublicResolver", () => {
             expect(actualName).to.equal("foo");
         });
     });
-    describe("PubKey", () => {
+    describe.only("PubKey", () => {
         it("set pubKey on L2", async () => {
-            const node = ethers.utils.namehash(ethers.utils.nameprep("dm3.eth"));
+            const name = "dm3.eth";
+            const node = ethers.utils.namehash(name);
 
 
             const x = ethers.utils.formatBytes32String("foo");
             const y = ethers.utils.formatBytes32String("bar");
 
-            const tx = await l2PublicResolver.connect(user1).setPubkey(node, x, y);
+            const tx = await l2PublicResolver.connect(user1).setPubkey(dnsEncode(name), x, y);
 
             const receipt = await tx.wait();
             const [pubKeyChangedChangedEvent] = receipt.events;
 
-            const [eventContext, eventNode, eventX, eventY] = pubKeyChangedChangedEvent.args;
+            const [eventContext, eventName, eventNode, eventX, eventY] = pubKeyChangedChangedEvent.args;
 
             expect(ethers.utils.getAddress(eventContext)).to.equal(user1.address);
             expect(eventNode).to.equal(node);
+            expect(eventName).to.equal(dnsEncode(name));
             expect(eventX).to.eql(x);
             expect(eventY).to.eql(y);
 

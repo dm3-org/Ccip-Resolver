@@ -2,7 +2,7 @@
 pragma solidity >=0.8.4;
 
 interface IPubkeyResolver {
-    event PubkeyChanged(bytes context, bytes32 indexed node, bytes x, bytes y);
+    event PubkeyChanged(bytes context, bytes name, bytes32 indexed node, bytes x, bytes y);
 
     /**
      * Returns the SECP256k1 public key associated with an ENS node.

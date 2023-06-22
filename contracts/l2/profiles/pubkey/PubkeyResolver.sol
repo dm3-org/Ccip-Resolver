@@ -1,10 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.4;
 
-import {ResolverBase} from "../ResolverBase.sol";
+import {ResolverBase, BytesUtils} from "../ResolverBase.sol";
 import {IPubkeyResolver} from "./IPubkeyResolver.sol";
 
 abstract contract PubkeyResolver is IPubkeyResolver, ResolverBase {
+    using BytesUtils for bytes;
     struct PublicKey {
         bytes x;
         bytes y;
@@ -14,14 +15,15 @@ abstract contract PubkeyResolver is IPubkeyResolver, ResolverBase {
 
     /**
      * Sets the SECP256k1 public key associated with an ENS node.
-     * @param node The ENS node to query
+     * @param name The ENS node to query
      * @param x the X coordinate of the curve point for the public key.
      * @param y the Y coordinate of the curve point for the public key.
      */
-    function setPubkey(bytes32 node, bytes calldata x, bytes calldata y) external virtual {
+    function setPubkey(bytes calldata name, bytes calldata x, bytes calldata y) external virtual {
         bytes memory context = abi.encodePacked(msg.sender);
+        bytes32 node = name.namehash(0);
         versionable_pubkeys[recordVersions[context][node]][context][node] = PublicKey(x, y);
-        emit PubkeyChanged(context, node, x, y);
+        emit PubkeyChanged(context, name, node, x, y);
     }
 
     /**
