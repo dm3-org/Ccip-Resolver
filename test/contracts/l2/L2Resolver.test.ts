@@ -20,19 +20,21 @@ describe("L2PublicResolver", () => {
 
     describe("TextResolver", () => {
         it("set text record on L2", async () => {
-            const node = ethers.utils.namehash(ethers.utils.nameprep("dm3.eth"));
+            const name = "dm3.eth"
+            const node = ethers.utils.namehash("dm3.eth")
             // record should initially be empty
             expect(await l2PublicResolver.text(user1.address, node, "network.dm3.profile")).to.equal("");
 
-            const tx = await l2PublicResolver.connect(user1).setText(node, "network.dm3.profile", "test");
+            const tx = await l2PublicResolver.connect(user1).setText(dnsEncode(name), "network.dm3.profile", "test");
             const receipt = await tx.wait();
 
             const [textChangedEvent] = receipt.events;
 
-            const [context, eventNode, _, eventKey, eventValue] = textChangedEvent.args;
+            const [context, eventName, eventNode, _, eventKey, eventValue] = textChangedEvent.args;
 
             expect(ethers.utils.getAddress(context)).to.equal(user1.address);
             expect(eventNode).to.equal(node);
+            expect(eventName).to.equal(dnsEncode(name));
             expect(eventKey).to.equal("network.dm3.profile");
             expect(eventValue).to.equal("test");
 
@@ -41,7 +43,7 @@ describe("L2PublicResolver", () => {
         });
     });
 
-    describe.only("AddrResolver", () => {
+    describe("AddrResolver", () => {
         it("set addr record on L2", async () => {
             const name = "a.b.c.d.dm3.eth"
             const node = ethers.utils.namehash(name);

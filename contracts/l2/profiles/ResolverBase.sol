@@ -2,6 +2,7 @@
 pragma solidity >=0.8.4;
 
 import {ERC165} from "@openzeppelin/contracts/utils/introspection/ERC165.sol";
+import {BytesUtils} from "@ensdomains/ens-contracts/contracts/wrapper/BytesUtils.sol";
 
 interface IVersionableResolver {
     event VersionChanged(bytes32 indexed node, uint64 newVersion);

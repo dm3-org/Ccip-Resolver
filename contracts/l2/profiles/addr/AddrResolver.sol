@@ -4,13 +4,9 @@ pragma solidity >=0.8.4;
 import "../ResolverBase.sol";
 import {IAddrResolver} from "./IAddrResolver.sol";
 import {IAddressResolver} from "./IAddressResolver.sol";
-import {BytesUtils} from "@ensdomains/ens-contracts/contracts/wrapper/BytesUtils.sol";
-
-import "hardhat/console.sol";
 
 abstract contract AddrResolver is IAddrResolver, IAddressResolver, ResolverBase {
     using BytesUtils for bytes;
-
     uint256 private constant COIN_TYPE_ETH = 60;
 
     mapping(uint64 => mapping(bytes => mapping(bytes32 => mapping(uint256 => bytes)))) public versionable_addresses;

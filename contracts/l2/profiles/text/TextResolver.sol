@@ -1,23 +1,25 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.4;
 
-import {ResolverBase} from "../ResolverBase.sol";
+import {ResolverBase, BytesUtils} from "../ResolverBase.sol";
 import {ITextResolver} from "./ITextResolver.sol";
 
 abstract contract TextResolver is ITextResolver, ResolverBase {
-    mapping(uint64 => mapping(bytes => mapping(bytes32 => mapping(string => string)))) versionable_texts;
+    using BytesUtils for bytes;
+    mapping(uint64 => mapping(bytes => mapping(bytes32 => mapping(string => string)))) public versionable_texts;
 
     /**
      * Sets the text data associated with an ENS node and key.
      * May only be called by the owner of that node in the ENS registry.
-     * @param node The node to update.
+     * @param name The name to update.
      * @param key The key to set.
      * @param value The text data value to set.
      */
-    function setText(bytes32 node, string calldata key, string calldata value) external virtual {
+    function setText(bytes calldata name, string calldata key, string calldata value) external virtual {
+        bytes32 node = name.namehash(0);
         bytes memory context = abi.encodePacked(msg.sender);
         versionable_texts[recordVersions[context][node]][context][node][key] = value;
-        emit TextChanged(context, node, key, key, value);
+        emit TextChanged(context, name, node, key, key, value);
     }
 
     /**
