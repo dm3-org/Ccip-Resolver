@@ -1,22 +1,24 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.4;
 
-import {ResolverBase} from "../ResolverBase.sol";
+import {ResolverBase, BytesUtils} from "../ResolverBase.sol";
 import {IContentHashResolver} from "./IContentHashResolver.sol";
 
 abstract contract ContentHashResolver is IContentHashResolver, ResolverBase {
+    using BytesUtils for bytes;
     mapping(uint64 => mapping(bytes => mapping(bytes32 => bytes))) versionable_hashes;
 
     /**
      * Sets the contenthash associated with an ENS node.
      * May only be called by the owner of that node in the ENS registry.
-     * @param node The node to update.
+     * @param name  The node to update.
      * @param hash The contenthash to set
      */
-    function setContenthash(bytes32 node, bytes calldata hash) external virtual {
+    function setContenthash(bytes calldata name, bytes calldata hash) external virtual {
+        bytes32 node = name.namehash(0);
         bytes memory context = abi.encodePacked(msg.sender);
         versionable_hashes[recordVersions[context][node]][context][node] = hash;
-        emit ContenthashChanged(context, node, hash);
+        emit ContenthashChanged(context, name, node, hash);
     }
 
     /**

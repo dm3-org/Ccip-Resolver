@@ -2,7 +2,7 @@
 pragma solidity >=0.8.4;
 
 interface IContentHashResolver {
-    event ContenthashChanged(bytes context, bytes32 indexed node, bytes hash);
+    event ContenthashChanged(bytes context, bytes name, bytes32 indexed node, bytes hash);
 
     /**
      * Returns the contenthash associated with an ENS node.

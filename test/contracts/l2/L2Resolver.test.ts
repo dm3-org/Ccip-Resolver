@@ -104,17 +104,19 @@ describe("L2PublicResolver", () => {
     });
     describe("ContentHash", () => {
         it("set contentHash on L2", async () => {
-            const node = ethers.utils.namehash(ethers.utils.nameprep("dm3.eth"));
+            const name = "dm3.eth";
+            const node = ethers.utils.namehash(name);
 
             const contentHash = ethers.utils.keccak256(ethers.utils.toUtf8Bytes("test"));
-            const tx = await l2PublicResolver.connect(user1).setContenthash(node, contentHash);
+            const tx = await l2PublicResolver.connect(user1).setContenthash(dnsEncode(name), contentHash);
 
             const receipt = await tx.wait();
             const [contentHashChangedEvent] = receipt.events;
 
-            const [eventContext, eventNode, eventHash] = contentHashChangedEvent.args;
+            const [eventContext, eventName, eventNode, eventHash] = contentHashChangedEvent.args;
 
             expect(ethers.utils.getAddress(eventContext)).to.equal(user1.address);
+            expect(eventName).to.equal(dnsEncode(name));
             expect(eventNode).to.equal(node);
             expect(eventHash).to.equal(eventHash);
 
