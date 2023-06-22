@@ -177,18 +177,20 @@ describe("L2PublicResolver", () => {
         })
     })
 
-    describe("Name", () => {
+    describe.only("Name", () => {
         it("set name on L2", async () => {
-            const node = ethers.utils.namehash(ethers.utils.nameprep("dm3.eth"));
+            const name = "dm3.eth";
+            const node = ethers.utils.namehash(name);
 
-            const tx = await l2PublicResolver.connect(user1).setName(node, "foo");
+            const tx = await l2PublicResolver.connect(user1).setName(dnsEncode(name), "foo");
 
             const receipt = await tx.wait();
             const [nameChangedEvent] = receipt.events;
 
-            const [eventContext, eventNode, eventNewName] = nameChangedEvent.args;
+            const [eventContext, eventName, eventNode, eventNewName] = nameChangedEvent.args;
 
             expect(ethers.utils.getAddress(eventContext)).to.equal(user1.address);
+            expect(eventName).to.equal(dnsEncode(name));
             expect(eventNode).to.equal(node);
             expect(eventNewName).to.equal("foo");
 

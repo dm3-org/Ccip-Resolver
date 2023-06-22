@@ -1,21 +1,23 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.4;
 
-import {ResolverBase} from "../ResolverBase.sol";
+import {ResolverBase, BytesUtils} from "../ResolverBase.sol";
 import {INameResolver} from "./INameResolver.sol";
 
 abstract contract NameResolver is INameResolver, ResolverBase {
-    mapping(uint64 => mapping(bytes => mapping(bytes32 => string))) versionable_names;
+    using BytesUtils for bytes;
+    mapping(uint64 => mapping(bytes => mapping(bytes32 => string))) public versionable_names;
 
     /**
      * Sets the name associated with an ENS node, for reverse records.
      * May only be called by the owner of that node in the ENS registry.
-     * @param node The node to update.
+     * @param nodeName The node to update.
      */
-    function setName(bytes32 node, string calldata newName) external virtual {
+    function setName(bytes calldata nodeName, string calldata newName) external virtual {
+        bytes32 node = nodeName.namehash(0);
         bytes memory context = abi.encodePacked(msg.sender);
         versionable_names[recordVersions[context][node]][context][node] = newName;
-        emit NameChanged(context, node, newName);
+        emit NameChanged(context, nodeName, node, newName);
     }
 
     /**

@@ -2,7 +2,7 @@
 pragma solidity >=0.8.4;
 
 interface INameResolver {
-    event NameChanged(bytes context, bytes32 indexed node, string name);
+    event NameChanged(bytes context, bytes nodeName, bytes32 indexed node, string name);
 
     /**
      * Returns the name associated with an ENS node, for reverse records.
