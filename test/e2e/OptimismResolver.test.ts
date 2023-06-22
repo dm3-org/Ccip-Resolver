@@ -212,7 +212,7 @@ describe("OptimismResolver Test", () => {
             expect(x).to.equal(ethers.utils.formatBytes32String("foo"))
             expect(y).to.equal(ethers.utils.formatBytes32String("bar"))
         });
-        it.only("ccip gateway resolves dnsRecord ", async () => {
+        it("ccip gateway resolves dnsRecord ", async () => {
             const provider = new MockProvider(hreEthers.provider, fetchRecordFromCcipGateway, optimismResolver);
             await optimismResolver.connect(alice).setResolverForDomain(
                 ethers.utils.namehash("alice.eth"),
@@ -232,8 +232,29 @@ describe("OptimismResolver Test", () => {
             const [response] = l2PublicResolverFactory.interface.decodeFunctionResult("dnsRecord", await resolver._fetch(sig));
             //await require("hardhat").storageLayout.export()
             // await require("hardhat").storageLayout.export()
-            expect(response).to.equal( "0x161076578616d706c6503636f6d000001000100000e100004010203040")
-            
+            expect(response).to.equal("0x161076578616d706c6503636f6d000001000100000e100004010203040")
+
+        });
+        it.only("ccip gateway resolves hasDnsRecords", async () => {
+            const provider = new MockProvider(hreEthers.provider, fetchRecordFromCcipGateway, optimismResolver);
+            await optimismResolver.connect(alice).setResolverForDomain(
+                ethers.utils.namehash("alice.eth"),
+                bedrockCcipVerifier.address,
+                "http://localhost:8080/{sender}/{data}"
+            );
+            const resolver = await provider.getResolver("alice.eth");
+            const l2PublicResolverFactory = await hreEthers.getContractFactory("L2PublicResolver");
+
+            const record = dnsWireFormat("a.example.com", 3600, 1, 1, "1.2.3.4")
+
+            const sig = l2PublicResolverFactory.interface.encodeFunctionData("hasDNSRecords",
+                [alice.address, ethers.utils.namehash("alice.eth"), keccak256("0x" + record.substring(0, 30))]
+            )
+
+            const [response] = l2PublicResolverFactory.interface.decodeFunctionResult("hasDNSRecords", await resolver._fetch(sig));
+            // await require("hardhat").storageLayout.export()
+            expect(response).to.equal(true)
+
         });
 
 

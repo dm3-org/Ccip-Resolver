@@ -7,6 +7,7 @@ import { encodeInterface } from "./../encoding/interface/encodeInterface";
 import { encodeName } from "./../encoding/name/encodeName";
 import { encodePubkey } from "./../encoding/pubkey/encodePubkey";
 import { encodeDnsRecord } from "./../encoding/dns/encodeDnsRecord";
+import { encodeHasDnsRecord } from "./../encoding/dns/encodeHasDnsRecords";
 
 import { EnsResolverService } from "../ens/EnsService";
 import { getProofParamType } from "../encoding/proof/getProofParamType";
@@ -38,6 +39,8 @@ export class CcipRouter {
                 return await this.handlePubkey(request);
             case "dnsRecord(bytes,bytes32,bytes32,uint16)":
                 return await this.handleDnsRecord(request);
+            case "hasDNSRecords(bytes,bytes32,bytes32)":
+                return await this.handleHasDnsRecords(request);
             default:
                 return null;
         }
@@ -116,6 +119,13 @@ export class CcipRouter {
 
         const { proof, result } = await this.ensService.proofDnsRecord(request.context, request.node, request.name, request.resource);
         const encodedGetDnstResult = encodeDnsRecord(result);
+        const proofParamType = await getProofParamType();
+        return ethers.utils.defaultAbiCoder.encode(["bytes", proofParamType], [encodedGetDnstResult, proof]);
+
+    }
+    private async handleHasDnsRecords(request: any) {
+        const { proof, result } = await this.ensService.proofHasDnsRecords(request.context, request.node, request.name);
+        const encodedGetDnstResult = encodeHasDnsRecord(result);
         const proofParamType = await getProofParamType();
         return ethers.utils.defaultAbiCoder.encode(["bytes", proofParamType], [encodedGetDnstResult, proof]);
 
