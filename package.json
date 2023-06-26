@@ -4,7 +4,7 @@
     "description": "",
     "scripts": {
         "compile": "hardhat compile",
-        "test": "hardhat test",
+        "test": "hardhat test ",
         "lint:fix": "prettier --write 'scripts/**/*.{js,ts}' 'test/**/*.{js,ts}' 'tasks/**/*.{js,ts}' && tslint --fix --config tslint.json --project tsconfig.json && solhint contracts/**/*.sol",
         "lint": "tslint --config tslint.json --project tsconfig.json && solhint contracts/**/*.sol",
         "format": "prettier --check \"**/*.{ts,js,sol}\"",
@@ -32,6 +32,7 @@
         "@types/chai": "^4.3.0",
         "@types/mocha": "^9.0.0",
         "@types/node": "^16.11.12",
+        "axios-mock-adapter": "^1.21.5",
         "babel-eslint": "^10.1.0",
         "chai": "^4.3.4",
         "chai-bignumber": "^3.0.0",
@@ -76,6 +77,7 @@
         "@eth-optimism/sdk": "^2.0.2",
         "ens-contracts-legacy": "https://github.com/ensdomains/resolvers.git#v0.1.7",
         "express": "^4.18.2",
-        "solidity-bytes-utils": "^0.8.0"
+        "solidity-bytes-utils": "^0.8.0",
+        "winston": "^3.9.0"
     }
 }

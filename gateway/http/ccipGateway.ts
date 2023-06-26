@@ -1,40 +1,51 @@
-import { ethers } from "ethers";
-import express from "express";
-import { CcipRouter } from "../service/ccip/CcipRouter";
-import { decodeCcipRequest } from "../service/encoding/ccipRequest/decodeCcipRequest";
+import express from 'express';
+import { Config } from '../config/Config';
+import { signingHandler } from '../handler/signing/signingHandler';
 
-export function ccipGateway(
-    l1provider: ethers.providers.StaticJsonRpcProvider,
-    l2provider: ethers.providers.JsonRpcProvider
-) {
-    global.l1_provider = l1provider;
-    global.l2_provider = l2provider;
-
+export function ccipGateway(config: Config) {
     const router = express.Router();
 
-    router.get("/:resolverAddr/:calldata", async (req: express.Request, res: express.Response) => {
-        const { resolverAddr, calldata } = req.params;
-        try {
-            const { request, signature } = decodeCcipRequest(calldata);
+    router.get(
+        '/:resolverAddr/:calldata',
+        async (
+            req: express.Request,
+            res: express.Response,
+        ) => {
+            const { resolverAddr } = req.params;
+            const calldata = req.params.calldata.replace('.json', '');
 
-            if (!request) {
-                return res.status(404).send({ message: `unsupported signature ${signature}` });
+            req.app.locals.logger.info(`GET ${resolverAddr}`);
+
+            try {
+                const configEntry = config[resolverAddr];
+
+                if (!configEntry) {
+                    res.status(404).send({
+                        message: 'Unknown resolver selector pair',
+                    });
+                }
+                switch (configEntry.type) {
+                    case 'signing':
+                        const response = await signingHandler(
+                            calldata,
+                            resolverAddr,
+                            configEntry,
+                        );
+
+                        res.status(200).send({ data: response });
+                        break;
+
+                    default:
+                        res.status(404).send({
+                            message: 'Unsupported entry type',
+                        });
+                }
+
+            } catch (e) {
+                req.app.locals.logger.warn((e as Error).message);
+                res.status(400).send({ message: 'Unknown error' });
             }
-
-            const router = await CcipRouter.instance();
-
-            const response = await router.handleRequest(signature, request);
-
-            if (!response) {
-                console.log("no res");
-                return res.status(404).send({ message: `unable to process request` });
-            }
-
-            res.status(200).send({ data: response });
-        } catch (e) {
-            console.warn((e as Error).message);
-            res.status(400).send({ message: "Cant process request" });
-        }
-    });
+        },
+    );
     return router;
 }

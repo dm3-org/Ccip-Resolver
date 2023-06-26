@@ -1,16 +1,34 @@
-import bodyParser from "body-parser";
-import { ethers } from "ethers";
-import express from "express";
-import { ccipGateway } from "./http/ccipGateway";
+import * as dotenv from 'dotenv';
+import bodyParser from 'body-parser';
+import express from 'express';
+import http from 'http';
+import cors from 'cors';
+import winston from 'winston';
 
-const port = 3000;
-const main = async () => {
-    const l1_provider = new ethers.providers.JsonRpcProvider(process.env.MAINNET_RPC_URL);
-    const l2_provider = new ethers.providers.JsonRpcProvider(process.env.OPTIMISM_RPC_URL);
+import { ccipGateway } from './http/ccipGateway';
 
-    const app = express();
-    app.use(bodyParser.json());
-    app.use(ccipGateway(l1_provider, l2_provider));
+dotenv.config();
 
-    app.listen(port, () => console.log(`Listening on port ${port}`));
-};
+const app = express();
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ limit: '50mb' }));
+
+const server = http.createServer(app);
+
+app.use(cors());
+app.use(bodyParser.json());
+
+(async () => {
+    app.locals.logger = winston.createLogger({
+        transports: [new winston.transports.Console()],
+    });
+
+    const config = JSON.parse(process.env.CONFIG as string);
+    app.use('/', ccipGateway(config));
+})();
+const port = process.env.PORT || '8081';
+server.listen(port, () => {
+    app.locals.logger.info(
+        '[Server] listening at port ' + port + ' and dir ' + __dirname,
+    );
+});
