@@ -35,6 +35,7 @@ contract OptimismResolver is IExtendedResolver, IContextResolver, SupportsInterf
 
     struct Resolver {
         string gatewayUrl;
+        //TODO rename to verifier
         ICcipResponseVerifier resolverAddress;
     }
 
