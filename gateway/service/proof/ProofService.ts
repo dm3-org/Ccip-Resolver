@@ -9,9 +9,9 @@ export enum StorageLayout {
     /**
      * address,uint,bytes32,bool
      */
-    NORMAL,
+    FIXED,
     /**
-     * array,bytes
+     * array,bytes,string
      */
     DYNAMIC
 }
@@ -115,7 +115,7 @@ export class ProofService {
         layout: StorageLayout
     ): Promise<{ storageProof: StorageProof[]; accountProof: string[]; storageHash: string; length: number }> {
 
-        if (layout === StorageLayout.NORMAL) {
+        if (layout === StorageLayout.FIXED) {
             /**
             * Since we're prooving one entrie slot the length is always 32
             */

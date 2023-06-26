@@ -33,7 +33,7 @@ describe("ProofServiceTest", () => {
 
     it("bytes32 slot", async () => {
         const proofService = new ProofService(l1Provider, l2Provider);
-        const { proof } = await proofService.createProof(PROOF_SERVICE_TEST_CONTRACT, ethers.constants.HashZero, StorageLayout.NORMAL);
+        const { proof } = await proofService.createProof(PROOF_SERVICE_TEST_CONTRACT, ethers.constants.HashZero, StorageLayout.FIXED);
 
         const responseBytes = await BedrockProofVerifier.getProofValue(proof);
         console.log(responseBytes);
