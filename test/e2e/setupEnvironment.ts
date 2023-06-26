@@ -1,6 +1,6 @@
 import { ethers } from "hardhat";
 import { dnsWireFormat } from "../helper/encodednsWireFormat";
-import { L2PublicResolver, L2PublicResolver__factory } from "typechain";
+import { L2PublicResolver, L2PublicResolver__factory, ProofServiceTestContract, ProofServiceTestContract__factory } from "typechain";
 import { dnsEncode, keccak256, toUtf8Bytes } from "ethers/lib/utils";
 /**
  * This script is used to setup the environment for the e2e tests.
@@ -25,6 +25,10 @@ const setupEnvironment = async () => {
     //Another resolver contract not related to the OptimismResolver contract
     let foreignResolver: L2PublicResolver
 
+    //Test proof logic
+
+    let proofServiceTestContract: ProofServiceTestContract;
+
     const l2Whale = whale.connect(l2Provider);
 
     //Verifiy that the local development environment is set up correctly
@@ -42,6 +46,10 @@ const setupEnvironment = async () => {
     await foreignResolver.deployed();
     console.log(`L2 Foreign resolver deployed at ${foreignResolver.address}`);
 
+
+    const proofServiceTestContractFactory = (await ethers.getContractFactory("ProofServiceTestContract")) as ProofServiceTestContract__factory;
+    proofServiceTestContract = await proofServiceTestContractFactory.connect(l2Whale).deploy();
+    console.log(`ProofServiceTestContract deployed at ${proofServiceTestContract.address}`);
 
     //Fund alice account
     const fundTx = await l2Whale.sendTransaction({
@@ -61,6 +69,15 @@ const setupEnvironment = async () => {
     console.log(`${bob.address} funded with ${await l2Provider.getBalance(bob.address)}`);
 
     //Create data on L2 that later be used for the tests
+    const prepareTestPrimitiveSlot = async () => {
+        //Prepare test single slot
+        const name = dnsEncode("bob.eth");
+        const tx = await l2PublicResolver.connect(alice.connect(l2Provider)).clearRecords(name);
+        const rec = await tx.wait();
+        console.log(rec.events);
+
+
+    };
     const prepareTestSingleSlot = async () => {
         //Prepare test single slot
         const name = dnsEncode("alice.eth");
@@ -153,7 +170,6 @@ const setupEnvironment = async () => {
             keccak256(toUtf8Bytes("foo"))
         )
         const rec = await tx.wait();
-        console.log("set dns zh", rec.events)
     }
 
     const prepareTestSubdomain = async () => {
@@ -169,8 +185,7 @@ const setupEnvironment = async () => {
         const recordName = "bobs-slot";
         const value = "bobs-subdomain-record";
 
-        console.log("bob adddres", bob.address)
-        console.log("bob pk", bob.privateKey)
+
 
         await l2PublicResolver.connect(bob.connect(l2Provider)).setText(name, recordName, value);
     };
@@ -186,6 +201,13 @@ const setupEnvironment = async () => {
         const name = dnsEncode("alice.eth");
         await foreignResolver.connect(alice.connect(l2Provider))["setAddr(bytes,address)"](name, alice.address);
     };
+
+    const prepateProofServiceTestContractBytes32 = async () => {
+        await proofServiceTestContract.setBytes32(ethers.utils.namehash("alice.eth"));
+        await proofServiceTestContract.setBool(true)
+        await proofServiceTestContract.setUint256(123)
+    }
+    await prepareTestPrimitiveSlot();
     await prepareTestSingleSlot();
     await prepareTest31yte();
     await prepeTestMultipleSlots();
@@ -200,6 +222,12 @@ const setupEnvironment = async () => {
     await prepareTestSubdomain2();
     await nameWrapperProfile();
     await prepareForeign();
+
+    await prepateProofServiceTestContractBytes32();
+
+
     console.log("Environment setup complete wait a few minutes until everything is set");
 };
+
+
 setupEnvironment();

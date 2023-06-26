@@ -109,6 +109,11 @@ export class EnsResolverService {
     }
 
 
+    public static getStorageSlotForVersion(slot: number, context: string, node: string) {
+        const innerHash = hreEthers.utils.solidityKeccak256(["bytes", "uint256"], [context, slot]);
+        const contextHash = hreEthers.utils.solidityKeccak256(["bytes", "bytes32"], [node, innerHash]);
+        return contextHash;
+    }
     public static getStorageSlotForText(slot: number, versionNumber: number, context: string, node: string, recordName: string) {
         const innerHash = hreEthers.utils.solidityKeccak256(["uint256", "uint256"], [versionNumber, slot]);
         const contextHash = hreEthers.utils.solidityKeccak256(["bytes", "bytes32"], [context, innerHash]);

@@ -3,9 +3,13 @@ import { ethers } from "hardhat";
 import { BedrockProofVerifier, L2PublicResolver, L2PublicResolver__factory } from "typechain";
 import { getPublicResolverAddress } from "../../gateway/constants";
 import { EnsResolverService } from "../../gateway/service/ens/EnsService";
-import { ProofService } from "../../gateway/service/proof/ProofService";
+import { ProofService, StorageLayout } from "../../gateway/service/proof/ProofService";
+import { dnsEncode } from "ethers/lib/utils";
+import { BigNumber } from "ethers";
 
 const PUBLIC_RESOLVER_ADDRESS = getPublicResolverAddress();
+
+const PROOF_SERVICE_TEST_CONTRACT = "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0";
 describe("ProofServiceTest", () => {
     let BedrockProofVerifier: BedrockProofVerifier;
     let publicResolver: L2PublicResolver;
@@ -18,7 +22,6 @@ describe("ProofServiceTest", () => {
 
     beforeEach(async () => {
         //See github.com/ethereum-optimism/optimism/op-bindings/predeploys/dev_addresses.go
-
         const BedrockProofVerifierFactory = await ethers.getContractFactory("BedrockProofVerifier");
         BedrockProofVerifier = (await BedrockProofVerifierFactory.deploy(
             "0x6900000000000000000000000000000000000000"
@@ -28,12 +31,20 @@ describe("ProofServiceTest", () => {
         publicResolver = await factory.attach(PUBLIC_RESOLVER_ADDRESS).connect(l2Provider);
     });
 
+    it("bytes32 slot", async () => {
+        const proofService = new ProofService(l1Provider, l2Provider);
+        const { proof } = await proofService.createProof(PROOF_SERVICE_TEST_CONTRACT, ethers.constants.HashZero, StorageLayout.NORMAL);
+
+        const responseBytes = await BedrockProofVerifier.getProofValue(proof);
+        console.log(responseBytes);
+        expect(responseBytes).to.equal(ethers.utils.namehash("alice.eth"));
+    })
+
     it("empy slot", async () => {
         const proofService = new ProofService(l1Provider, l2Provider);
 
         const node = ethers.utils.namehash("alice1234.eth");
         const recordName = "empy-slot";
-
 
 
         const slot = EnsResolverService.getStorageSlotForText(2, 0, alice.address, node, recordName);

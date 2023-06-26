@@ -3,6 +3,18 @@ import { asL2Provider, CrossChainMessenger, L2Provider } from "@eth-optimism/sdk
 import { BigNumber, ethers } from "ethers";
 import { keccak256 } from "ethers/lib/utils";
 import { CreateProofResult, EthGetProofResponse, StorageProof } from "./types";
+
+
+export enum StorageLayout {
+    /**
+     * address,uint,bytes32,bool
+     */
+    NORMAL,
+    /**
+     * array,bytes
+     */
+    DYNAMIC
+}
 /**
  * The proofService class can be used to calculate proofs for a given target and slot on the Optimism Bedrock network. It's also capable of proofing long types such as mappings or string by using all included slots in the proof.
  *
@@ -33,16 +45,18 @@ export class ProofService {
      * @param target The address of the smart contract that contains the storage slot
      * @param slot The storage slot the proof should be created for
      */
-    public async createProof(target: string, slot: string): Promise<CreateProofResult> {
+
+    public async createProof(target: string, slot: string, layout: StorageLayout = StorageLayout.DYNAMIC): Promise<CreateProofResult> {
         //use the most recent block to build the proof posted to L1
         const { l2OutputIndex, number, stateRoot, hash } = await this.getLatestProposedBlock();
 
-        const { storageProof, storageHash, accountProof, length } = await this.getProofForSlot(slot, number, target);
+        const { storageProof, storageHash, accountProof, length } = await this.getProofForSlot(slot, number, target, layout);
 
         //The messengePasserStorageRoot is important for the verification on chain
         const messagePasserStorageRoot = await this.getMessagePasserStorageRoot(number);
 
         const proof = {
+            layout: layout,
             //The contract address of the slot beeing proofed
             target,
             //The length actual length of the value
@@ -90,18 +104,26 @@ export class ProofService {
         return { stateRoot, hash, number: output.l2BlockNumber.toNumber(), l2OutputIndex: l2OutputIndex.toNumber() };
     }
 
+
     /**
      * Creates the actual proof using the eth_proof RPC method. To get an better understanding how the storage layout looks like visit {@link https://docs.soliditylang.org/en/v0.8.17/internals/layout_in_storage.html}
      */
     private async getProofForSlot(
         initalSlot: string,
         blockNr: number,
-        resolverAddr: string
+        resolverAddr: string,
+        layout: StorageLayout
     ): Promise<{ storageProof: StorageProof[]; accountProof: string[]; storageHash: string; length: number }> {
+
+        if (layout === StorageLayout.NORMAL) {
+            /**
+            * Since we're prooving one entrie slot the length is always 32
+            */
+            return this.handleShortType(resolverAddr, initalSlot, blockNr, 32)
+        }
         //The initial value. We used it to determine how many slots we need to proof
         //See https://docs.soliditylang.org/en/v0.8.17/internals/layout_in_storage.html#mappings-and-dynamic-arrays
         const slotValue = await this.l2_provider.getStorageAt(resolverAddr, initalSlot, blockNr);
-
 
         const length = this.decodeLength(slotValue);
 
