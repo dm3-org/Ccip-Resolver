@@ -40,10 +40,76 @@ export class EnsResolverService {
 
         return this.proofService.createProof(this.l2PublicResolver.address, slot);
     }
+    public async proofAbi(context: string, node: string, contentType: number): Promise<CreateProofResult> {
+        //The storage slot within the particular contract
+        const ABI_SLOT_NAME = 3;
+        const version = await this.l2PublicResolver.recordVersions(context, node);
+
+        const slot = EnsResolverService.getStorageSlotForAbi(ABI_SLOT_NAME, version.toNumber(), context, node, contentType);
+
+        return this.proofService.createProof(this.l2PublicResolver.address, slot);
+    }
+    public async proofContentHash(context: string, node: string): Promise<CreateProofResult> {
+        //The storage slot within the particular contract
+        const CONTENTHASH_SLOT_NAME = 4;
+        const version = await this.l2PublicResolver.recordVersions(context, node);
+
+        const slot = EnsResolverService.getStorageSlotForContentType(CONTENTHASH_SLOT_NAME, version.toNumber(), context, node);
+        return this.proofService.createProof(this.l2PublicResolver.address, slot);
+    }
+    public async proofName(context: string, node: string): Promise<CreateProofResult> {
+        //The storage slot within the particular contract
+        const NAME_SLOT_NAME = 8;
+        const version = await this.l2PublicResolver.recordVersions(context, node);
+        const slot = EnsResolverService.getStorageSlotForName(NAME_SLOT_NAME, version.toNumber(), context, node);
+        return this.proofService.createProof(this.l2PublicResolver.address, slot);
+    }
+    public async proofPubkey(context: string, node: string,): Promise<CreateProofResult> {
+        //The storage slot within the particular contract
+        const PUBKEY_SLOT_NAME = 9;
+
+        const version = await this.l2PublicResolver.recordVersions(context, node);
+        const slot = EnsResolverService.getStorageSlotForPubkey(PUBKEY_SLOT_NAME, version.toNumber(), context, node)
+
+        const slotY = ethers.BigNumber.from(slot).add(1).toHexString();
+
+        const proofx = await this.proofService.createProof(this.l2PublicResolver.address, slot);
+        const proofy = await this.proofService.createProof(this.l2PublicResolver.address, slotY);
+
+        //TOOD think about how to deal with this
+        return {
+            proof: proofy.proof,
+            result: [proofx.result, proofy.result] as any
+        }
+    }
+
+    public async proofDnsRecord(context: string, node: string, name: string, resource: string): Promise<CreateProofResult> {
+        //The storage slot within the particular contract
+        const NAME_SLOT_NAME = 6;
+        const version = await this.l2PublicResolver.recordVersions(context, node);
+        const slot = EnsResolverService.getStorageSlotForDnsRecord(NAME_SLOT_NAME, version.toNumber(), context, node, name, resource);
+
+        return this.proofService.createProof(this.l2PublicResolver.address, slot);
+    }
+    public async proofHasDnsRecords(context: string, node: string, name: string,): Promise<CreateProofResult> {
+        //The storage slot within the particular contract
+        const NAME_SLOT_NAME = 6;
+        const version = await this.l2PublicResolver.recordVersions(context, node);
+        const slot = EnsResolverService.getStorageSlotForHasDnsRecords(NAME_SLOT_NAME, version.toNumber(), context, node, name,);
+
+        return this.proofService.createProof(this.l2PublicResolver.address, slot);
+    }
+    public async proofZonehash(context: string, node: string, name: string,): Promise<CreateProofResult> {
+        //The storage slot within the particular contract
+        const NAME_SLOT_NAME = 5;
+        const version = await this.l2PublicResolver.recordVersions(context, node);
+        const slot = EnsResolverService.getStorageSlotForZonehash(NAME_SLOT_NAME, version.toNumber(), context, node, name);
+
+        return this.proofService.createProof(this.l2PublicResolver.address, slot);
+    }
+
 
     public static getStorageSlotForText(slot: number, versionNumber: number, context: string, node: string, recordName: string) {
-        //versionable_texts[number][node][key]
-        //versionable_texts[inner][middle][outer]
         const innerHash = hreEthers.utils.solidityKeccak256(["uint256", "uint256"], [versionNumber, slot]);
         const contextHash = hreEthers.utils.solidityKeccak256(["bytes", "bytes32"], [context, innerHash]);
         const middleHash = hreEthers.utils.solidityKeccak256(["bytes32", "bytes32"], [node, contextHash]);
@@ -57,4 +123,53 @@ export class EnsResolverService {
         const outerHash = hreEthers.utils.solidityKeccak256(["uint256", "bytes32"], [coinType, nodeHash]);
         return outerHash;
     }
+    public static getStorageSlotForAbi(slot: number, versionNumber: number, context: string, node: string, contentType: number) {
+        const innerHash = hreEthers.utils.solidityKeccak256(["uint256", "uint256"], [versionNumber, slot]);
+        const contextHash = hreEthers.utils.solidityKeccak256(["bytes", "bytes32"], [context, innerHash]);
+        const nodeHash = hreEthers.utils.solidityKeccak256(["bytes32", "bytes32"], [node, contextHash]);
+        const outerHash = hreEthers.utils.solidityKeccak256(["uint256", "bytes32"], [contentType, nodeHash]);
+        return outerHash;
+    }
+    public static getStorageSlotForContentType(slot: number, versionNumber: number, context: string, node: string,) {
+        const innerHash = hreEthers.utils.solidityKeccak256(["uint256", "uint256"], [versionNumber, slot]);
+        const contextHash = hreEthers.utils.solidityKeccak256(["bytes", "bytes32"], [context, innerHash]);
+        const outerHash = hreEthers.utils.solidityKeccak256(["bytes32", "bytes32"], [node, contextHash]);
+        return outerHash;
+    }
+
+    public static getStorageSlotForName(slot: number, versionNumber: number, context: string, node: string,) {
+        const innerHash = hreEthers.utils.solidityKeccak256(["uint256", "uint256"], [versionNumber, slot]);
+        const contextHash = hreEthers.utils.solidityKeccak256(["bytes", "bytes32"], [context, innerHash]);
+        const outerHash = hreEthers.utils.solidityKeccak256(["bytes32", "bytes32"], [node, contextHash]);
+        return outerHash;
+    }
+
+    public static getStorageSlotForPubkey(slot: number, versionNumber: number, context: string, node: string,) {
+        const innerHash = hreEthers.utils.solidityKeccak256(["uint256", "uint256"], [versionNumber, slot]);
+        const contextHash = hreEthers.utils.solidityKeccak256(["bytes", "bytes32"], [context, innerHash]);
+        const nodeHash = hreEthers.utils.solidityKeccak256(["bytes32", "bytes32"], [node, contextHash]);
+        return nodeHash;
+    }
+    public static getStorageSlotForDnsRecord(slot: number, versionNumber: number, context: string, node: string, name: string, resource: string) {
+        const innerHash = hreEthers.utils.solidityKeccak256(["uint256", "uint256"], [versionNumber, slot]);
+        const contextHash = hreEthers.utils.solidityKeccak256(["bytes", "bytes32"], [context, innerHash]);
+        const nodeHash = hreEthers.utils.solidityKeccak256(["bytes32", "bytes32"], [node, contextHash]);
+        const nameHash = hreEthers.utils.solidityKeccak256(["bytes32", "bytes32"], [name, nodeHash]);
+        const resourceHash = hreEthers.utils.solidityKeccak256(["uint256", "bytes32"], [resource, nameHash]);
+        return resourceHash;
+    }
+    public static getStorageSlotForHasDnsRecords(slot: number, versionNumber: number, context: string, node: string, name: string) {
+        const innerHash = hreEthers.utils.solidityKeccak256(["uint256", "uint256"], [versionNumber, slot]);
+        const contextHash = hreEthers.utils.solidityKeccak256(["bytes", "bytes32"], [context, innerHash]);
+        const nodeHash = hreEthers.utils.solidityKeccak256(["bytes32", "bytes32"], [node, contextHash]);
+        const nameHash = hreEthers.utils.solidityKeccak256(["bytes32", "bytes32"], [name, nodeHash]);
+        return nameHash;
+    }
+    public static getStorageSlotForZonehash(slot: number, versionNumber: number, context: string, node: string, name: string) {
+        const innerHash = hreEthers.utils.solidityKeccak256(["uint256", "uint256"], [versionNumber, slot]);
+        const contextHash = hreEthers.utils.solidityKeccak256(["bytes", "bytes32"], [context, innerHash]);
+        const nodeHash = hreEthers.utils.solidityKeccak256(["bytes32", "bytes32"], [node, contextHash]);
+        return nodeHash;
+    }
+
 }

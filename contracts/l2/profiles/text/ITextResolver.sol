@@ -2,7 +2,7 @@
 pragma solidity >=0.8.4;
 
 interface ITextResolver {
-    event TextChanged(bytes context, bytes32 indexed node, string indexed indexedKey, string key, string value);
+    event TextChanged(bytes context, bytes name, bytes32 indexed node, string indexed indexedKey, string key, string value);
 
     /**
      * Returns the text data associated with an ENS node and key.

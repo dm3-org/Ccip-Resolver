@@ -6,18 +6,19 @@ import {IAddrResolver} from "./IAddrResolver.sol";
 import {IAddressResolver} from "./IAddressResolver.sol";
 
 abstract contract AddrResolver is IAddrResolver, IAddressResolver, ResolverBase {
+    using BytesUtils for bytes;
     uint256 private constant COIN_TYPE_ETH = 60;
 
-    mapping(uint64 => mapping(bytes => mapping(bytes32 => mapping(uint256 => bytes)))) versionable_addresses;
+    mapping(uint64 => mapping(bytes => mapping(bytes32 => mapping(uint256 => bytes)))) public versionable_addresses;
 
     /**
      * Sets the address associated with an ENS node.
      * May only be called by the owner of that node in the ENS registry.
-     * @param node The node to update.
+     * @param name The name to update.
      * @param a The address to set.
      */
-    function setAddr(bytes32 node, address a) external virtual {
-        setAddr(node, COIN_TYPE_ETH, addressToBytes(a));
+    function setAddr(bytes calldata name, address a) external virtual {
+        setAddr(name, COIN_TYPE_ETH, addressToBytes(a));
     }
 
     /**
@@ -33,11 +34,12 @@ abstract contract AddrResolver is IAddrResolver, IAddressResolver, ResolverBase 
         return bytesToAddress(a);
     }
 
-    function setAddr(bytes32 node, uint256 coinType, bytes memory a) public virtual {
+    function setAddr(bytes calldata name, uint256 coinType, bytes memory a) public virtual {
+        bytes32 node = name.namehash(0);
         bytes memory context = abi.encodePacked(msg.sender);
-        emit AddressChanged(context, node, coinType, a);
+        emit AddressChanged(context, name, node, coinType, a);
         if (coinType == COIN_TYPE_ETH) {
-            emit AddrChanged(context, node, bytesToAddress(a));
+            emit AddrChanged(context, name, node, bytesToAddress(a));
         }
         versionable_addresses[recordVersions[context][node]][context][node][coinType] = a;
     }

@@ -1,5 +1,7 @@
 import { ethers } from "hardhat";
+import { dnsWireFormat } from "../helper/encodednsWireFormat";
 import { L2PublicResolver, L2PublicResolver__factory } from "typechain";
+import { dnsEncode, keccak256, toUtf8Bytes } from "ethers/lib/utils";
 /**
  * This script is used to setup the environment for the e2e tests.
  * It asumes that you've set up the local development environment for OP bedrock
@@ -61,26 +63,26 @@ const setupEnvironment = async () => {
     //Create data on L2 that later be used for the tests
     const prepareTestSingleSlot = async () => {
         //Prepare test single slot
-        const node = ethers.utils.namehash("alice.eth");
+        const name = dnsEncode("alice.eth");
 
         const recordName = "foo";
         const value = "bar";
-        await l2PublicResolver.connect(alice.connect(l2Provider)).setText(node, recordName, value);
-        console.log(`Added record '${recordName}' with value '${value}' at ${node}`);
+        await l2PublicResolver.connect(alice.connect(l2Provider)).setText(name, recordName, value);
+
     };
 
     //Prepare test 31 byte
     const prepareTest31yte = async () => {
-        const node = ethers.utils.namehash("alice.eth");
+        const name = dnsEncode("alice.eth");
         const recordName = "my-slot";
         const value = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
 
-        await l2PublicResolver.connect(alice.connect(l2Provider)).setText(node, recordName, value);
+        await l2PublicResolver.connect(alice.connect(l2Provider)).setText(name, recordName, value);
     };
 
     //Prepare test multiple slots
     const prepeTestMultipleSlots = async () => {
-        const node = ethers.utils.namehash("alice.eth");
+        const name = dnsEncode("alice.eth");
         const recordName = "network.dm3.eth";
 
         const profile = {
@@ -89,54 +91,111 @@ const setupEnvironment = async () => {
             deliveryServices: ["foo.dm3"],
         };
 
-        await l2PublicResolver.connect(alice.connect(l2Provider)).setText(node, recordName, JSON.stringify(profile));
-        console.log(`Added record '${recordName}' with value '${JSON.stringify(profile)}' at ${node}`);
+        await l2PublicResolver.connect(alice.connect(l2Provider)).setText(name, recordName, JSON.stringify(profile));
     };
 
     //Prepare setAddr
     const prepareSetAddr = async () => {
-        const node = ethers.utils.namehash("alice.eth");
-        console.log("set alice node ", node)
-        console.log("set alice address ", alice.address)
-
-        const tx = await l2PublicResolver.connect(alice.connect(l2Provider))["setAddr(bytes32,address)"](node, alice.
+        const name = dnsEncode("alice.eth");
+        const tx = await l2PublicResolver.connect(alice.connect(l2Provider))["setAddr(bytes,address)"](name, alice.
             address);
 
     };
+    const prepareSetAbi = async () => {
+        const name = dnsEncode("alice.eth");
+        const abi = l2PublicResolver.interface.format(ethers.utils.FormatTypes.json);
+
+        const tx = await l2PublicResolver.connect(alice.connect(l2Provider)).setABI(name, 1, ethers.utils.toUtf8Bytes(abi.toString()));
+        const rec = await tx.wait();
+    }
+    const prepareSetContentHash = async () => {
+        const name = dnsEncode("alice.eth");
+
+
+        const tx = await l2PublicResolver.connect(alice.connect(l2Provider)).setContenthash(name, "0xe3010170122029f2d17be6139079dc48696d1f582a8530eb9805b561eda517e22a892c7e3f1f")
+        const rec = await tx.wait();
+    }
+    const prepareSetName = async () => {
+        const nodeName = dnsEncode("alice.eth");
+        const name = "alice";
+
+        const tx = await l2PublicResolver.connect(alice.connect(l2Provider)).setName(nodeName, name)
+        const rec = await tx.wait();
+
+    }
+    const prepareSetPubkey = async () => {
+        const name = dnsEncode("alice.eth");
+
+        const x = ethers.utils.formatBytes32String("foo");
+        const y = ethers.utils.formatBytes32String("bar");
+
+        const tx = await l2PublicResolver.connect(alice.connect(l2Provider)).setPubkey(name, x, y)
+        const rec = await tx.wait();
+    }
+    const prepareSetDNS = async () => {
+        const node = ethers.utils.namehash("alice.eth");
+
+        const record = dnsWireFormat("a.example.com", 3600, 1, 1, "1.2.3.4")
+
+        const tx = await l2PublicResolver.connect(alice.connect(l2Provider)).setDNSRecords(
+            node,
+            "0x" + record
+        )
+        const rec = await tx.wait();
+    }
+    const prepareSetZonehash = async () => {
+        const node = ethers.utils.namehash("alice.eth");
+
+        const record = dnsWireFormat("a.example.com", 3600, 1, 1, "1.2.3.4")
+
+        const tx = await l2PublicResolver.connect(alice.connect(l2Provider)).setZonehash(
+            node,
+            keccak256(toUtf8Bytes("foo"))
+        )
+        const rec = await tx.wait();
+        console.log("set dns zh", rec.events)
+    }
+
     const prepareTestSubdomain = async () => {
-        const node = ethers.utils.namehash("a.b.c.alice.eth");
+        const name = dnsEncode("a.b.c.alice.eth");
         const recordName = "my-slot";
         const value = "my-subdomain-record";
 
-        await l2PublicResolver.connect(alice.connect(l2Provider)).setText(node, recordName, value);
+        await l2PublicResolver.connect(alice.connect(l2Provider)).setText(name, recordName, value);
     };
     const prepareTestSubdomain2 = async () => {
-        const node = ethers.utils.namehash("bob.alice.eth");
+        const name = dnsEncode("alice.eth");
+
         const recordName = "bobs-slot";
         const value = "bobs-subdomain-record";
 
         console.log("bob adddres", bob.address)
         console.log("bob pk", bob.privateKey)
 
-        await l2PublicResolver.connect(bob.connect(l2Provider)).setText(node, recordName, value);
+        await l2PublicResolver.connect(bob.connect(l2Provider)).setText(name, recordName, value);
     };
     const nameWrapperProfile = async () => {
-        const node = ethers.utils.namehash("namewrapper.alice.eth");
+        const name = dnsEncode("namewrapper.alice.eth");
         const recordName = "namewrapper-slot";
         const value = "namewrapper-subdomain-record";
 
-        await l2PublicResolver.connect(alice.connect(l2Provider)).setText(node, recordName, value);
+        await l2PublicResolver.connect(alice.connect(l2Provider)).setText(name, recordName, value);
     }
     //Prepare foreign resolver
     const prepareForeign = async () => {
-        const node = ethers.utils.namehash("alice.eth");
-
-        await foreignResolver.connect(alice.connect(l2Provider))["setAddr(bytes32,address)"](node, alice.address);
+        const name = dnsEncode("alice.eth");
+        await foreignResolver.connect(alice.connect(l2Provider))["setAddr(bytes,address)"](name, alice.address);
     };
     await prepareTestSingleSlot();
     await prepareTest31yte();
     await prepeTestMultipleSlots();
     await prepareSetAddr();
+    await prepareSetAbi();
+    await prepareSetContentHash();
+    await prepareSetName();
+    await prepareSetPubkey();
+    await prepareSetDNS();
+    await prepareSetZonehash();
     await prepareTestSubdomain();
     await prepareTestSubdomain2();
     await nameWrapperProfile();

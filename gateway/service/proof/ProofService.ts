@@ -64,6 +64,8 @@ export class ProofService {
             storageProofs: storageProof,
         };
 
+
+
         //The result is not part of the proof but its convenient to have it i:E in tests
         const result = storageProof.reduce((agg, cur) => agg + cur.value.substring(2), "0x").substring(0, length * 2 + 2);
         return { result, proof };
@@ -100,6 +102,7 @@ export class ProofService {
         //See https://docs.soliditylang.org/en/v0.8.17/internals/layout_in_storage.html#mappings-and-dynamic-arrays
         const slotValue = await this.l2_provider.getStorageAt(resolverAddr, initalSlot, blockNr);
 
+
         const length = this.decodeLength(slotValue);
 
         //Handle slots at most 31 bytes long
@@ -111,8 +114,11 @@ export class ProofService {
         return this.handleLongType(initalSlot, resolverAddr, blockNr, length);
     }
     private decodeLength(slot: string) {
+
         const lastByte = slot.substring(slot.length - 2);
         const lastBit = parseInt(lastByte, 16) % 2;
+
+
         //If the last bit is not set it is a short type
         if (lastBit === 0) {
             //The length is encoded as length / 2
@@ -126,7 +132,6 @@ export class ProofService {
     private async handleShortType(resolverAddr: string, slot: string, blockNr: number, length: number) {
         const res = await this.makeGetProofRpcCall(resolverAddr, [slot], blockNr);
         const { storageProof, accountProof, storageHash } = res;
-
         return {
             accountProof,
             storageProof: this.mapStorageProof(storageProof),
