@@ -1,111 +1,90 @@
 import { ethers, ethers as hreEthers } from "hardhat";
 import { L2PublicResolver, L2PublicResolver__factory } from "typechain";
-import { ProofService } from "../proof/ProofService";
-import { CreateProofResult } from "../proof/types";
-import { getPublicResolverAddress } from "./../../constants";
+import { getPublicResolverAddress } from "../../constants";
 
 /**
  * This class provides the storage location for different for the particular fiels of the PublicResolverContract
  */
 export class EnsResolverService {
     private readonly l2PublicResolver: L2PublicResolver;
-    private readonly proofService: ProofService;
 
-    constructor(l2PublicResolver: L2PublicResolver, proofService: ProofService) {
+    constructor(l2PublicResolver: L2PublicResolver,) {
         this.l2PublicResolver = l2PublicResolver;
-        this.proofService = proofService;
     }
     public static async instance() {
         const l2PublicResolverFactory = (await hreEthers.getContractFactory("L2PublicResolver")) as L2PublicResolver__factory;
 
         const l2PublicResolver = await l2PublicResolverFactory.attach(getPublicResolverAddress()).connect(global.l2_provider);
-        return new EnsResolverService(l2PublicResolver, ProofService.instance());
+        return new EnsResolverService(l2PublicResolver);
     }
 
-    public async proofText(context: string, node: string, recordName: string): Promise<CreateProofResult> {
+    public async getSlotForText(context: string, node: string, recordName: string): Promise<string> {
         //The storage slot within the particular contract
         const TEXTS_SLOT_NAME = 2;
 
         const version = await this.l2PublicResolver.recordVersions(context, node);
-        const slot = EnsResolverService.getStorageSlotForText(TEXTS_SLOT_NAME, version.toNumber(), context, node, recordName);
-
-        return this.proofService.createProof(this.l2PublicResolver.address, slot);
+        return EnsResolverService.getStorageSlotForText(TEXTS_SLOT_NAME, version.toNumber(), context, node, recordName);
     }
-    public async proofAddr(context: string, node: string, coinType: number): Promise<CreateProofResult> {
+
+    public async getSlotForAddr(context: string, node: string, coinType: number): Promise<string> {
         //The storage slot within the particular contract
         const ADDR_SLOT_NAME = 1;
         const version = await this.l2PublicResolver.recordVersions(context, node);
 
-        const slot = EnsResolverService.getStorageSlotForAddr(ADDR_SLOT_NAME, version.toNumber(), context, node, coinType);
-
-        return this.proofService.createProof(this.l2PublicResolver.address, slot);
+        return EnsResolverService.getStorageSlotForAddr(ADDR_SLOT_NAME, version.toNumber(), context, node, coinType);
     }
-    public async proofAbi(context: string, node: string, contentType: number): Promise<CreateProofResult> {
+    public async getSlotForAbi(context: string, node: string, contentType: number): Promise<string> {
         //The storage slot within the particular contract
         const ABI_SLOT_NAME = 3;
         const version = await this.l2PublicResolver.recordVersions(context, node);
 
-        const slot = EnsResolverService.getStorageSlotForAbi(ABI_SLOT_NAME, version.toNumber(), context, node, contentType);
+        return EnsResolverService.getStorageSlotForAbi(ABI_SLOT_NAME, version.toNumber(), context, node, contentType);
 
-        return this.proofService.createProof(this.l2PublicResolver.address, slot);
     }
-    public async proofContentHash(context: string, node: string): Promise<CreateProofResult> {
+    public async getSlotForContentHash(context: string, node: string): Promise<string> {
         //The storage slot within the particular contract
         const CONTENTHASH_SLOT_NAME = 4;
         const version = await this.l2PublicResolver.recordVersions(context, node);
 
-        const slot = EnsResolverService.getStorageSlotForContentType(CONTENTHASH_SLOT_NAME, version.toNumber(), context, node);
-        return this.proofService.createProof(this.l2PublicResolver.address, slot);
+        return EnsResolverService.getStorageSlotForContentType(CONTENTHASH_SLOT_NAME, version.toNumber(), context, node);
     }
-    public async proofName(context: string, node: string): Promise<CreateProofResult> {
+    public async getSlotForName(context: string, node: string): Promise<string> {
         //The storage slot within the particular contract
         const NAME_SLOT_NAME = 8;
         const version = await this.l2PublicResolver.recordVersions(context, node);
-        const slot = EnsResolverService.getStorageSlotForName(NAME_SLOT_NAME, version.toNumber(), context, node);
-        return this.proofService.createProof(this.l2PublicResolver.address, slot);
+        return EnsResolverService.getStorageSlotForName(NAME_SLOT_NAME, version.toNumber(), context, node);
     }
-    public async proofPubkey(context: string, node: string,): Promise<CreateProofResult> {
+    public async getSlotForPubkeyX(context: string, node: string,): Promise<string> {
         //The storage slot within the particular contract
         const PUBKEY_SLOT_NAME = 9;
 
         const version = await this.l2PublicResolver.recordVersions(context, node);
-        const slot = EnsResolverService.getStorageSlotForPubkey(PUBKEY_SLOT_NAME, version.toNumber(), context, node)
+        return EnsResolverService.getStorageSlotForPubkey(PUBKEY_SLOT_NAME, version.toNumber(), context, node)
 
-        const slotY = ethers.BigNumber.from(slot).add(1).toHexString();
 
-        const proofx = await this.proofService.createProof(this.l2PublicResolver.address, slot);
-        const proofy = await this.proofService.createProof(this.l2PublicResolver.address, slotY);
-
-        //TOOD think about how to deal with this
-        return {
-            proof: proofy.proof,
-            result: [proofx.result, proofy.result] as any
-        }
+    }
+    public async getSlotForPubkeyY(context: string, node: string,): Promise<string> {
+        const slotx = this.getSlotForPubkeyX(context, node);
+        return ethers.BigNumber.from(slotx).add(1).toHexString();
     }
 
-    public async proofDnsRecord(context: string, node: string, name: string, resource: string): Promise<CreateProofResult> {
+    public async getSlotForDnsRecord(context: string, node: string, name: string, resource: string): Promise<string> {
         //The storage slot within the particular contract
         const NAME_SLOT_NAME = 6;
         const version = await this.l2PublicResolver.recordVersions(context, node);
-        const slot = EnsResolverService.getStorageSlotForDnsRecord(NAME_SLOT_NAME, version.toNumber(), context, node, name, resource);
-
-        return this.proofService.createProof(this.l2PublicResolver.address, slot);
+        return EnsResolverService.getStorageSlotForDnsRecord(NAME_SLOT_NAME, version.toNumber(), context, node, name, resource);
     }
-    public async proofHasDnsRecords(context: string, node: string, name: string,): Promise<CreateProofResult> {
+    public async getSlotForHasDnsRecords(context: string, node: string, name: string,): Promise<string> {
         //The storage slot within the particular contract
         const NAME_SLOT_NAME = 6;
         const version = await this.l2PublicResolver.recordVersions(context, node);
-        const slot = EnsResolverService.getStorageSlotForHasDnsRecords(NAME_SLOT_NAME, version.toNumber(), context, node, name,);
-
-        return this.proofService.createProof(this.l2PublicResolver.address, slot);
+        return EnsResolverService.getStorageSlotForHasDnsRecords(NAME_SLOT_NAME, version.toNumber(), context, node, name);
     }
-    public async proofZonehash(context: string, node: string, name: string,): Promise<CreateProofResult> {
+    public async getSlotForZoneHash(context: string, node: string, name: string,): Promise<string> {
         //The storage slot within the particular contract
         const NAME_SLOT_NAME = 5;
         const version = await this.l2PublicResolver.recordVersions(context, node);
-        const slot = EnsResolverService.getStorageSlotForZonehash(NAME_SLOT_NAME, version.toNumber(), context, node, name);
-
-        return this.proofService.createProof(this.l2PublicResolver.address, slot);
+        return EnsResolverService.getStorageSlotForZonehash(NAME_SLOT_NAME, version.toNumber(), context, node, name);
     }
 
 

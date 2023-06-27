@@ -1,17 +1,16 @@
 import { ethers } from "hardhat";
-import { encodeText } from "./../encoding/text/encodeText";
-import { encodeAddr } from "./../encoding/addr/encodeAddr";
-import { encodeAbi } from "./../encoding/abi/encodeAbi";
-import { encodeContentHash } from "./../encoding/contenthash/encodeContentHash";
-import { encodeInterface } from "./../encoding/interface/encodeInterface";
-import { encodeName } from "./../encoding/name/encodeName";
-import { encodePubkey } from "./../encoding/pubkey/encodePubkey";
-import { encodeDnsRecord } from "./../encoding/dns/encodeDnsRecord";
-import { encodeHasDnsRecord } from "./../encoding/dns/encodeHasDnsRecords";
-import { encodeZonehash } from "./../encoding/dns/encodeZonehash";
+import { encodeAbi } from "../encoding/abi/encodeAbi";
+import { encodeAddr } from "../encoding/addr/encodeAddr";
+import { encodeContentHash } from "../encoding/contenthash/encodeContentHash";
+import { encodeDnsRecord } from "../encoding/dns/encodeDnsRecord";
+import { encodeHasDnsRecord } from "../encoding/dns/encodeHasDnsRecords";
+import { encodeZonehash } from "../encoding/dns/encodeZonehash";
+import { encodeName } from "../encoding/name/encodeName";
+import { encodePubkey } from "../encoding/pubkey/encodePubkey";
+import { encodeText } from "../encoding/text/encodeText";
 
-import { EnsResolverService } from "../ens/EnsService";
 import { getProofParamType } from "../encoding/proof/getProofParamType";
+import { EnsResolverService } from "../ens/EnsService";
 export class CcipRouter {
     private readonly ensService: EnsResolverService;
 

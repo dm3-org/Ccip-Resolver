@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.9;
+pragma solidity ^0.8.20;
 
 import {Multicallable} from "@ensdomains/ens-contracts/contracts/resolvers/Multicallable.sol";
 import {AddrResolver} from "./profiles/addr/AddrResolver.sol";
@@ -25,16 +25,7 @@ contract L2PublicResolver is
     )
         public
         view
-        override(
-            Multicallable,
-            AddrResolver,
-            TextResolver,
-            ABIResolver,
-            ContentHashResolver,
-            DNSResolver,
-            NameResolver,
-            PubkeyResolver
-        )
+        override(Multicallable, AddrResolver, TextResolver, ABIResolver, ContentHashResolver, DNSResolver, NameResolver, PubkeyResolver)
         returns (bool)
     {
         return super.supportsInterface(interfaceID);
