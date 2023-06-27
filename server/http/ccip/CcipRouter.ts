@@ -1,5 +1,5 @@
 import { ethers } from "hardhat";
-import { encodeAbi } from "../encoding/abi/encodeAbi";
+import { encodeAbi } from "../profiles/abi/encodeAbi";
 import { encodeAddr } from "../encoding/addr/encodeAddr";
 import { encodeContentHash } from "../encoding/contenthash/encodeContentHash";
 import { encodeDnsRecord } from "../encoding/dns/encodeDnsRecord";
@@ -55,8 +55,6 @@ export class CcipRouter {
 
     private async handleText(request: any) {
         const { proof, result } = await this.ensService.getSlotForText(request.context, request.node, request.record);
-
-
 
     }
 

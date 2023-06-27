@@ -14,15 +14,13 @@ export function EnsHandler() {
             const calldata = req.params.calldata.replace('.json', '');
 
             try {
-                const { signature, request } = decodeCcipRequest(calldata);
+                const slot = decodeCcipRequest(calldata);
 
-                if (!request) {
-                    return res.status(404).send({ message: `unsupported signature ${signature}` });
+                if (!slot) {
+                    return res.status(404).send({ message: `unsupported signature` });
                 }
 
-                const ccipRouter = await CcipRouter.instance();
-                const response = await ccipRouter.handleRequest(signature, request)
-
+               
                 if (!response) {
                     return res.status(404).send({ message: `unable to process request` });
                 }

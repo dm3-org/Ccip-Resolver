@@ -1,13 +1,23 @@
 import { getResolverInterface } from "../../../utils/getResolverInterface";
-import { decodeText } from "../text/decodeText";
-import { decodeAddr } from "../addr/decodeAddr";
-import { decodeAbi } from "../abi/decodeAbi";
-import { decodeContentHash } from "../contenthash/decodeContentHash";
-import { decodeName } from "../name/decodeName";
-import { decodePubkey } from "../pubkey/decodePubKey";
-import { decodeDNSRecord } from "../dns/decodeDnsRecord";
-import { decodeHasDNSRecords } from "../dns/decodeHasDnsRecords";
-import { decodeZonehash } from "../dns/decodeZonehash";
+
+import { decodeAbi } from "../../profiles/abi/decodeAbi";
+import { getSlotForAbi } from "../../profiles/abi/getSlotForAbi";
+import { decodeAddr } from "../../profiles/addr/decodeAddr";
+import { getSlotForAddr } from "../../profiles/addr/getSlotForAddr";
+import { getSlotForContentHash } from "../../profiles/contentHash/getSlotForContentHash";
+import { getSlotForDnsRecord } from "../../profiles/dns/dnsRecord/getSlotForDnsRecord";
+import { getSlotForHasDnsRecords } from "../../profiles/dns/hasDnsRecord/getSlotForHasDnsRecord";
+import { getSlotForZoneHash } from "../../profiles/dns/zonehash/getSlotForZonehash";
+import { getSlotForName } from "../../profiles/name/getSlotForName";
+import { getSlotForPubkeyX } from "../../profiles/pubkey/getStorageSlotForPubkey";
+import { decodeText } from "../../profiles/text/decodeText";
+import { getSlotForText } from "../../profiles/text/getSlotForText";
+import { decodeContentHash } from "../../profiles/contentHash/decodeContentHash";
+import { decodeName } from "../../profiles/name/decodeName";
+import { decodePubkey } from "../../profiles/pubkey/decodePubKey";
+import { decodeDNSRecord } from "../../profiles/dns/dnsRecord/decodeDnsRecord";
+import { decodeHasDNSRecords } from "../../profiles/dns/hasDnsRecord/decodeHasDnsRecords";
+import { decodeZonehash } from "../../profiles/dns/zonehash/decodeZonehash";
 
 export function decodeCcipRequest(calldata: string) {
     try {
@@ -23,25 +33,58 @@ export function decodeCcipRequest(calldata: string) {
         });
         switch (signature) {
             case "text(bytes32,string)":
-                return { signature, request: decodeText(context, args) };
+                {
+
+                    const { node, record } = decodeText(context, args);
+                    return getSlotForText(context, node, record)
+                }
             case "addr(bytes32)":
-                return { signature, request: decodeAddr(context, args) };
+                {
+                    const { node } = decodeAddr(context, args);
+                    return getSlotForAddr(context, node, 60);
+                }
             case "ABI(bytes,bytes32,uint256)":
-                return { signature, request: decodeAbi(context, args) };
+                {
+                    const { node, contentTypes } = decodeAbi(context, args);
+                    return getSlotForAbi(context, node, contentTypes);
+                }
             case "contenthash(bytes32)":
-                return { signature, request: decodeContentHash(context, args) };;
+                {
+                    const { node } = decodeContentHash(context, args);
+                    return getSlotForContentHash(context, node);
+
+                }
             case "name(bytes,bytes32)":
-                return { signature, request: decodeName(context, args) };
+                {
+                    const { node } = decodeName(context, args);
+                    return getSlotForName(context, node);
+
+                }
             case "pubkey(bytes,bytes32)":
-                return { signature, request: decodePubkey(context, args) };
+                {
+                    const { node } = decodePubkey(context, args);
+                    return getSlotForPubkeyX(context, node);
+                }
             case "dnsRecord(bytes,bytes32,bytes32,uint16)":
-                return { signature, request: decodeDNSRecord(context, args) };
+                {
+                    const { node, name, resource } = decodeDNSRecord(context, args)
+                    return getSlotForDnsRecord(context, node, name, resource)
+
+                }
             case "hasDNSRecords(bytes,bytes32,bytes32)":
-                return { signature, request: decodeHasDNSRecords(context, args) }
+                {
+                    const { node, name } = decodeHasDNSRecords(context, args)
+                    return getSlotForHasDnsRecords(context, node, name)
+                }
             case "zonehash(bytes,bytes32)":
-                return { signature, request: decodeZonehash(context, args) }
+                {
+                    const { node, name } = decodeZonehash(context, args)
+                    return getSlotForZoneHash(context, node, name)
+                }
             default:
-                return { signature, request: null };
+
+                //Unsupported signature
+                return null
         }
     } catch (err: any) {
         console.log("[Decode Calldata] Can't decode calldata ");
