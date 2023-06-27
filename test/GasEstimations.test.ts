@@ -19,7 +19,7 @@ describe("Gas Estimations", () => {
 
             const gasUsed = deployTxReceipt.gasUsed;
 
-            console.log(`Optimism Proof Verifier deployment took ${gasUsed} Gas`);
+            console.log(`Bedrock Proof Verifier deployment took ${gasUsed} Gas`);
 
             console.log(
                 "Based on 50 GWEI it would've cost : " + ethers.utils.formatEther(gasUsed.mul(ethers.utils.parseUnits("50", "gwei")))
@@ -41,7 +41,7 @@ describe("Gas Estimations", () => {
             );
         });
         it("Deployment", async () => {
-            const BedrockProofVerifierFactory = await hreEthers.getContractFactory("OptimismResolver");
+            const BedrockProofVerifierFactory = await hreEthers.getContractFactory("CcipResolver");
 
             const deployTx = BedrockProofVerifierFactory.getDeployTransaction(
                 ethers.constants.AddressZero,
@@ -56,7 +56,7 @@ describe("Gas Estimations", () => {
 
             const gasUsed = deployTxReceipt.gasUsed;
 
-            console.log(`OptimismResolver deployment took ${gasUsed} Gas`);
+            console.log(`CcipResolver deployment took ${gasUsed} Gas`);
 
             console.log(
                 "Based on 50 GWEI it would've cost : " + ethers.utils.formatEther(gasUsed.mul(ethers.utils.parseUnits("50", "gwei")))

@@ -1,7 +1,7 @@
 import { BaseProvider, BlockTag, Network, TransactionRequest } from "@ethersproject/providers";
 import { BytesLike, ethers } from "ethers";
 import { fetchJson, FetchJsonResponse, hexlify } from "ethers/lib/utils";
-import { OptimismResolver } from "typechain";
+import { CcipResolver } from "typechain";
 
 export type Fetch = (
     url: string,
@@ -12,20 +12,20 @@ export type Fetch = (
 export class MockProvider extends ethers.providers.BaseProvider {
     readonly parent: ethers.providers.BaseProvider;
     readonly fetcher: Fetch;
-    readonly optimismResolver: OptimismResolver;
+    readonly ccipResolver: CcipResolver;
 
     /**
      * Constructor.
      * @param provider: The Ethers provider to wrap.
      */
-    constructor(provider: BaseProvider, fetcher: Fetch = fetchJson, optimsimResolver: OptimismResolver) {
+    constructor(provider: BaseProvider, fetcher: Fetch = fetchJson, ccipResolver: CcipResolver) {
         super(31337);
         this.parent = provider;
         this.fetcher = fetcher;
-        this.optimismResolver = optimsimResolver;
+        this.ccipResolver = ccipResolver;
     }
     async getResolver(name: string) :Promise<ethers.providers.Resolver>{
-        return new ethers.providers.Resolver(this, this.optimismResolver.address, name) as any;
+        return new ethers.providers.Resolver(this, this.ccipResolver.address, name) as any;
     }
 
     async perform(method: string, params: any): Promise<any> {
@@ -47,14 +47,14 @@ export class MockProvider extends ethers.providers.BaseProvider {
         const rawResult = await provider.parent.perform("call", params);
         //0x9061b923 = resolve
         if (fnSig !== "0x9061b923") {
-            const result = this.optimismResolver.interface.encodeFunctionResult(fnSig, [rawResult]);
+            const result = this.ccipResolver.interface.encodeFunctionResult(fnSig, [rawResult]);
             return {
                 transaction: params.transaction,
                 result,
             };
         }
 
-        const { urls, callData } = this.optimismResolver.interface.decodeErrorResult("OffchainLookup", rawResult);
+        const { urls, callData } = this.ccipResolver.interface.decodeErrorResult("OffchainLookup", rawResult);
 
         const response = await this.sendRPC(provider.fetcher, urls, params.transaction.to, callData);
         return {

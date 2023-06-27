@@ -36,10 +36,6 @@ export class ProofService {
         });
     }
 
-    public static instance() {
-        return new ProofService(global.l1_provider, global.l2_provider);
-    }
-
     /**
      * Creates a {@see CreateProofResult} for a given target and slot.
      * @param target The address of the smart contract that contains the storage slot

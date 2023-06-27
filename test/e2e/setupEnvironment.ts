@@ -230,4 +230,4 @@ const setupEnvironment = async () => {
 };
 
 
-setupEnvironment();
+//setupEnvironment();
