@@ -7,7 +7,7 @@ import express from 'express';
 import { ethers as hreEthers } from 'hardhat';
 import request from 'supertest';
 import { ccipGateway } from '../../gateway/http/ccipGateway';
-import { ENS, INameWrapper, OptimismResolver, SignatureCcipVerifier, SignatureCcipVerifier__factory } from '../../typechain';
+import { ENS, INameWrapper, CcipResolver, SignatureCcipVerifier, SignatureCcipVerifier__factory } from '../../typechain';
 import { getGateWayUrl } from "../helper/getGatewayUrl";
 
 import { FakeContract, smock } from '@defi-wonderland/smock';
@@ -17,7 +17,7 @@ const { expect } = require('chai');
 
 describe('Signature Handler', () => {
     let ccipApp: express.Express;
-    let signatureResolver: OptimismResolver
+    let signatureResolver: CcipResolver
     let owner: SignerWithAddress;
     let vitalik: SignerWithAddress;
 
@@ -55,14 +55,13 @@ describe('Signature Handler', () => {
 
         signerCcipVerifier = (await SignerCcipVerifierFactory.deploy(owner.address, [signer.address]))
 
-        const OptimismResolverFactory = await hreEthers.getContractFactory("OptimismResolver");
-        signatureResolver = (await OptimismResolverFactory.deploy(
+        const CcipResolverFactory = await hreEthers.getContractFactory("CcipResolver");
+        signatureResolver = (await CcipResolverFactory.deploy(
             owner.address,
             ensRegistry.address,
             nameWrapper.address,
             "http://localhost:8080/graphql"
-        )) as OptimismResolver;
-
+        ));
         //Get signers
         [owner] = await hreEthers.getSigners();
 

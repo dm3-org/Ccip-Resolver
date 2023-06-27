@@ -15,7 +15,7 @@ import {BytesLib} from "solidity-bytes-utils/contracts/BytesLib.sol";
  * Implements an ENS resolver that directs all queries to a CCIP read gateway.
  * Callers must implement EIP 3668 and ENSIP 10.
  */
-contract OptimismResolver is IExtendedResolver, IContextResolver, SupportsInterface {
+contract CcipResolver is IExtendedResolver, IContextResolver, SupportsInterface {
     using BytesUtils for bytes;
 
     ENS public ensRegistry;
@@ -109,7 +109,7 @@ contract OptimismResolver is IExtendedResolver, IContextResolver, SupportsInterf
         string[] memory urls = new string[](1);
         urls[0] = _resolver.gatewayUrl;
 
-        revert OffchainLookup(address(this), urls, callData, OptimismResolver.resolveWithProof.selector, callData);
+        revert OffchainLookup(address(this), urls, callData, CcipResolver.resolveWithProof.selector, callData);
     }
 
     function getResolverOfDomain(bytes calldata name) public view returns (Resolver memory, bytes32) {

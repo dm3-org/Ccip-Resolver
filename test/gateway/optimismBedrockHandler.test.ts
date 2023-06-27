@@ -7,7 +7,7 @@ import express from 'express';
 import { ethers as hreEthers } from 'hardhat';
 import request from 'supertest';
 import { ccipGateway } from '../../gateway/http/ccipGateway';
-import { BedrockCcipVerifier, BedrockCcipVerifier__factory, BedrockProofVerifier, BedrockProofVerifier__factory, ENS, INameWrapper, OptimismResolver } from '../../typechain';
+import { BedrockCcipVerifier, BedrockCcipVerifier__factory, BedrockProofVerifier, BedrockProofVerifier__factory, ENS, INameWrapper, CcipResolver } from '../../typechain';
 import { getGateWayUrl } from "../helper/getGatewayUrl";
 
 import { FakeContract, smock } from '@defi-wonderland/smock';
@@ -18,7 +18,7 @@ const { expect } = require('chai');
 
 describe('Optimism Bedrock Handler', () => {
     let ccipApp: express.Express;
-    let ccipResolver: OptimismResolver
+    let ccipResolver: CcipResolver
     let owner: SignerWithAddress;
 
     //0x8111DfD23B99233a7ae871b7c09cCF0722847d89
@@ -61,13 +61,13 @@ describe('Optimism Bedrock Handler', () => {
         const BedrockCcipVerifierFactory = await hreEthers.getContractFactory("BedrockCcipVerifier") as BedrockCcipVerifier__factory;
 
         bedrockCcipVerifier = (await BedrockCcipVerifierFactory.deploy(bedrockProofVerifier.address, "0x5FbDB2315678afecb367f032d93F642f64180aa3"))
-        const OptimismResolverFactory = await hreEthers.getContractFactory("OptimismResolver");
-        ccipResolver = (await OptimismResolverFactory.deploy(
+        const CcipResolverFactory = await hreEthers.getContractFactory("CcipResolver");
+        ccipResolver = (await CcipResolverFactory.deploy(
             owner.address,
             ensRegistry.address,
             nameWrapper.address,
             "http://localhost:8080/graphql"
-        )) as OptimismResolver;
+        ));
 
         await owner.sendTransaction({
             to: alice.address,
