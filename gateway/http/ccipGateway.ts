@@ -1,6 +1,7 @@
 import express from 'express';
 import { Config } from '../config/Config';
 import { signingHandler } from '../handler/signing/signingHandler';
+import { optimismBedrockHandler } from '../handler/optimism-bedrock/optimismBedrockHandler';
 
 export function ccipGateway(config: Config) {
     const router = express.Router();
@@ -26,14 +27,27 @@ export function ccipGateway(config: Config) {
                 }
                 switch (configEntry.type) {
                     case 'signing':
-                        const response = await signingHandler(
-                            calldata,
-                            resolverAddr,
-                            configEntry,
-                        );
+                        {
 
-                        res.status(200).send({ data: response });
-                        break;
+                            const response = await signingHandler(
+                                calldata,
+                                resolverAddr,
+                                configEntry,
+                            );
+                            res.status(200).send({ data: response });
+                            break;
+                        }
+                    case "optimism-bedrock":
+                        {
+
+                            const response = await optimismBedrockHandler(
+                                calldata,
+                                resolverAddr,
+                                configEntry);
+                            res.status(200).send({ data: response });
+                            break;
+                        }
+
 
                     default:
                         res.status(404).send({

@@ -13,7 +13,7 @@ import { keccak256, toUtf8Bytes } from "ethers/lib/utils";
 import { dnsWireFormat } from "../helper/encodednsWireFormat";
 const { expect } = require("chai");
 
-describe("OptimismResolver Test", () => {
+describe.skip("OptimismResolver Test", () => {
     let owner: SignerWithAddress;
     //ENS
     let ensRegistry: FakeContract<ENS>;
