@@ -67,7 +67,7 @@ describe('Optimism Bedrock Handler', () => {
             ensRegistry.address,
             nameWrapper.address,
             "http://localhost:8080/graphql"
-        ));
+        )) as CcipResolver;
 
         await owner.sendTransaction({
             to: alice.address,

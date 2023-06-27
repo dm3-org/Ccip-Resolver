@@ -15,8 +15,6 @@ export function ccipGateway(config: Config) {
             const { resolverAddr } = req.params;
             const calldata = req.params.calldata.replace('.json', '');
 
-            req.app.locals.logger.info(`GET ${resolverAddr}`);
-
             try {
                 const configEntry = config[resolverAddr];
 
@@ -28,7 +26,6 @@ export function ccipGateway(config: Config) {
                 switch (configEntry.type) {
                     case 'signing':
                         {
-
                             const response = await signingHandler(
                                 calldata,
                                 resolverAddr,
@@ -39,7 +36,6 @@ export function ccipGateway(config: Config) {
                         }
                     case "optimism-bedrock":
                         {
-
                             const response = await optimismBedrockHandler(
                                 calldata,
                                 resolverAddr,
