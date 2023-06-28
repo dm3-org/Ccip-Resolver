@@ -1,25 +1,25 @@
 import { getResolverInterface } from "../utils/getResolverInterface";
 
-import { decodeAbi } from "./profiles/abi/decodeAbi";
-import { getSlotForAbi } from "./profiles/abi/getSlotForAbi";
-import { decodeAddr } from "./profiles/addr/decodeAddr";
-import { getSlotForAddr } from "./profiles/addr/getSlotForAddr";
-import { getSlotForContentHash } from "./profiles/contentHash/getSlotForContentHash";
-import { getSlotForDnsRecord } from "./profiles/dns/dnsRecord/getSlotForDnsRecord";
-import { getSlotForHasDnsRecords } from "./profiles/dns/hasDnsRecord/getSlotForHasDnsRecord";
-import { getSlotForZoneHash } from "./profiles/dns/zonehash/getSlotForZonehash";
-import { getSlotForName } from "./profiles/name/getSlotForName";
-import { getSlotForPubkeyX } from "./profiles/pubkey/getStorageSlotForPubkey";
-import { decodeText } from "./profiles/text/decodeText";
-import { getSlotForText } from "./profiles/text/getSlotForText";
-import { decodeContentHash } from "./profiles/contentHash/decodeContentHash";
-import { decodeName } from "./profiles/name/decodeName";
-import { decodePubkey } from "./profiles/pubkey/decodePubKey";
-import { decodeDNSRecord } from "./profiles/dns/dnsRecord/decodeDnsRecord";
-import { decodeHasDNSRecords } from "./profiles/dns/hasDnsRecord/decodeHasDnsRecords";
-import { decodeZonehash } from "./profiles/dns/zonehash/decodeZonehash";
+import { decodeAbi } from "../profiles/abi/decodeAbi";
+import { getSlotForAbi } from "../profiles/abi/getSlotForAbi";
+import { decodeAddr } from "../profiles/addr/decodeAddr";
+import { getSlotForAddr } from "../profiles/addr/getSlotForAddr";
+import { getSlotForContentHash } from "../profiles/contentHash/getSlotForContentHash";
+import { getSlotForDnsRecord } from "../profiles/dns/dnsRecord/getSlotForDnsRecord";
+import { getSlotForHasDnsRecords } from "../profiles/dns/hasDnsRecord/getSlotForHasDnsRecord";
+import { getSlotForZoneHash } from "../profiles/dns/zonehash/getSlotForZonehash";
+import { getSlotForName } from "../profiles/name/getSlotForName";
+import { getSlotForPubkeyX } from "../profiles/pubkey/getStorageSlotForPubkey";
+import { decodeText } from "../profiles/text/decodeText";
+import { getSlotForText } from "../profiles/text/getSlotForText";
+import { decodeContentHash } from "../profiles/contentHash/decodeContentHash";
+import { decodeName } from "../profiles/name/decodeName";
+import { decodePubkey } from "../profiles/pubkey/decodePubKey";
+import { decodeDNSRecord } from "../profiles/dns/dnsRecord/decodeDnsRecord";
+import { decodeHasDNSRecords } from "../profiles/dns/hasDnsRecord/decodeHasDnsRecords";
+import { decodeZonehash } from "../profiles/dns/zonehash/decodeZonehash";
 import { L2PublicResolver } from "../../typechain";
-import { StorageLayout } from "./profiles/StorageLayout";
+import { StorageLayout } from "../profiles/StorageLayout";
 
 export async function handleCcipRequest(l2PubicResolver: L2PublicResolver, calldata: string) {
     try {
@@ -34,6 +34,7 @@ export async function handleCcipRequest(l2PubicResolver: L2PublicResolver, calld
             data,
         });
 
+
         switch (signature) {
             case "text(bytes32,string)":
                 {
@@ -41,10 +42,11 @@ export async function handleCcipRequest(l2PubicResolver: L2PublicResolver, calld
                     const slot = await getSlotForText(l2PubicResolver, context, node, record)
                     return { slot, target: l2PubicResolver.address, layout: StorageLayout.DYNAMIC }
                 }
-            case "addr(bytes32)":
-                {
-                    const { node } = decodeAddr(context, args);
-                    return getSlotForAddr(l2PubicResolver, context, node, 60);
+                case "addr(bytes32)":
+                    {
+                        const { node } = decodeAddr(context, args);
+                        const slot = await getSlotForAddr(l2PubicResolver, context, node, 60);
+                        return { slot, target: l2PubicResolver.address, layout: StorageLayout.DYNAMIC }
                 }
             case "ABI(bytes,bytes32,uint256)":
                 {

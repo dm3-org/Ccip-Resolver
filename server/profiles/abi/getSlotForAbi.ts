@@ -1,5 +1,5 @@
 import { ethers } from "ethers";
-import { L2PublicResolver } from "../../../../typechain";
+import { L2PublicResolver } from "../../../typechain";
 
 export async function getSlotForAbi(l2PublicResolver: L2PublicResolver, context: string, node: string, contentType: number): Promise<string> {
     //The storage slot within the particular contract

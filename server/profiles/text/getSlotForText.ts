@@ -1,5 +1,5 @@
 import { ethers } from "ethers";
-import { L2PublicResolver } from "../../../../typechain";
+import { L2PublicResolver } from "../../../typechain";
 export async function getSlotForText(l2PublicResolver: L2PublicResolver,context: string, node: string, recordName: string): Promise<string> {
     //The storage slot within the particular contract
     const TEXTS_SLOT_NAME = 2;

@@ -1,11 +1,10 @@
 import { ethers } from "ethers";
-import { L2PublicResolver } from "../../../../typechain";
+import { L2PublicResolver } from "../../../typechain";
 
 export async function getSlotForAddr(l2PublicResolver: L2PublicResolver, context: string, node: string, coinType: number): Promise<string> {
     //The storage slot within the particular contract
     const ADDR_SLOT_NAME = 1;
     const version = await l2PublicResolver.recordVersions(context, node);
-
     return getStorageSlotForAddr(ADDR_SLOT_NAME, version.toNumber(), context, node, coinType);
 }
 

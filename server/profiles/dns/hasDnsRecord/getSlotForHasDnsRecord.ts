@@ -1,5 +1,5 @@
 import { ethers } from "ethers";
-import { L2PublicResolver } from "../../../../../typechain";
+import { L2PublicResolver } from "../../../../typechain";
 
 export async function getSlotForHasDnsRecords(l2PublicResolver: L2PublicResolver, context: string, node: string, name: string,): Promise<string> {
     //The storage slot within the particular contract

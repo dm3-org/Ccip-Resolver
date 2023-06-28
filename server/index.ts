@@ -4,7 +4,7 @@ import express from 'express';
 import http from 'http';
 import cors from 'cors';
 import winston from 'winston';
-import { EnsHandler } from './http/ccipGateway';
+import { EnsHandler } from './http/EnsHandler';
 
 
 dotenv.config();

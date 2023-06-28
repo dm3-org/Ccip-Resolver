@@ -1,14 +1,13 @@
 import express from 'express';
-import { handleCcipRequest} from "./handleCcipRequest";
+import { handleCcipRequest } from "./handleCcipRequest";
 import { ethers } from "hardhat";
-import { L2PublicResolver__factory, L2PublicResolver } from "./../../typechain"
-import { getPublicResolverAddress } from '../constants';
+import { L2PublicResolver__factory, L2PublicResolver } from "../../typechain"
 
-export async function EnsHandler() {
+export async function EnsHandler(l2ResolverAddress: string) {
     const router = express.Router();
     const l2PublicResolverFactory = (await ethers.getContractFactory("L2PublicResolver")) as L2PublicResolver__factory;
 
-    const l2PublicResolver = await l2PublicResolverFactory.attach(getPublicResolverAddress()).connect(global.l2_provider);
+    const l2PublicResolver = await l2PublicResolverFactory.attach(l2ResolverAddress)
 
 
     router.get(
@@ -20,7 +19,7 @@ export async function EnsHandler() {
             const calldata = req.params.calldata.replace('.json', '');
 
             try {
-                const response = handleCcipRequest(l2PublicResolver, calldata);
+                const response = await handleCcipRequest(l2PublicResolver, calldata);
 
                 if (!response) {
                     return res.status(404).send({ message: `unsupported signature` });

@@ -5,7 +5,7 @@ import { L2PublicResolver } from "typechain";
 
 import { expect } from "chai";
 import { dnsEncode, keccak256, toUtf8Bytes } from "ethers/lib/utils";
-import { dnsWireFormat } from "../../helper/encodednsWireFormat";
+import { dnsWireFormat } from "../helper/encodednsWireFormat";
 
 describe("L2PublicResolver", () => {
     let user1: SignerWithAddress;
