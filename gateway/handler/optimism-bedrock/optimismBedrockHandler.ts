@@ -3,7 +3,7 @@ import axios from 'axios';
 
 import { OptimismBedrockConfigEntry } from '../../config/Config';
 import { ProofService } from '../../service/proof/ProofService';
-import { ethers } from 'hardhat';
+import { ethers } from 'ethers';
 import { getProofParamType } from "../../service/encoding/proof/getProofParamType";
 
 export async function optimismBedrockHandler(
