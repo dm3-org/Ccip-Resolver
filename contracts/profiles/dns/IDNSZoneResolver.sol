@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity >=0.8.4;
+pragma solidity 0.8.19;
 
 interface IDNSZoneResolver {
     // DNSZonehashChanged is emitted whenever a given node's zone hash is updated.

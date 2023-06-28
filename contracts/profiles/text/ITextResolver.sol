@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity >=0.8.4;
+pragma solidity 0.8.19;
 
 interface ITextResolver {
     event TextChanged(bytes context, bytes name, bytes32 indexed node, string indexed indexedKey, string key, string value);
