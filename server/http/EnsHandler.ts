@@ -1,13 +1,17 @@
 import express from 'express';
+import { L2PublicResolver, L2PublicResolver__factory } from "../../typechain";
 import { handleCcipRequest } from "./handleCcipRequest";
-import { ethers } from "hardhat";
-import { L2PublicResolver__factory, L2PublicResolver } from "../../typechain"
+import { ethers } from 'ethers';
 
-export async function EnsHandler(l2ResolverAddress: string) {
+export async function EnsHandler(provider: ethers.providers.StaticJsonRpcProvider, l2ResolverAddress: string) {
     const router = express.Router();
-    const l2PublicResolverFactory = (await ethers.getContractFactory("L2PublicResolver")) as L2PublicResolver__factory;
 
-    const l2PublicResolver = await l2PublicResolverFactory.attach(l2ResolverAddress)
+    const l2PublicResolver = new ethers.Contract(
+        l2ResolverAddress,
+        L2PublicResolver__factory.createInterface(),
+        provider
+    ) as L2PublicResolver
+
 
 
     router.get(

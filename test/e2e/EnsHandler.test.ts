@@ -84,9 +84,7 @@ describe.only('EnsHandler', () => {
             const name = ethers.utils.dnsEncode("alice.eth")
             const dnsName = ethers.utils.dnsEncode(name)
             const node = ethers.utils.namehash(name)
-
-            const abi = l2PublicResolver.interface.format(ethers.utils.FormatTypes.json);
-
+            
             await l2PublicResolver.connect(alice).setABI(dnsName, 1, ethers.utils.toUtf8Bytes("0xabc"));
 
             const ccipRequest = getCcipRequest("ABI", alice.address, alice.address, node, "1")

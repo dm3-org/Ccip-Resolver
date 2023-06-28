@@ -1,4 +1,4 @@
-import { getResolverInterface } from "../../../utils/getResolverInterface";
+import { getResolverInterface } from "../../utils/getResolverInterface";
 
 
 export function encodeContentHash(result: string) {
