@@ -1,7 +1,4 @@
 import { ethers } from "ethers";
-import { keccak256, solidityKeccak256 } from "ethers/lib/utils";
-import { decodeDnsName } from "../dnsName/decodeDnsName";
-
 /**
 Decodes the text record of a given ENS name and returns an object containing the name and the record.
 @param context - The context of the ENS name. In this case the owner

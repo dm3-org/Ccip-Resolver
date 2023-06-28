@@ -4,8 +4,8 @@ import express from 'express';
 import http from 'http';
 import cors from 'cors';
 import winston from 'winston';
+import { EnsHandler } from './http/ccipGateway';
 
-import { ccipGateway } from './http/ccipGateway';
 
 dotenv.config();
 
@@ -23,8 +23,7 @@ app.use(bodyParser.json());
         transports: [new winston.transports.Console()],
     });
 
-    const config = JSON.parse(process.env.CONFIG as string);
-    app.use('/', ccipGateway(config));
+    app.use('/', await EnsHandler());
 })();
 const port = process.env.PORT || '8081';
 server.listen(port, () => {

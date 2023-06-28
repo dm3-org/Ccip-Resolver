@@ -1,5 +1,6 @@
 import { ethers } from "ethers";
 
+//TODO maybe remove everything except resolveWithProof
 export function getResolverInterface() {
     return new ethers.utils.Interface([
         "function resolve(bytes calldata name, bytes calldata data) external view returns(bytes)",

@@ -14,12 +14,14 @@ describe("L2PublicResolver", () => {
 
     beforeEach(async () => {
         [user1, user2] = await ethers.getSigners();
-        const l2PublicResolverFactory = await ethers.getContractFactory("L2PublicResolver", user1);
+        const l2PublicResolverFactory = await ethers.getContractFactory("L2PublicResolver");
         l2PublicResolver = (await l2PublicResolverFactory.deploy()) as L2PublicResolver;
     });
+  
     describe("Clear records", async () => {
         it("can clear records", async () => {
 
+            console.log("addr", user1.address)
             const name = "dm3.eth"
             const node = ethers.utils.namehash("dm3.eth")
             // record should initially be empty
