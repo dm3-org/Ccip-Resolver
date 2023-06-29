@@ -1,45 +1,44 @@
-\*\*\*\*# Optimism-Resolver
+# A Generic CCIP resolver
 
-## An Optimism CCIP resolver for ENS
+Storing data on Ethereum Mainnet is expensive hence it is appealing to use other storage solutions that offer more compelling rates. To facilitate this https://eips.ethereum.org/EIPS/eip-3668 introduces CCIP a standard that can be used to securely retrieve external data.
 
-Storing data on Ethereum Mainnet is expensive hence it is appealing to use other storage solutions that offer more compelling rates. To facilitate this https://eips.ethereum.org/EIPS/eip-3668 introduces CCIP a standard that can be used to securely retrieve external data. While the solution is focused on ENS, the methodology can be adapted to any other data from Optimism.
-Optimism-Resolver is a CCIP Resolver that retrieves data from optimism and validates the integrity of this data in a trustless manner using merkle proofs.
+This repository contains contracts implementing the ERC-3668 standard to resolve data from an arbitrary data source. This might be based on another EVM Chain like Optimism, a Database like Postgress or any other way you might want to store data for your app.
+Visit the App-specific Handler section to learn how to write a handler for your app.
 
-### Components:
+# Architecture
 
--   **BedrockProofVerifier [L1]:**
-    Contract on Ethereum Mainnet that can validate whether a sequence of data is stored on a certain optimism contract.
--   **OptimismResolver [L1]:**
-    Contract on Ethereum Mainnet that implements the https://docs.ens.domains/ens-improvement-proposals/ensip-10-wildcard-resolution Flow
--   **PublicL2Resolver [OP]:**
-    A fork of the ens Public Resolver Contract on Layer2
--   **Gateway [Centralized]:**
-    Calculates the actual Proofs (to be decentralized)
--   **READ Client [Client]:**
-    A Client used to query data from the blockchain i.E ethers.js
+## Smart Contracts
 
-### How does it work
+### Ccip Resolver
 
-The Optimism Resolver can be set as the default Resolver in the ENS Registry. That replaces the ENS public resolver which stores every data on Ethereum Mainnet with a CCIP resolver that, rather than storing the data on mainnet, performs a CCIP lookup to retrieve the data associated with the account from the L2PublicResolver contract deployed on Optimims.
-The data can be easily retrieved by a CCIP-compliant client like ethers.js using just a single line of code.
-This reduces the fees occurring when setting records drastically and makes it more compelling to use ENS.
+The core contract implementing the Ccip Interface. It delegates the actual implementation to an instance of the CcipVerifier contract. Every Ens name owner can specify its verifier. This allows the Ens-name owner to declare different Data sources associated with their domain.
 
-### Lookup
+### CcipResponseVerifier
+An App Specific Handler needs a CcipResponseVerifier contract that implements the ```resolveWithProof``` function accordingly. For example, the handler related to the optimism-Bedrock validates the Merkle proof for the returned data and ensures it is part of the Optimism Network.
 
-The Optimism Resolvers computes an HTTP address that has to be called by the CCIP read client. The address contains the address of the domain owner retrieved from the ENS Registry contract as well as the requested record. This address points to a Gateway server that is capable of accessing the Optimism Network to fetch the requested data.  
-To ensure on the Mainnet that the result of the backend is valid and indeed part of the Optimism storage the Gateway also computes a Merkle Proof for every slot needed.
-Using the root of that proof the Optimism contract can ensure the data integrity without having access to it.
+## Gateway
 
-The lookup sequence looks like
+![Resolver architecture](./architcture.jpeg)
 
--   **[Client]** Request something from the provider to resolve i.E `ethers.provider.getText("alice.eth")`
--   **[Client]** calls the `resolver(bytes32 node)` method of the ENS Registry contract. The result will be the address of the Optimism Resolver contract given the user has set it as there provider before.
--   **[Client]** calls the `resolve(bytes calldata name, bytes calldata data)` method to retrieve the address of the CCIP Gateway and call it
--   **[Gateway]** fetches the requested data from the L2PublicResolver contract. Then use 'eth_getProof' to compute a merkle proof showing that the retrieved data belongs to the storageRoot of a certain block. Returns that proof to the client
--   **[Client]** uses the `resolveWithProof(bytes calldata response, bytes calldata extraData)`method of the OptimismResolver contract to verify the integrity of the provided proof.
--   **[OptimismResolver]** calls the `getProofValue(BedrockStateProof memory proof)` from the BedrockProofVerifier Contract To ensure the provided proof is valid.
--   **[BedrockProofVerifier]** Get the output root the proof is related to from the l2OutputOracle contract. Checks if it matches the one provided by the proof. This proves that the outputRootProof the proof is based on is committed. After this check passes the contract checks if the account root is part of the state root. Is this the case the contract checks if each slot provided in the proof is part of that account root. The result is the concatenated value of each slot.
--   **[Client]** Returns the value returned by the BedrockVerifier
+The Gateway is a Node.js app resolving incoming requests made by the CCIP Reader. It queries the Type Specific handler defined in the Config to retrieve the desired data. You can host your gateway by simply using our docker file and providing your config file.
+
+### Type Specific Handler
+
+When CCIP is used the recipient that made a request has to trust the gateway that the returned data is correct. This is because the recipient doesn't have access to the underlying data source to look this up by themself. To handle this the CCIP flow contains the `resolveWithProof` function that can be used to verify the integrity of the data returned.
+A Type Specific handler fetches the data from the data source and prepares the proof so it can be verified using `resolveWithProof`. At the moment we're supporting two different Handlers _Signature_ and _Optimism-Bedrock_
+
+**Signature**
+
+When the Signature Handler is used the Gateway computes a signature of the response data using a predefined private Key. When retrieving the data the recipient can use ECRecover to ensure the given signature was computed by the address defined in the CcipVerifer contract.
+When this handler is used the Gateway is trusted. If the Gateway is corrupted the returned data might be corrupted as well.
+
+**Optimism-Bedrock**
+
+The Optimim Bedrock handler leverages the Optimism Bedrock protocol and enables a trustless way to store data on L2. The Optimism Node posts a hash to Ethereum Mainnet that contains the Stateroot of the entire Optimism Network. That Stateroot can be used to prove that certain data existed in account storage using Merkle proofs.
+
+### App Specific Handler
+
+App Specific handlers implement the actual data source and provide a REST interface so the Gateway can query it. An example using an L2 ENS Public Resolver contract as a data source can be found here: https://github.com/corpus-io/ENS-Bedrock-Resolver
 
 ## Resources
 

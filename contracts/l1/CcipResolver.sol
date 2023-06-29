@@ -18,14 +18,10 @@ import {BytesLib} from "solidity-bytes-utils/contracts/BytesLib.sol";
 contract CcipResolver is IExtendedResolver, IContextResolver, SupportsInterface {
     using BytesUtils for bytes;
 
-    ENS public ensRegistry;
-    INameWrapper public nameWrapper;
-
-    address public owner;
-    string public graphqlUrl;
-
-    mapping(bytes32 => Resolver) public resolvers;
-
+    struct CcipVerifier {
+        string gatewayUrl;
+        ICcipResponseVerifier verifierAddress;
+    }
     event GraphQlUrlChanged(string newGraphQlUrl);
     event OwnerChanged(address newOwner);
     event ResolverAdded(bytes32 indexed node, string gatewayUrl, address resolverAddress);
@@ -33,11 +29,13 @@ contract CcipResolver is IExtendedResolver, IContextResolver, SupportsInterface 
     error OffchainLookup(address sender, string[] urls, bytes callData, bytes4 callbackFunction, bytes extraData);
     error InvalidOperation();
 
-    struct Resolver {
-        string gatewayUrl;
-        //TODO rename to verifier
-        ICcipResponseVerifier resolverAddress;
-    }
+    ENS public ensRegistry;
+    INameWrapper public nameWrapper;
+
+    address public owner;
+    string public graphqlUrl;
+
+    mapping(bytes32 => CcipVerifier) public ccipVerifier;
 
     constructor(
         //The owner of the resolver
@@ -86,8 +84,8 @@ contract CcipResolver is IExtendedResolver, IContextResolver, SupportsInterface 
 
         require(bytes(url).length > 0, "url is empty");
 
-        Resolver memory resolver = Resolver(url, ICcipResponseVerifier(resolverAddress));
-        resolvers[node] = resolver;
+        CcipVerifier memory _ccipVerifier = CcipVerifier(url, ICcipResponseVerifier(resolverAddress));
+        ccipVerifier[node] = _ccipVerifier;
 
         emit ResolverAdded(node, url, resolverAddress);
     }
@@ -99,7 +97,7 @@ contract CcipResolver is IExtendedResolver, IContextResolver, SupportsInterface 
      * @return The return data, ABI encoded identically to the underlying function.
      */
     function resolve(bytes calldata name, bytes calldata data) external view override returns (bytes memory) {
-        (Resolver memory _resolver, bytes32 node) = getResolverOfDomain(name);
+        (CcipVerifier memory _resolver, bytes32 node) = getResolverOfDomain(name);
 
         address nodeOwner = getNodeOwner(node);
 
@@ -112,15 +110,15 @@ contract CcipResolver is IExtendedResolver, IContextResolver, SupportsInterface 
         revert OffchainLookup(address(this), urls, callData, CcipResolver.resolveWithProof.selector, callData);
     }
 
-    function getResolverOfDomain(bytes calldata name) public view returns (Resolver memory, bytes32) {
+    function getResolverOfDomain(bytes calldata name) public view returns (CcipVerifier memory, bytes32) {
         uint offset = 0;
 
         while (offset < name.length - 1) {
             bytes32 node = name.namehash(offset);
 
-            Resolver memory resolver = resolvers[node];
-            if (address(resolver.resolverAddress) != address(0)) {
-                return (resolver, node);
+            CcipVerifier memory _ccipVerifier = ccipVerifier[node];
+            if (address(_ccipVerifier.verifierAddress) != address(0)) {
+                return (_ccipVerifier, node);
             }
             (, offset) = name.readLabel(offset);
         }
@@ -136,10 +134,9 @@ contract CcipResolver is IExtendedResolver, IContextResolver, SupportsInterface 
         (, bytes memory data) = abi.decode(extraData[4:], (bytes, bytes));
 
         bytes32 node = bytes32(BytesLib.slice(data, 4, 32));
-        Resolver memory resolver = resolvers[node];
+        CcipVerifier memory _ccipVerifier = ccipVerifier[node];
 
-        //TODO revert if unknown resolver
-        return ICcipResponseVerifier(resolver.resolverAddress).resolveWithProof(response, extraData);
+        return ICcipResponseVerifier(_ccipVerifier.verifierAddress).resolveWithProof(response, extraData);
     }
 
     function supportsInterface(bytes4 interfaceID) public pure override returns (bool) {
