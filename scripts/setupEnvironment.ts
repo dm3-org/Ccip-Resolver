@@ -11,13 +11,10 @@ const whale = new ethers.Wallet("ac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5ef
 
 //0x8111DfD23B99233a7ae871b7c09cCF0722847d89
 const alice = new ethers.Wallet("0xfd9f3842a10eb01ccf3109d4bd1c4b165721bf8c26db5db7570c146f9fad6014");
-//0x504846E80A4eE8C6Eb46ec4AD64150d3f554F6b8
-const bob = new ethers.Wallet("0xb03367a9007c929dfdb33237ed31e27a3d1e62f5a69ca00bb90001d6063dda4e");
 
 const l1Provider = new ethers.providers.StaticJsonRpcProvider("http://localhost:8545");
 const l2Provider = new ethers.providers.StaticJsonRpcProvider("http://localhost:9545");
-
-const setupEnvironment = async () => {
+async function main() {
     //Test proof logic
     let proofServiceTestContract: ProofServiceTestContract;
     let foreignProofServiceTestContract: ProofServiceTestContract;
@@ -29,10 +26,6 @@ const setupEnvironment = async () => {
         console.error("Please ensure that you're running the local development environment for OP bedrock");
         return;
     }
-
-
-
-
     const proofServiceTestContractFactory = (await ethers.getContractFactory("ProofServiceTestContract")) as ProofServiceTestContract__factory;
 
     proofServiceTestContract = await proofServiceTestContractFactory.connect(l2Whale).deploy();
@@ -40,25 +33,6 @@ const setupEnvironment = async () => {
 
     console.log(`ProofServiceTestContract deployed at ${proofServiceTestContract.address}`);
     console.log(`ForeignProofServiceTestContract deployed at ${foreignProofServiceTestContract.address}`);
-
-    /*     //Fund alice account
-        const fundTx = await l2Whale.sendTransaction({
-            to: alice.address,
-            value: ethers.utils.parseEther("100"),
-        });
-        await fundTx.wait();
-    
-        console.log(`${alice.address} funded with ${await l2Provider.getBalance(alice.address)}`);
-        //Fund bob account
-        const fundTxbob = await l2Whale.sendTransaction({
-            to: bob.address,
-            value: ethers.utils.parseEther("100"),
-        });
-    
-        await fundTxbob.wait();
-        console.log(`${bob.address} funded with ${await l2Provider.getBalance(bob.address)}`); */
-
-
 
     const prepateProofServiceTestContractBytes32 = async () => {
         await proofServiceTestContract.setBool(true)
@@ -70,7 +44,11 @@ const setupEnvironment = async () => {
     }
     await prepateProofServiceTestContractBytes32();
     console.log("Environment setup complete wait a few minutes until everything is set");
-};
+}
 
-
-//setupEnvironment();
+// We recommend this pattern to be able to use async/await everywhere
+// and properly handle errors.
+main().catch((error) => {
+    console.error(error);
+    process.exitCode = 1;
+});
