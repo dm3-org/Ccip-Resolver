@@ -50,7 +50,7 @@ describe("ProofServiceTest", () => {
         const { proof } = await proofService.createProof(PROOF_SERVICE_TEST_CONTRACT, "0x0000000000000000000000000000000000000000000000000000000000000003", StorageLayout.FIXED);
 
         const responseBytes = await BedrockProofVerifier.getProofValue(proof);
-        expect(BigNumber.from(responseBytes)).to.equal("123");
+        expect(BigNumber.from(responseBytes).toNumber()).to.equal(123);
     })
     it("bytes slot", async () => {
         const proofService = new ProofService(l1Provider, l2Provider);

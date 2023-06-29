@@ -16,8 +16,6 @@ export async function optimismBedrockHandler(
         await axios.get(`${configEntry.handlerUrl}/${resolverAddr}/${calldata}`)
     ).data;
 
-    console.log("optimismBedrockHandler : ", target, slot, layout);
-
     if (!target || !slot || layout===undefined) {
         throw new Error("optimismBedrockHandler : Invalid data source response");
     }

@@ -61,7 +61,7 @@ describe('Signature Handler', () => {
             ensRegistry.address,
             nameWrapper.address,
             "http://localhost:8080/graphql"
-        ));
+        )) as CcipResolver
         //Get signers
         [owner] = await hreEthers.getSigners();
 

@@ -16,7 +16,7 @@ import { StorageLayout } from '../../gateway/service/proof/ProofService';
 
 const { expect } = require('chai');
 
-describe.only('Optimism Bedrock Handler', () => {
+describe('Optimism Bedrock Handler', () => {
     let ccipApp: express.Express;
     let ccipResolver: CcipResolver
     let owner: SignerWithAddress;
