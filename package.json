@@ -13,7 +13,10 @@
         "format": "prettier --check \"**/*.{ts,js,sol}\"",
         "format:fix": "prettier --write \"**/*.{ts,js,sol}\"",
         "deploy:l2": " hardhat run --network optimism deploy/l2/01_L2Public_Resolver.ts",
-        "e2e:setup": "npx hardhat run ./scripts/setupEnvironment.ts"
+        "e2e:setup": "npx hardhat run ./scripts/setupEnvironment.ts",
+        "build": "yarn hardhat compile && yarn tsc -p tsconfig-build.json",
+        "start": "node dist/gateway/index.js",
+        "docker:build": "docker build -t ccip-resolver -f ./Dockerfile ."
     },
     "files": [
         "dist/src/",
@@ -32,7 +35,10 @@
         "@pinata/sdk": "^1.1.23",
         "@typechain/ethers-v5": "^8.0.5",
         "@typechain/hardhat": "^3.0.0",
+        "@types/body-parser": "^1.19.2",
         "@types/chai": "^4.3.0",
+        "@types/cors": "^2.8.13",
+        "@types/express": "^4.17.17",
         "@types/mocha": "^9.0.0",
         "@types/node": "^16.11.12",
         "axios-mock-adapter": "^1.21.5",
