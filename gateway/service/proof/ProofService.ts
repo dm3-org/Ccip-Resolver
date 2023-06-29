@@ -77,7 +77,6 @@ export class ProofService {
 
 
         //The result is not part of the proof but its convenient to have it i:E in tests
-        //@ts-ignore
         const result = storageProof.reduce((agg, cur) => agg + cur.value.substring(2), "0x").substring(0, length * 2 + 2);
         return { result, proof };
     }
@@ -110,13 +109,12 @@ export class ProofService {
         blockNr: number,
         resolverAddr: string,
         layout: StorageLayout
-    ): Promise<{ storageProof: StorageProof[]; accountProof: string[]; storageHash: string; length: number }> {
+    ): Promise<{ storageProof: (StorageProof & { value: string })[]; accountProof: string; storageHash: string; length: number }> {
 
         if (layout === StorageLayout.FIXED) {
             /**
             * Since we're prooving one entrie slot the length is always 32
             */
-               //@ts-ignore
             return this.handleShortType(resolverAddr, initalSlot, blockNr, 32)
         }
         //The initial value. We used it to determine how many slots we need to proof
@@ -127,12 +125,8 @@ export class ProofService {
 
         //Handle slots at most 31 bytes long
         if (length <= 31) {
-            console.log("handle short type");
-                //@ts-ignore
             return this.handleShortType(resolverAddr, initalSlot, blockNr, length);
         }
-        console.log("handle long type");
-            //@ts-ignore
         return this.handleLongType(initalSlot, resolverAddr, blockNr, length);
     }
     private decodeLength(slot: string) {
@@ -210,7 +204,7 @@ export class ProofService {
      * @param storageProofs The storage proofs to be mapped.
      * @returns An array of mapped storage proofs.
      */
-    private mapStorageProof(storageProofs: EthGetProofResponse["storageProof"]): StorageProof[] {
+    private mapStorageProof(storageProofs: EthGetProofResponse["storageProof"]): (StorageProof & { value: string })[] {
         return storageProofs.map(({ key, proof, value }) => ({
             key,
             value,
