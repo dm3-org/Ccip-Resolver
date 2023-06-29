@@ -17,7 +17,8 @@ export async function optimismBedrockHandler(
     ).data;
 
     console.log("optimismBedrockHandler : ", target, slot, layout);
-    if (!target || !slot || !!layout) {
+
+    if (!target || !slot || layout===undefined) {
         throw new Error("optimismBedrockHandler : Invalid data source response");
     }
 

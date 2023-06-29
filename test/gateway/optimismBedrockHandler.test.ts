@@ -16,7 +16,7 @@ import { StorageLayout } from '../../gateway/service/proof/ProofService';
 
 const { expect } = require('chai');
 
-describe('Optimism Bedrock Handler', () => {
+describe.only('Optimism Bedrock Handler', () => {
     let ccipApp: express.Express;
     let ccipResolver: CcipResolver
     let owner: SignerWithAddress;
@@ -24,9 +24,7 @@ describe('Optimism Bedrock Handler', () => {
     //0x8111DfD23B99233a7ae871b7c09cCF0722847d89
     const alice = new ethers.Wallet("0xfd9f3842a10eb01ccf3109d4bd1c4b165721bf8c26db5db7570c146f9fad6014").connect(hreEthers.provider)
 
-
     let signer: Wallet;
-
 
     let ensRegistry: FakeContract<ENS>;
     //NameWrapper
@@ -37,9 +35,6 @@ describe('Optimism Bedrock Handler', () => {
     let bedrockCcipVerifier: BedrockCcipVerifier
 
     beforeEach(async () => {
-        const l1Provider = new ethers.providers.StaticJsonRpcProvider("http://localhost:8545");
-        const l2Provider = new ethers.providers.StaticJsonRpcProvider("http://localhost:9545");
-
         [owner] = await hreEthers.getSigners();
         signer = ethers.Wallet.createRandom()
         /**
@@ -102,8 +97,8 @@ describe('Optimism Bedrock Handler', () => {
 
         const result = {
             target: "0x5FbDB2315678afecb367f032d93F642f64180aa3",
-            slot: "0xbb067781a09f1c3e4bacec4a5146d6405c3f727f6ccc8a7703d7a998ecf2d418",
-            layout: StorageLayout.FIXED
+            slot: "0x0000000000000000000000000000000000000000000000000000000000000005",
+            layout: StorageLayout.DYNAMIC
         }
         mock.onGet(`http://test/${bedrockCcipVerifier.address}/${callData}`).reply(
             200,
@@ -129,18 +124,12 @@ describe('Optimism Bedrock Handler', () => {
 
         expect(response.status).to.equal(200);
 
-
-
-
         const responseBytes = await ccipResolver.resolveWithProof(
             response.body.data,
             callData,
         );
-
-
-
         const responseString = Buffer.from(responseBytes.slice(2), "hex").toString();
-        expect(responseString).to.eql(ethers.utils.toUtf8String(responseBytes));
+        expect(responseString).to.eql("Hello from Alice");
 
 
     });
