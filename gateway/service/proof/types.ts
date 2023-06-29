@@ -1,3 +1,5 @@
+import { StorageLayout } from "./ProofService";
+
 export interface EthGetProofResponse {
     accountProof: string;
     balance: string;
@@ -12,6 +14,7 @@ export interface EthGetProofResponse {
 }
 
 export interface ProofInputObject {
+    layout: StorageLayout;
     target: string;
     length: number;
     storageHash: string;

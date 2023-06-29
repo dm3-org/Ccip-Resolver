@@ -4,6 +4,7 @@ import {Types} from "@eth-optimism/contracts-bedrock/contracts/libraries/Types.s
 
 interface IBedrockProofVerifier {
     struct BedrockStateProof {
+        uint8 layout;
         //The address of the contract we are trying to prove
         address target;
         //The length of the result
