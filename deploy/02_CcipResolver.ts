@@ -17,7 +17,8 @@ async function main() {
 
     console.log(`OptimismResolver deployed at  ${deployTx.address}`);
     console.log(
-        ` Verifiy contract using npx hardhat verify --network ${hre.network.name} ${deployTx.address} ${owner.address} ${ensRegistry} ${namewrapper} '${graphqlUrl}'`
+        ` Verifiy contract using npx hardhat verify --network
+         ${hre.network.name} ${deployTx.address} ${owner.address} ${ensRegistry} ${namewrapper} '${graphqlUrl}'`
     );
 }
 
