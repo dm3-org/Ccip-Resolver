@@ -14,7 +14,8 @@ Visit the App-specific Handler section to learn how to write a handler for your 
 The core contract implementing the Ccip Interface. It delegates the actual implementation to an instance of the CcipVerifier contract. Every Ens name owner can specify its verifier. This allows the Ens-name owner to declare different Data sources associated with their domain.
 
 ### CcipResponseVerifier
-An App Specific Handler needs a CcipResponseVerifier contract that implements the ```resolveWithProof``` function accordingly. For example, the handler related to the optimism-Bedrock validates the Merkle proof for the returned data and ensures it is part of the Optimism Network.
+
+An App Specific Handler needs a CcipResponseVerifier contract that implements the `resolveWithProof` function accordingly. For example, the handler related to the optimism-Bedrock validates the Merkle proof for the returned data and ensures it is part of the Optimism Network.
 
 ## Gateway
 
@@ -67,9 +68,12 @@ Visit https://community.optimism.io/docs/developers/build/dev-node/ for setup in
 ## Deployments
 
 ### Bedrock ProofVerifier
-Deploy the BedrockProofVerifier Contract using ```yarn run deploy:bedrock-proof-verifier-goerli```
+
+Deploy the BedrockProofVerifier Contract using `yarn run deploy:bedrock-proof-verifier-goerli`
+### Ccip Resolver
+Deploy the BedrockProofVerifier Contract using `yarn run deploy:ccip-resolver-goerli`
 
 ### Goerli
 
 BedrockProofVerifier : 0x49FA2e3dc397d6AcA8e2DAe402eB2fD6164EebAC
-OptimismResolver: 0xa5582e57281E6d4Bc51A3ad3A0F1ec18f37751ca
+Ccip Resolver: 0x6D8D77aD82a954A0001a845Ff28C4278e6F5E879

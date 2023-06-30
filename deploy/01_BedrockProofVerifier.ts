@@ -7,8 +7,6 @@ async function main() {
     const chainId = await hre.getChainId();
     const l2OutputOracleAddress = chainId === "1" ? L2_OUTPUT_ORALCE_MAINNET : L2_OUTPUT_ORALCE_GOERLI;
 
-
-
     const BedrockProofVerifierFactory = await ethers.getContractFactory("BedrockProofVerifier");
     const deployTx = await BedrockProofVerifierFactory.deploy(l2OutputOracleAddress);
 
