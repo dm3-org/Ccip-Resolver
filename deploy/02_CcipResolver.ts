@@ -1,7 +1,7 @@
 import hre, { ethers } from "hardhat";
 
-const NAMEWRAPPER_GOERLI = "0x114D4603199df73e7D157787f8778E21fCd13066"
-const NAMEWRAPPER_MAINNET = "0xD4416b13d2b3a9aBae7AcD5D6C2BbDBE25686401"
+const NAMEWRAPPER_GOERLI = "0x114D4603199df73e7D157787f8778E21fCd13066";
+const NAMEWRAPPER_MAINNET = "0xD4416b13d2b3a9aBae7AcD5D6C2BbDBE25686401";
 async function main() {
     const chainId = await hre.getChainId();
 
@@ -15,9 +15,10 @@ async function main() {
 
     await deployTx.deployed();
 
-
     console.log(`OptimismResolver deployed at  ${deployTx.address}`);
-    console.log(` Verifiy contract using npx hardhat verify --network ${hre.network.name} ${deployTx.address} ${owner.address} ${ensRegistry} ${namewrapper} '${graphqlUrl}'`)
+    console.log(
+        ` Verifiy contract using npx hardhat verify --network ${hre.network.name} ${deployTx.address} ${owner.address} ${ensRegistry} ${namewrapper} '${graphqlUrl}'`
+    );
 }
 
 // We recommend this pattern to be able to use async/await everywhere

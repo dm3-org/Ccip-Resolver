@@ -14,8 +14,9 @@ async function main() {
 
     console.log(`BedrockProofVerifier deployed at  ${deployTx.address}`);
 
-
-    console.log(`Verify the contract using  npx hardhat verify --network ${hre.network.name} ${deployTx.address} ${l2OutputOracleAddress} `)
+    console.log(
+        `Verify the contract using  npx hardhat verify --network ${hre.network.name} ${deployTx.address} ${l2OutputOracleAddress} `
+    );
 }
 
 // We recommend this pattern to be able to use async/await everywhere
