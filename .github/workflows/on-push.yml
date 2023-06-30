@@ -31,12 +31,6 @@ jobs:
                   cache: 'yarn'
             - name: Install
               run: yarn install
-              env:
-                  #NODE_AUTH_TOKEN: ${{ secrets.PACKAGE_PAT }}
-            - name: Build
-              run: yarn build
-                  name: lib-schema
-                  path: packages/lib/**/schema/
     gateway-tests:
       runs-on: ubuntu-latest
       needs: build
