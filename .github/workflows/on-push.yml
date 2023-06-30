@@ -37,5 +37,5 @@ jobs:
     needs: build
     steps:
       - uses: actions/checkout@v2
-      - name: Gateway Tests
+      - run: yarn install
         run: yarn test:gateway
