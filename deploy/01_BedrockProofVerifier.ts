@@ -1,6 +1,6 @@
 import hre, { ethers } from "hardhat";
 
-//https://community.optimism.io/docs/useful-tools/networks/
+// https://community.optimism.io/docs/useful-tools/networks/
 const L2_OUTPUT_ORALCE_GOERLI = "0xE6Dfba0953616Bacab0c9A8ecb3a9BBa77FC15c0";
 const L2_OUTPUT_ORALCE_MAINNET = "0xdfe97868233d1aa22e815a266982f2cf17685a27";
 async function main() {
