@@ -9,9 +9,9 @@
         "lint": "tslint --config tslint.json --project tsconfig.json && solhint contracts/**/*.sol",
         "format": "prettier --check \"**/*.{ts,js,sol}\"",
         "format:fix": "prettier --write \"**/*.{ts,js,sol}\"",
-        "deploy:l2": " hardhat run --network optimism deploy/l2/01_L2Public_Resolver.ts",
         "build": "yarn hardhat compile && yarn tsc -p tsconfig-build.json",
-        "start": "node dist/server/index.js"
+        "start": "node dist/server/index.js",
+        "docker:build": "docker build -t ens_bedrock_resolver -f ./Dockerfile ."
     },
     "files": [
         "dist/src/",
@@ -23,7 +23,7 @@
     "license": "MIT",
     "devDependencies": {
         "@nomiclabs/hardhat-ethers": "^2.0.3",
-        "@nomiclabs/hardhat-etherscan": "^2.1.8",
+        "@nomiclabs/hardhat-etherscan": "^3.1.7",
         "@nomiclabs/hardhat-solhint": "^2.0.0",
         "@nomiclabs/hardhat-web3": "^2.0.0",
         "@openzeppelin/contracts": "^4.4.0",

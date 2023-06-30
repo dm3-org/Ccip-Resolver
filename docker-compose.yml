@@ -1,0 +1,16 @@
+# Set the version of docker compose to use
+version: "3.6"
+
+services:
+  ccip-resolver:
+    image: dm3org/offchain-resolver:v0.0.1
+    restart: always
+    environment:
+        CONFIG: '{"0x39Dc8A3A607970FA9F417D284E958D4cA69296C8":{"type":"optimism-bedrock","handlerUrl":"http://localhost:8080","l1ProviderUrl":"https://eth-goerli.g.alchemy.com/v2/XsX8NB_NvPFNUIAPQmOSjP4rMqsrTGDV","l2ProviderUrl":"https://goerli.optimism.io"}}'
+  ens-data-source:
+    image: ens_bedrock_resolver:latest
+    restart: always
+    environment:
+        L2_RESOLVER_ADDRESS: "0x0x39Dc8A3A607970FA9F417D284E958D4cA69296C8123456"   
+
+

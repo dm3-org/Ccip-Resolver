@@ -24,6 +24,8 @@ const server = http.createServer(app);
 app.use(cors());
 app.use(bodyParser.json());
 
+
+
 (async () => {
     app.locals.logger = winston.createLogger({
         transports: [new winston.transports.Console()],
@@ -38,7 +40,7 @@ app.use(bodyParser.json());
 
     app.use('/', await EnsHandler(provider, resolverAddress));
 })();
-const port = process.env.PORT || '8081';
+const port = process.env.PORT || '8080';
 server.listen(port, () => {
     app.locals.logger.info(
         '[Ens Handler] listening at port ' + port + ' and dir ' + __dirname,
