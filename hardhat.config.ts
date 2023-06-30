@@ -23,9 +23,9 @@ module.exports = {
     defaultNetwork: "hardhat",
     networks: {
         hardhat: {
-       /*      forking: {
-                url: "http://localhost:8545",
-            }, */
+            /*      forking: {
+                     url: "http://localhost:8545",
+                 }, */
         },
         optimismGoerli: {
             url: "https://goerli.optimism.io",
@@ -38,7 +38,20 @@ module.exports = {
         localhost: {},
     },
     etherscan: {
-        apiKey: ETHERSCAN_API_KEY,
+        apiKey: {
+            optimismGoerli: OPTIMISTIC_ETHERSCAN_API_KEY
+        },
+        customChains: [
+            {
+                network: "optimismGoerli",
+                chainId: 420,
+                urls: {
+                    apiURL: "https://api-goerli-optimism.etherscan.io/api",
+                    browserURL: "https://goerli-optimism.etherscan.io"
+                }
+            }
+        ]
+
     },
     namedAccounts: {
         deployer: {
