@@ -19,9 +19,16 @@ const OPTIMISTIC_ETHERSCAN_API_KEY = process.env.OPTIMISTIC_ETHERSCAN_API_KEY;
 const GOERLI_URL = process.env.GOERLI_RPC_URL ?? "";
 const DEPLOYER_PRIVATE_KEY = process.env.DEPLOYER_PRIVATE_KEY ?? ethers.Wallet.createRandom().privateKey;
 
+const hardhat = process.env.CI ? {} : {
+    forking: {
+        url: "http://localhost:8545"
+    }
+}
+
 module.exports = {
     defaultNetwork: "hardhat",
     networks: {
+        hardhat,
         optimismGoerli: {
             url: "https://goerli.optimism.io",
             accounts: [DEPLOYER_PRIVATE_KEY],
