@@ -35,9 +35,9 @@ jobs:
         runs-on: ubuntu-latest
         needs: build
         steps:
-        - uses: actions/checkout@v2
-        - name: "Gateway Tests"
-            run: yarn test:gateway
+            - uses: actions/checkout@v2
+            - name: "Gateway Tests"
+                run: yarn test:gateway
     
           
        
