@@ -34,14 +34,6 @@ export interface CreateProofResult {
 }
 
 type bytes32 = string;
-/**
- *   struct OutputRootProof {
-        bytes32 version;
-        bytes32 stateRoot;
-        bytes32 messagePasserStorageRoot;
-        bytes32 latestBlockhash;
-    }
- */
 export interface OutputRootProof {
     version: bytes32;
     stateRoot: bytes32;

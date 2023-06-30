@@ -7,11 +7,11 @@ import "@nomiclabs/hardhat-etherscan";
 import "@nomiclabs/hardhat-solhint";
 import "@typechain/hardhat";
 import "dotenv/config";
+import { ethers } from "ethers";
 import "hardhat-deploy";
-import "solidity-coverage";
 import "hardhat-storage-layout";
 import "hardhat-tracer";
-import { ethers } from "ethers";
+import "solidity-coverage";
 
 const ETHERSCAN_API_KEY = process.env.ETHERSCAN_API_KEY;
 const OPTIMISTIC_ETHERSCAN_API_KEY = process.env.OPTIMISTIC_ETHERSCAN_API_KEY;
@@ -19,11 +19,13 @@ const OPTIMISTIC_ETHERSCAN_API_KEY = process.env.OPTIMISTIC_ETHERSCAN_API_KEY;
 const GOERLI_URL = process.env.GOERLI_RPC_URL ?? "";
 const DEPLOYER_PRIVATE_KEY = process.env.DEPLOYER_PRIVATE_KEY ?? ethers.Wallet.createRandom().privateKey;
 
-const hardhat = process.env.CI ? {} : {
-    forking: {
-        url: "http://localhost:8545"
-    }
-}
+const hardhat = process.env.CI
+    ? {}
+    : {
+          forking: {
+              url: "http://localhost:8545",
+          },
+      };
 
 module.exports = {
     defaultNetwork: "hardhat",

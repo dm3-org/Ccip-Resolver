@@ -8,14 +8,14 @@ export function encodeEnsName(ensName: string) {
     // strip leading and trailing .
     const n = ensName.replace(/^\.|\.$/gm, "");
 
-    var bufLen = n === "" ? 1 : n.length + 2;
-    var buf = Buffer.allocUnsafe(bufLen);
+    const bufLen = n === "" ? 1 : n.length + 2;
+    const buf = Buffer.allocUnsafe(bufLen);
 
     let offset = 0;
     if (n.length) {
         const list = n.split(".");
-        for (let i = 0; i < list.length; i++) {
-            const len = buf.write(list[i], offset + 1);
+        for (const e of list) {
+            const len = buf.write(e, offset + 1);
             buf[offset] = len;
             offset += len + 1;
         }
