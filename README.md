@@ -66,7 +66,10 @@ Visit https://community.optimism.io/docs/developers/build/dev-node/ for setup in
 
 ## Deployments
 
-### L1 Goerli
+### Bedrock ProofVerifier
+Deploy the BedrockProofVerifier Contract using ```yarn run deploy:bedrock-proof-verifier-goerli```
 
-BedrockProofVerifier : 0xA4178AF5847a633dAd8c2A3fC84520F9951489De
+### Goerli
+
+BedrockProofVerifier : 0x49FA2e3dc397d6AcA8e2DAe402eB2fD6164EebAC
 OptimismResolver: 0xa5582e57281E6d4Bc51A3ad3A0F1ec18f37751ca
