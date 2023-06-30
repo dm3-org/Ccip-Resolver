@@ -22,11 +22,6 @@ const DEPLOYER_PRIVATE_KEY = process.env.DEPLOYER_PRIVATE_KEY ?? ethers.Wallet.c
 module.exports = {
     defaultNetwork: "hardhat",
     networks: {
-        hardhat: {
-            forking: {
-                url: "http://localhost:8545",
-            },
-        },
         optimismGoerli: {
             url: "https://goerli.optimism.io",
             accounts: [DEPLOYER_PRIVATE_KEY],
