@@ -17,6 +17,10 @@ The core contract implementing the Ccip Interface. It delegates the actual imple
 
 An App Specific Handler needs a CcipResponseVerifier contract that implements the `resolveWithProof` function accordingly. For example, the handler related to the optimism-Bedrock validates the Merkle proof for the returned data and ensures it is part of the Optimism Network.
 
+### BedrockCcipVerifier
+
+An implementation of the CcipResponseVerifier Interface. This contract is supposed to prove data from a certain contract on Optimism Bedrock.
+
 ## Gateway
 
 ![Resolver architecture](./architcture.jpeg)
@@ -56,6 +60,19 @@ App Specific handlers implement the actual data source and provide a REST interf
 
 ## Tests
 
+This repository contains 3 different test suites. There are tests for the Smart contracts the Gateway server and the bedrock-related parts.
+All tests associated with Bedrock require access to the Bedrock local development environment and the execution of setupEnvironment as described in the Bedrock test section. This might not be always feasible for example when a test should be executed in a CI Pipeline.
+Thus the test suites can be executed separately
+
+
+### Gateway tests 
+ Run ```yarn run test:gateway```
+
+### Contract test
+Run ```yarn run test:contracts```
+
+### Bedrock tests
+
 The tests are based on the Optimism local development environment. To run them you've to run this environment on your machine.
 Visit https://community.optimism.io/docs/developers/build/dev-node/ for setup instructions.
 
@@ -70,10 +87,17 @@ Visit https://community.optimism.io/docs/developers/build/dev-node/ for setup in
 ### Bedrock ProofVerifier
 
 Deploy the BedrockProofVerifier Contract using `yarn run deploy:bedrock-proof-verifier-goerli`
+
 ### Ccip Resolver
+
 Deploy the BedrockProofVerifier Contract using `yarn run deploy:ccip-resolver-goerli`
+
+### Bedrock CCIP Verifier
+
+The BedrockCCIPVerifier just supports one contract on Optimism. If you want to use a different contract you have to deploy a new instance of that contract.
 
 ### Goerli
 
 BedrockProofVerifier : 0x49FA2e3dc397d6AcA8e2DAe402eB2fD6164EebAC
 Ccip Resolver: 0x6D8D77aD82a954A0001a845Ff28C4278e6F5E879
+BedrockCcipVerifier : 0x14e8914d0831780858e6E1871Ff7e38E14d053Dd
