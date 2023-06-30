@@ -9,7 +9,7 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           registry-url: 'https://npm.pkg.github.com'
-          node-version: 18.0.0
+          node-version: 16.0.0
           cache: 'yarn'
       - name: Install
         run: yarn install
@@ -27,7 +27,7 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           registry-url: 'https://npm.pkg.github.com'
-          node-version: 18.0.0
+          node-version: 16.0.0
           cache: 'yarn'
       - name: Install
         run: yarn install
@@ -37,5 +37,10 @@ jobs:
     needs: build
     steps:
       - uses: actions/checkout@v2
+      - uses: actions/setup-node@v3
+        with:
+          registry-url: 'https://npm.pkg.github.com'
+          node-version: 16.0.0
+          cache: 'yarn'
       - run: yarn install
       - run: yarn test:gateway
