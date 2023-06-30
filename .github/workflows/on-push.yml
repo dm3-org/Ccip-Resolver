@@ -32,11 +32,12 @@ jobs:
             - name: Install
               run: yarn install
     gateway-tests:
-      runs-on: ubuntu-latest
-      needs: build
-      steps:
-      - name: "Gateway Tests"
-        run: yarn test:gateway
+        runs-on: ubuntu-latest
+        needs: build
+        steps:
+        - uses: actions/checkout@v2
+        - name: "Gateway Tests"
+            run: yarn test:gateway
     
           
        
