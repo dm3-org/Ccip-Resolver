@@ -34,6 +34,10 @@ contract BedrockProofVerifier is IBedrockProofVerifier {
         );
 
         bytes memory result = getMultipleStorageProofs(proof);
+
+        if (proof.layout == 0) {
+            return result;
+        }
         return trimResult(result, proof.length);
     }
 

@@ -1,4 +1,4 @@
-import { ethers, Signer } from 'ethers';
+import { ethers, Signer } from "ethers";
 
 /**
  * @param signer A signer to sign the request. The address of the signer HAS to be part of
@@ -14,7 +14,7 @@ export async function signAndEncodeResponse(
     resolverAddr: string,
     result: string,
     calldata: string,
-    ttl: number = 30000,
+    ttl: number = 30000
 ): Promise<string> {
     const validUntil = Math.floor(Date.now() / 1000 + ttl);
 
@@ -24,14 +24,8 @@ export async function signAndEncodeResponse(
      */
 
     const messageHash = ethers.utils.solidityKeccak256(
-        ['bytes', 'address', 'uint64', 'bytes32', 'bytes32'],
-        [
-            '0x1900',
-            resolverAddr,
-            validUntil,
-            ethers.utils.keccak256(calldata),
-            ethers.utils.keccak256(result),
-        ],
+        ["bytes", "address", "uint64", "bytes32", "bytes32"],
+        ["0x1900", resolverAddr, validUntil, ethers.utils.keccak256(calldata), ethers.utils.keccak256(result)]
     );
 
     const msgHashDigest = ethers.utils.arrayify(messageHash);
@@ -40,8 +34,5 @@ export async function signAndEncodeResponse(
      */
     const sig = await signer.signMessage(msgHashDigest);
 
-    return ethers.utils.defaultAbiCoder.encode(
-        ['bytes', 'uint64', 'bytes'],
-        [result, validUntil, sig],
-    );
+    return ethers.utils.defaultAbiCoder.encode(["bytes", "uint64", "bytes"], [result, validUntil, sig]);
 }

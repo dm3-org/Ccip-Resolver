@@ -1,0 +1,58 @@
+name: Push Workflow
+on: push
+
+jobs:
+  code-quality:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v3
+        with:
+          registry-url: 'https://npm.pkg.github.com'
+          node-version: 16.0.0
+          cache: 'yarn'
+      - name: Install
+        run: yarn install
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.PACKAGE_PAT }}
+      - name: Lint
+        run: yarn lint
+      - name: Format
+        run: yarn format:fix
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v3
+        with:
+          registry-url: 'https://npm.pkg.github.com'
+          node-version: 16.0.0
+          cache: 'yarn'
+      - name: Install
+        run: yarn install
+
+  gateway-tests:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v3
+        with:
+          registry-url: 'https://npm.pkg.github.com'
+          node-version: 16.0.0
+          cache: 'yarn'
+      - run: yarn install
+      - run: yarn test:gateway
+  contract-tests:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v3
+        with:
+          registry-url: 'https://npm.pkg.github.com'
+          node-version: 16.0.0
+          cache: 'yarn'
+      - run: yarn install
+      - run: yarn test:contracts

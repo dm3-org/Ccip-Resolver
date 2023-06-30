@@ -1,0 +1,10 @@
+version: "3.6"
+
+services:
+  ens-data-source:
+    image: ens_bedrock_resolver:latest
+    restart: always
+    environment:
+        L2_RESOLVER_ADDRESS: "0x123456"
+        
+
