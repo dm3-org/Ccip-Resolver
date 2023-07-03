@@ -3,7 +3,7 @@ import { L2PublicResolver, L2PublicResolver__factory } from "../../typechain";
 import { handleCcipRequest } from "./handleCcipRequest";
 import { ethers } from 'ethers';
 
-export async function EnsHandler(provider: ethers.providers.StaticJsonRpcProvider, l2ResolverAddress: string) {
+export  function EnsHandler(provider: ethers.providers.StaticJsonRpcProvider, l2ResolverAddress: string) {
     const router = express.Router();
 
     const l2PublicResolver = new ethers.Contract(
@@ -11,7 +11,6 @@ export async function EnsHandler(provider: ethers.providers.StaticJsonRpcProvide
         L2PublicResolver__factory.createInterface(),
         provider
     ) as L2PublicResolver
-
 
 
     router.get(
@@ -24,12 +23,13 @@ export async function EnsHandler(provider: ethers.providers.StaticJsonRpcProvide
 
             try {
                 const response = await handleCcipRequest(l2PublicResolver, calldata);
+                console.log(response)
 
                 if (!response) {
                     return res.status(404).send({ message: `unsupported signature` });
                 }
 
-                res.status(200).send({ data: response });
+                res.status(200).send({ ...response });
             } catch (e) {
                 req.app.locals.logger.warn((e as Error).message);
                 res.status(400).send({ message: 'Unknown error' });

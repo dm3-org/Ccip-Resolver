@@ -7,7 +7,6 @@ import "@nomiclabs/hardhat-etherscan";
 import "@nomiclabs/hardhat-solhint";
 import "@typechain/hardhat";
 import "dotenv/config";
-import "hardhat-deploy";
 import "solidity-coverage";
 import "hardhat-storage-layout";
 import "hardhat-tracer";

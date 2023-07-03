@@ -19,7 +19,7 @@ describe.only('EnsHandler', () => {
         l2PublicResolver = (await l2PublicResolverFactory.deploy()) as L2PublicResolver;
         expressApp = express();
         expressApp.use(bodyParser.json());
-        expressApp.use(await EnsHandler(l2PublicResolver.address));
+        expressApp.use(await EnsHandler(ethers.provider, l2PublicResolver.address));
     })
 
     describe("Addr", () => {
@@ -84,7 +84,7 @@ describe.only('EnsHandler', () => {
             const name = ethers.utils.dnsEncode("alice.eth")
             const dnsName = ethers.utils.dnsEncode(name)
             const node = ethers.utils.namehash(name)
-            
+
             await l2PublicResolver.connect(alice).setABI(dnsName, 1, ethers.utils.toUtf8Bytes("0xabc"));
 
             const ccipRequest = getCcipRequest("ABI", alice.address, alice.address, node, "1")

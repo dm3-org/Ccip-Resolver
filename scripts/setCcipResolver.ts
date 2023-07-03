@@ -2,15 +2,15 @@ import { BigNumber } from "ethers"
 import hre, { ethers } from "hardhat"
 
 
-const CCIP_RESOLVER_ADDRESS = "0x6D8D77aD82a954A0001a845Ff28C4278e6F5E879"
 const ENS_NAME = "alice123.eth"
 
-const ENS_REGISTRY = "0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e"
+const CCIP_RESOLVER_ADDRESS = "0x410EBbabB4471e9c18CC36642F4057812E125e94"
+const NAME_WRAPPER = "0x114D4603199df73e7D157787f8778E21fCd13066"
 
 export const setCcipResolver = async () => {
     const [signer] = await hre.ethers.getSigners()
     const node = ethers.utils.namehash(ENS_NAME)
-    console.log(node)
+
     const registryInterface = new ethers.utils.Interface([
         "function setResolver(bytes32 node, address resolver) external"
     ])
@@ -18,15 +18,12 @@ export const setCcipResolver = async () => {
     const data = registryInterface.encodeFunctionData("setResolver", [node, CCIP_RESOLVER_ADDRESS])
 
     const tx = await signer.sendTransaction({
-        to: ENS_REGISTRY,
+        to: NAME_WRAPPER,
         data,
-        gasLimit: 1000000,
-        gasPrice: 1000000
+        gasLimit: 56631,
+    
     })
-
     await tx.wait()
-
-    console.log("Transaction hash: ", tx.hash)
 }
 
 setCcipResolver()

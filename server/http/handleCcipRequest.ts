@@ -39,14 +39,19 @@ export async function handleCcipRequest(l2PubicResolver: L2PublicResolver, calld
             case "text(bytes32,string)":
                 {
                     const { node, record } = decodeText(context, args);
+
                     const slot = await getSlotForText(l2PubicResolver, context, node, record)
-                    return { slot, target: l2PubicResolver.address, layout: StorageLayout.DYNAMIC }
+                    const result = await l2PubicResolver.text(context, node, record)
+
+                    console.log(result)
+
+                    return { slot, target: l2PubicResolver.address, layout: StorageLayout.DYNAMIC, result: l2Resolverinterface.encodeFunctionResult("text(bytes32,string)", [result]) }
                 }
-                case "addr(bytes32)":
-                    {
-                        const { node } = decodeAddr(context, args);
-                        const slot = await getSlotForAddr(l2PubicResolver, context, node, 60);
-                        return { slot, target: l2PubicResolver.address, layout: StorageLayout.DYNAMIC }
+            case "addr(bytes32)":
+                {
+                    const { node } = decodeAddr(context, args);
+                    const slot = await getSlotForAddr(l2PubicResolver, context, node, 60);
+                    return { slot, target: l2PubicResolver.address, layout: StorageLayout.DYNAMIC }
                 }
             case "ABI(bytes,bytes32,uint256)":
                 {

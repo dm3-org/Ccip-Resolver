@@ -38,9 +38,9 @@ app.use(bodyParser.json());
 
     const provider = new ethers.providers.StaticJsonRpcProvider(RPC_URL);
 
-    app.use('/', await EnsHandler(provider, resolverAddress));
+    app.use('/', EnsHandler(provider, resolverAddress));
 })();
-const port = process.env.PORT || '8080';
+const port = process.env.PORT || '8887';
 server.listen(port, () => {
     app.locals.logger.info(
         '[Ens Handler] listening at port ' + port + ' and dir ' + __dirname,
