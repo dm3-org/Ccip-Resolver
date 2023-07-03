@@ -24,7 +24,7 @@ contract CcipResolver is IExtendedResolver, IContextResolver, SupportsInterface 
     }
     event GraphQlUrlChanged(string newGraphQlUrl);
     event OwnerChanged(address newOwner);
-    event ResolverAdded(bytes32 indexed node, string gatewayUrl, address resolverAddress);
+    event VerifierAdded(bytes32 indexed node, string gatewayUrl, address verifierAddress);
 
     error OffchainLookup(address sender, string[] urls, bytes callData, bytes4 callbackFunction, bytes extraData);
     error InvalidOperation();
@@ -67,27 +67,27 @@ contract CcipResolver is IExtendedResolver, IContextResolver, SupportsInterface 
         emit OwnerChanged(_owner);
     }
 
-    function setResolverForDomain(bytes32 node, address resolverAddress, string memory url) external {
+    function setVerifierForDomain(bytes32 node, address verifierAddress, string memory url) external {
         require(node != bytes32(0), "node is 0x0");
-        require(resolverAddress != address(0), "resolverAddress is 0x0");
+        require(verifierAddress != address(0), "verifierAddress is 0x0");
 
         require(msg.sender == getNodeOwner(node), "only subdomain owner");
 
-        (bool success, bytes memory response) = resolverAddress.staticcall(
+        (bool success, bytes memory response) = verifierAddress.staticcall(
             abi.encodeWithSignature("supportsInterface(bytes4)", ICcipResponseVerifier.resolveWithProof.selector)
         );
 
         require(
             success && response.length == 32 && (response[response.length - 1] & 0x01) == 0x01,
-            "resolverAddress is not a CCIP Resolver"
+            "verifierAddress is not a CCIP Verifier"
         );
 
         require(bytes(url).length > 0, "url is empty");
 
-        CcipVerifier memory _ccipVerifier = CcipVerifier(url, ICcipResponseVerifier(resolverAddress));
+        CcipVerifier memory _ccipVerifier = CcipVerifier(url, ICcipResponseVerifier(verifierAddress));
         ccipVerifier[node] = _ccipVerifier;
 
-        emit ResolverAdded(node, url, resolverAddress);
+        emit VerifierAdded(node, url, verifierAddress);
     }
 
     /**
@@ -97,7 +97,7 @@ contract CcipResolver is IExtendedResolver, IContextResolver, SupportsInterface 
      * @return The return data, ABI encoded identically to the underlying function.
      */
     function resolve(bytes calldata name, bytes calldata data) external view override returns (bytes memory) {
-        (CcipVerifier memory _resolver, bytes32 node) = getResolverOfDomain(name);
+        (CcipVerifier memory _verifier, bytes32 node) = getVerifierOfDomain(name);
 
         address nodeOwner = getNodeOwner(node);
 
@@ -105,12 +105,12 @@ contract CcipResolver is IExtendedResolver, IContextResolver, SupportsInterface 
         bytes memory callData = abi.encodeWithSelector(IResolverService.resolve.selector, context, data);
 
         string[] memory urls = new string[](1);
-        urls[0] = _resolver.gatewayUrl;
-
+        urls[0] = _verifier.gatewayUrl;
+        //TODO add move callback to external interface
         revert OffchainLookup(address(this), urls, callData, CcipResolver.resolveWithProof.selector, callData);
     }
 
-    function getResolverOfDomain(bytes calldata name) public view returns (CcipVerifier memory, bytes32) {
+    function getVerifierOfDomain(bytes calldata name) public view returns (CcipVerifier memory, bytes32) {
         uint offset = 0;
 
         while (offset < name.length - 1) {
@@ -130,7 +130,7 @@ contract CcipResolver is IExtendedResolver, IContextResolver, SupportsInterface 
      * Callback used by CCIP read compatible clients to verify and parse the response.
      * extraData -> the original call data
      */
-    function resolveWithProof(bytes calldata response, bytes calldata extraData) external view override returns (bytes memory) {
+    function resolveWithProof(bytes calldata response, bytes calldata extraData) external view returns (bytes memory) {
         (, bytes memory data) = abi.decode(extraData[4:], (bytes, bytes));
 
         bytes32 node = bytes32(BytesLib.slice(data, 4, 32));

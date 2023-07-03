@@ -34,6 +34,7 @@ export class ProofService {
             l2ChainId: l2Provider.network.chainId,
             l1SignerOrProvider: this.l1Provider,
             l2SignerOrProvider: this.l2Provider,
+            bedrock: true
         });
     }
 
@@ -46,6 +47,7 @@ export class ProofService {
     public async createProof(target: string, slot: string, layout: StorageLayout = StorageLayout.DYNAMIC): Promise<CreateProofResult> {
         // use the most recent block to build the proof posted to L1
         const { l2OutputIndex, number, stateRoot, hash } = await this.getLatestProposedBlock();
+
 
         const { storageProof, storageHash, accountProof, length } = await this.getProofForSlot(slot, number, target, layout);
 

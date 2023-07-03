@@ -3,6 +3,7 @@ import express from "express";
 import { Config } from "../config/Config";
 import { optimismBedrockHandler } from "../handler/optimism-bedrock/optimismBedrockHandler";
 import { signingHandler } from "../handler/signing/signingHandler";
+import { ethers } from "ethers";
 
 export function ccipGateway(config: Config) {
     const router = express.Router();
@@ -10,12 +11,15 @@ export function ccipGateway(config: Config) {
     router.get("/:resolverAddr/:calldata", async (req: express.Request, res: express.Response) => {
         const { resolverAddr } = req.params;
         const calldata = req.params.calldata.replace(".json", "");
+        console.log("inc rec", resolverAddr)
 
         try {
             const configEntry = config[resolverAddr];
+            console.log(config)
+
 
             if (!configEntry) {
-                res.status(404).send({
+                return res.status(404).send({
                     message: "Unknown resolver selector pair",
                 });
             }
@@ -27,6 +31,11 @@ export function ccipGateway(config: Config) {
                 }
                 case "optimism-bedrock": {
                     const response = await optimismBedrockHandler(calldata, resolverAddr, configEntry);
+                    
+
+                    console.log(response)
+
+            
                     res.status(200).send({ data: response });
                     break;
                 }

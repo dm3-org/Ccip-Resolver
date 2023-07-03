@@ -79,7 +79,7 @@ describe("Signature Handler", () => {
 
         await signatureResolver
             .connect(vitalik)
-            .setResolverForDomain(ethers.utils.namehash("vitalik.eth"), signerCcipVerifier.address, "http://test/{sender}/{data}");
+            .setVerifierForDomain(ethers.utils.namehash("vitalik.eth"), signerCcipVerifier.address, "http://test/{sender}/{data}");
 
         const { callData } = await getGateWayUrl("vitalik.eth", "my-record", signatureResolver);
 

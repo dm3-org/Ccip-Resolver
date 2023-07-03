@@ -6,8 +6,10 @@ export interface SigningConfigEntry {
 export interface OptimismBedrockConfigEntry {
     type: "optimism-bedrock";
     handlerUrl: string;
-    l1providerUrl: string;
-    l2providerUrl: string;
+    l1ProviderUrl: string;
+    l2ProviderUrl: string;
+    l1chainId: string
+    l2chainId: string
 }
 
 export type ConfigEntry = SigningConfigEntry | OptimismBedrockConfigEntry;
