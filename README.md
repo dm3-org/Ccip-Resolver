@@ -64,12 +64,13 @@ This repository contains 3 different test suites. There are tests for the Smart 
 All tests associated with Bedrock require access to the Bedrock local development environment and the execution of setupEnvironment as described in the Bedrock test section. This might not be always feasible for example when a test should be executed in a CI Pipeline.
 Thus the test suites can be executed separately
 
+### Gateway tests
 
-### Gateway tests 
- Run ```yarn run test:gateway```
+Run `yarn run test:gateway`
 
 ### Contract test
-Run ```yarn run test:contracts```
+
+Run `yarn run test:contracts`
 
 ### Bedrock tests
 
@@ -98,6 +99,7 @@ The BedrockCCIPVerifier just supports one contract on Optimism. If you want to u
 
 ### Goerli
 
+Ccip Resolver: 0x410EBbabB4471e9c18CC36642F4057812E125e94
+
 BedrockProofVerifier : 0x49FA2e3dc397d6AcA8e2DAe402eB2fD6164EebAC
-Ccip Resolver: 0x6D8D77aD82a954A0001a845Ff28C4278e6F5E879
-BedrockCcipVerifier : 0x14e8914d0831780858e6E1871Ff7e38E14d053Dd
+BedrockCcipVerifier : 0x4b563D894619331993f2EA95B4050bCBa87F869D

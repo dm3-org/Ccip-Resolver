@@ -8,7 +8,7 @@
         "test:gateway": "hardhat test ./test/gateway/**",
         "e2e:setup": "npx hardhat run ./scripts/setupEnvironment.ts",
         "test:e2e": "hardhat test ./test/e2e/** ",
-        "test": "yarn run test:contracts && yarn run test:gateway && yarn run test:e2e",
+        "test": "yarn run test:contracts && yarn run test:gateway ",
         "lint:fix": "prettier --write 'scripts/**/*.{js,ts}' 'test/**/*.{js,ts}' 'deploy/**/*.{js,ts}'  && tslint --fix --config tslint.json --project tsconfig.json && solhint contracts/**/*.sol",
         "lint": "tslint --config tslint.json --project tsconfig.json && solhint contracts/**/*.sol",
         "format": "prettier --check \"**/*.{ts,js,sol}\"",
