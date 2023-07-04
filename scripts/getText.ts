@@ -1,7 +1,9 @@
+import { log } from "console"
 import { dnsEncode } from "ethers/lib/utils"
 import hre, { ethers } from "hardhat"
 import { get } from "http"
 
+ethers.utils.Logger.setLogLevel(ethers.utils.Logger.levels.DEBUG)
 export const getText = async () => {
     const [signer] = await hre.ethers.getSigners()
     const node = ethers.utils.namehash("alice123.eth")
@@ -26,6 +28,8 @@ export const getText = async () => {
 
     const resolver = await ethers.provider.getResolver("alice123.eth")
 
+    
+
 
     const ifce = new ethers.utils.Interface([
         "function foo() returns (bytes memory)",
@@ -35,10 +39,21 @@ export const getText = async () => {
 
     console.log(fr)
     console.log("start getTEXT")
-    
-    const text = await resolver.getText("my-record")
+
+
+    const text = await resolver.getText("network.dm3.profile")
     console.log(text)
 
 
 }
+
+const getMainnet = async () => {
+    const name = "heiko.beta-user.dm3.eth"
+    const provider = new ethers.providers.JsonRpcProvider("https://eth-mainnet.g.alchemy.com/v2/L1PIhq_TFU7sofEqd2IJwWqhBsJYah1S")
+
+    const resolver = await provider.getResolver(name)
+    const text = await resolver.getText("network.dm3.profile")
+    console.log(text)
+}
+//getMainnet()
 getText()
