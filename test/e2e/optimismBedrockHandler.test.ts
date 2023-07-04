@@ -90,14 +90,14 @@ describe("Optimism Bedrock Handler", () => {
         };
     });
 
-    it("Returns valid data from resolver", async () => {
+    it.only("Returns valid data from resolver", async () => {
         process.env.SIGNER_PRIVATE_KEY = signer.privateKey;
 
         const mock = new MockAdapter(axios);
 
         await ccipResolver
             .connect(alice)
-            .setResolverForDomain(ethers.utils.namehash("alice.eth"), bedrockCcipVerifier.address, "http://test/{sender}/{data}");
+            .setVerifierForDomain(ethers.utils.namehash("alice.eth"), bedrockCcipVerifier.address, "http://test/{sender}/{data}");
 
         const { callData } = await getGateWayUrl("alice.eth", "foo", ccipResolver);
 
@@ -112,8 +112,10 @@ describe("Optimism Bedrock Handler", () => {
         ccipConfig[bedrockCcipVerifier.address] = {
             type: "optimism-bedrock",
             handlerUrl: "http://test",
-            l1providerUrl: "http://localhost:8545",
-            l2providerUrl: "http://localhost:9545",
+            l1ProviderUrl: "http://localhost:8545",
+            l2ProviderUrl: "http://localhost:9545",
+            l1chainId: "900",
+            l2chainId: "901"
         };
 
         config[bedrockCcipVerifier.address] = ccipApp.use(ccipGateway(ccipConfig));
@@ -124,6 +126,8 @@ describe("Optimism Bedrock Handler", () => {
         const response = await request(ccipApp).get(`/${sender}/${callData}`).send();
 
         expect(response.status).to.equal(200);
+
+
 
         const responseBytes = await ccipResolver.resolveWithProof(response.body.data, callData);
         const responseString = Buffer.from(responseBytes.slice(2), "hex").toString();

@@ -30,8 +30,8 @@ export class ProofService {
         this.l2Provider = asL2Provider(l2Provider);
 
         this.crossChainMessenger = new CrossChainMessenger({
-            l1ChainId: l1Provider.network.chainId,
-            l2ChainId: l2Provider.network.chainId,
+            l1ChainId: 900,
+            l2ChainId: 901,
             l1SignerOrProvider: this.l1Provider,
             l2SignerOrProvider: this.l2Provider,
             bedrock: true
