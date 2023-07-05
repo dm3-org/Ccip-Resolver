@@ -18,6 +18,7 @@ export function ccipGateway(config: Config) {
                 res.status(404).send({
                     message: "Unknown resolver selector pair",
                 });
+                return;
             }
             switch (configEntry.type) {
                 case "signing": {

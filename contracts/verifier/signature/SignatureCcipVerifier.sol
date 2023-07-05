@@ -4,8 +4,11 @@ pragma solidity ^0.8.15;
 import {CcipResponseVerifier} from "../CcipResponseVerifier.sol";
 import {SignatureVerifier} from "./SignatureVerifier.sol";
 
+
 contract SignatureCcipVerifier is CcipResponseVerifier {
     address public owner;
+    address public immutable resolver;
+
     mapping(address => bool) public signers;
 
     event NewOwner(address newOwner);
@@ -22,8 +25,9 @@ contract SignatureCcipVerifier is CcipResponseVerifier {
         emit NewOwner(owner);
     }
 
-    constructor(address _owner, address[] memory _signers) {
+    constructor(address _owner, address _resolver, address[] memory _signers) {
         owner = _owner;
+        resolver = _resolver;
 
         for (uint256 i = 0; i < _signers.length; i++) {
             signers[_signers[i]] = true;
@@ -49,7 +53,7 @@ contract SignatureCcipVerifier is CcipResponseVerifier {
     }
 
     function resolveWithProof(bytes calldata response, bytes calldata extraData) external view override returns (bytes memory) {
-        (address signer, bytes memory result) = SignatureVerifier.verify(extraData, response);
+        (address signer, bytes memory result) = SignatureVerifier.verify(resolver, extraData, response);
         require(signers[signer], "SignatureVerifier: Invalid sigature");
         return result;
     }

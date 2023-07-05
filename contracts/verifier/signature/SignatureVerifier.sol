@@ -17,15 +17,16 @@ library SignatureVerifier {
 
     /**
      * @dev Verifies a signed message returned from a callback.
+     * @param resolver: The address the signature is for.(RESOLVER)
      * @param request: The original request that was sent.
      * @param response: An ABI encoded tuple of `(bytes result, uint64 expires, bytes sig)`, where `result` is the data to return
      *        to the caller, and `sig` is the (r,s,v) encoded message signature.
      * @return signer: The address that signed this message.
      * @return result: The `result` decoded from `response`.
      */
-    function verify(bytes calldata request, bytes calldata response) internal view returns (address, bytes memory) {
+    function verify(address resolver, bytes calldata request, bytes calldata response) internal view returns (address, bytes memory) {
         (bytes memory result, uint64 expires, bytes memory sig) = abi.decode(response, (bytes, uint64, bytes));
-        address signer = ECDSA.recover(ECDSA.toEthSignedMessageHash(makeSignatureHash(address(this), expires, request, result)), sig);
+        address signer = ECDSA.recover(ECDSA.toEthSignedMessageHash(makeSignatureHash(resolver, expires, request, result)), sig);
         require(expires >= block.timestamp, "SignatureVerifier: Signature expired");
         return (signer, result);
     }
