@@ -25,4 +25,3 @@ export async function optimismBedrockHandler(calldata: string, resolverAddr: str
     const proofParamType = await getProofParamType();
     return ethers.utils.defaultAbiCoder.encode(["bytes", proofParamType], [result, proof]);
 }
-

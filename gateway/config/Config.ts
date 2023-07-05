@@ -8,8 +8,8 @@ export interface OptimismBedrockConfigEntry {
     handlerUrl: string;
     l1ProviderUrl: string;
     l2ProviderUrl: string;
-    l1chainId: string
-    l2chainId: string
+    l1chainId: string;
+    l2chainId: string;
 }
 
 export type ConfigEntry = SigningConfigEntry | OptimismBedrockConfigEntry;
