@@ -1,27 +1,25 @@
 import { getResolverInterface } from "../utils/getResolverInterface";
 
+import { L2PublicResolver } from "../../typechain";
+import { StorageLayout } from "../profiles/StorageLayout";
 import { decodeAbi } from "../profiles/abi/decodeAbi";
 import { getSlotForAbi } from "../profiles/abi/getSlotForAbi";
 import { decodeAddr } from "../profiles/addr/decodeAddr";
-import { getSlotForAddr } from "../profiles/addr/getSlotForAddr";
+import { decodeContentHash } from "../profiles/contentHash/decodeContentHash";
 import { getSlotForContentHash } from "../profiles/contentHash/getSlotForContentHash";
+import { decodeDNSRecord } from "../profiles/dns/dnsRecord/decodeDnsRecord";
 import { getSlotForDnsRecord } from "../profiles/dns/dnsRecord/getSlotForDnsRecord";
+import { decodeHasDNSRecords } from "../profiles/dns/hasDnsRecord/decodeHasDnsRecords";
 import { getSlotForHasDnsRecords } from "../profiles/dns/hasDnsRecord/getSlotForHasDnsRecord";
+import { decodeZonehash } from "../profiles/dns/zonehash/decodeZonehash";
 import { getSlotForZoneHash } from "../profiles/dns/zonehash/getSlotForZonehash";
+import { decodeName } from "../profiles/name/decodeName";
 import { getSlotForName } from "../profiles/name/getSlotForName";
+import { decodePubkey } from "../profiles/pubkey/decodePubKey";
 import { getSlotForPubkeyX } from "../profiles/pubkey/getStorageSlotForPubkey";
 import { decodeText } from "../profiles/text/decodeText";
-import { getSlotForText } from "../profiles/text/getSlotForText";
-import { decodeContentHash } from "../profiles/contentHash/decodeContentHash";
-import { decodeName } from "../profiles/name/decodeName";
-import { decodePubkey } from "../profiles/pubkey/decodePubKey";
-import { decodeDNSRecord } from "../profiles/dns/dnsRecord/decodeDnsRecord";
-import { decodeHasDNSRecords } from "../profiles/dns/hasDnsRecord/decodeHasDnsRecords";
-import { decodeZonehash } from "../profiles/dns/zonehash/decodeZonehash";
-import { L2PublicResolver } from "../../typechain";
-import { StorageLayout } from "../profiles/StorageLayout";
 
-export async function handleCcipRequest(l2PubicResolver: L2PublicResolver, calldata: string) {
+export async function handleSignatureCcipRequest(l2PubicResolver: L2PublicResolver, calldata: string) {
     try {
         const l2Resolverinterface = getResolverInterface();
 
@@ -34,24 +32,16 @@ export async function handleCcipRequest(l2PubicResolver: L2PublicResolver, calld
             data,
         });
 
-
         switch (signature) {
             case "text(bytes32,string)":
                 {
                     const { node, record } = decodeText(context, args);
-
-                    const slot = await getSlotForText(l2PubicResolver, context, node, record)
-                    const result = await l2PubicResolver.text(context, node, record)
-
-                    console.log(result)
-
-                    return { slot, target: l2PubicResolver.address, layout: StorageLayout.DYNAMIC, result: l2Resolverinterface.encodeFunctionResult("text(bytes32,string)", [result]) }
+                    return await l2PubicResolver.text(context, node, record)
                 }
             case "addr(bytes32)":
                 {
                     const { node } = decodeAddr(context, args);
-                    const slot = await getSlotForAddr(l2PubicResolver, context, node, 60);
-                    return { slot, target: l2PubicResolver.address, layout: StorageLayout.DYNAMIC }
+                    return await l2PubicResolver["addr(bytes,bytes32)"](context, node)
                 }
             case "ABI(bytes,bytes32,uint256)":
                 {

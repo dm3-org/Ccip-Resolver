@@ -5,7 +5,7 @@ import express from "express";
 import { ethers } from "hardhat";
 import request from "supertest";
 import { L2PublicResolver } from "typechain";
-import { EnsHandler } from "../../server/http/EnsHandler";
+import { EnsBedrockHandler } from "../../server/http/EnsHandler";
 import { getResolverInterface } from "../../server/utils/getResolverInterface";
 
 describe('EnsHandler', () => {
@@ -19,7 +19,7 @@ describe('EnsHandler', () => {
         l2PublicResolver = (await l2PublicResolverFactory.deploy()) as L2PublicResolver;
         expressApp = express();
         expressApp.use(bodyParser.json());
-        expressApp.use(await EnsHandler(ethers.provider, l2PublicResolver.address));
+        expressApp.use(await EnsBedrockHandler(ethers.provider, l2PublicResolver.address));
     })
 
     describe("Addr", () => {

@@ -1,11 +1,11 @@
-import * as dotenv from 'dotenv';
 import bodyParser from 'body-parser';
+import cors from 'cors';
+import * as dotenv from 'dotenv';
+import { ethers } from 'ethers';
 import express from 'express';
 import http from 'http';
-import cors from 'cors';
 import winston from 'winston';
-import { EnsHandler } from './http/EnsHandler';
-import { ethers } from 'ethers';
+import { EnsSigningHandler } from './http/EnsSigningHandler';
 
 
 dotenv.config();
@@ -35,10 +35,9 @@ app.use(bodyParser.json());
     if (!RPC_URL) {
         throw new Error('RPC_URL not set');
     }
-
     const provider = new ethers.providers.StaticJsonRpcProvider(RPC_URL);
 
-    app.use('/', EnsHandler(provider, resolverAddress));
+    app.use('/', EnsSigningHandler(provider, resolverAddress));
 })();
 const port = process.env.PORT || '8887';
 server.listen(port, () => {
