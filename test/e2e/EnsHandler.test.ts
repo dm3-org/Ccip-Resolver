@@ -8,7 +8,7 @@ import { L2PublicResolver } from "typechain";
 import { EnsHandler } from "../../server/http/EnsHandler";
 import { getResolverInterface } from "../../server/utils/getResolverInterface";
 
-describe.only('EnsHandler', () => {
+describe('EnsHandler', () => {
     let l2PublicResolver: L2PublicResolver;
     let alice: SignerWithAddress
 
@@ -34,7 +34,7 @@ describe.only('EnsHandler', () => {
             console.log(ccipRequest)
 
             const res = await request(expressApp).get(`/${ethers.constants.AddressZero}/${ccipRequest}`).send()
-            const { slot, target, } = res.body.data
+            const { slot, target, } = res.body
 
 
             const slotValue = await ethers.provider.getStorageAt(target, slot)
@@ -51,7 +51,7 @@ describe.only('EnsHandler', () => {
             const ccipRequest = getCcipRequest("name", alice.address, alice.address, node)
 
             const res = await request(expressApp).get(`/${ethers.constants.AddressZero}/${ccipRequest}`).send()
-            const { slot, target, } = res.body.data
+            const { slot, target, } = res.body
 
 
             const slotValue = await ethers.provider.getStorageAt(target, slot)
@@ -70,7 +70,7 @@ describe.only('EnsHandler', () => {
             const ccipRequest = getCcipRequest("text", alice.address, node, "my-record")
 
             const res = await request(expressApp).get(`/${ethers.constants.AddressZero}/${ccipRequest}`).send()
-            const { slot, target, } = res.body.data
+            const { slot, target, } = res.body
 
 
             const slotValue = await ethers.provider.getStorageAt(target, slot)
@@ -90,7 +90,7 @@ describe.only('EnsHandler', () => {
             const ccipRequest = getCcipRequest("ABI", alice.address, alice.address, node, "1")
 
             const res = await request(expressApp).get(`/${ethers.constants.AddressZero}/${ccipRequest}`).send()
-            const { slot, target, } = res.body.data
+            const { slot, target, } = res.body
 
 
             const slotValue = await ethers.provider.getStorageAt(target, slot)
