@@ -4,7 +4,6 @@ pragma solidity ^0.8.15;
 import {CcipResponseVerifier} from "../CcipResponseVerifier.sol";
 import {SignatureVerifier} from "./SignatureVerifier.sol";
 
-
 contract SignatureCcipVerifier is CcipResponseVerifier {
     address public owner;
     address public immutable resolver;

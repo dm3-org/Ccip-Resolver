@@ -47,10 +47,6 @@ describe("Signature Handler", () => {
         ensRegistry.owner.whenCalledWith(ethers.utils.namehash("namewrapper.alice.eth")).returns(nameWrapper.address);
         // nameWrapper.ownerOf.whenCalledWith(ethers.utils.namehash("namewrapper.alice.eth")).returns(alice.address);
 
-        const SignerCcipVerifierFactory = (await hreEthers.getContractFactory("SignatureCcipVerifier")) as SignatureCcipVerifier__factory;
-
-        signerCcipVerifier = await SignerCcipVerifierFactory.deploy(owner.address, [signer.address]);
-
         const CcipResolverFactory = await hreEthers.getContractFactory("CcipResolver");
         signatureResolver = (await CcipResolverFactory.deploy(
             owner.address,
@@ -58,6 +54,10 @@ describe("Signature Handler", () => {
             nameWrapper.address,
             "http://localhost:8080/graphql"
         )) as CcipResolver;
+
+        const SignerCcipVerifierFactory = (await hreEthers.getContractFactory("SignatureCcipVerifier")) as SignatureCcipVerifier__factory;
+
+        signerCcipVerifier = await SignerCcipVerifierFactory.deploy(owner.address, signatureResolver.address, [signer.address]);
         // Get signers
         [owner] = await hreEthers.getSigners();
 
@@ -84,23 +84,22 @@ describe("Signature Handler", () => {
         const { callData } = await getGateWayUrl("vitalik.eth", "my-record", signatureResolver);
 
         const result = "0x1234";
-        mock.onGet(`http://test/${signerCcipVerifier.address}/${callData}`).reply(200, result);
+        mock.onGet(`http://test/${signatureResolver.address}/${callData}`).reply(200, result);
 
         const ccipConfig = {};
-        ccipConfig[signerCcipVerifier.address] = {
+        ccipConfig[signatureResolver.address] = {
             type: "signing",
             handlerUrl: "http://test",
         };
 
-        config[signerCcipVerifier.address] = ccipApp.use(ccipGateway(ccipConfig));
+        config[signatureResolver.address] = ccipApp.use(ccipGateway(ccipConfig));
 
-        const sender = signerCcipVerifier.address;
+        const sender = signatureResolver.address;
 
         // You the url returned by he contract to fetch the profile from the ccip gateway
         const response = await request(ccipApp).get(`/${sender}/${callData}`).send();
 
         expect(response.status).to.equal(200);
-
         const resultString = await signatureResolver.resolveWithProof(response.body.data, callData);
 
         expect(resultString).to.equal(result);
