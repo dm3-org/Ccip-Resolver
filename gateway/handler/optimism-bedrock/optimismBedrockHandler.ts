@@ -13,8 +13,8 @@ export async function optimismBedrockHandler(calldata: string, resolverAddr: str
         throw new Error("optimismBedrockHandler : Invalid data source response");
     }
 
-    const l1Provider = new ethers.providers.StaticJsonRpcProvider(configEntry.l1providerUrl);
-    const l2Provider = new ethers.providers.StaticJsonRpcProvider(configEntry.l2providerUrl);
+    const l1Provider = new ethers.providers.StaticJsonRpcProvider(configEntry.l1ProviderUrl);
+    const l2Provider = new ethers.providers.StaticJsonRpcProvider(configEntry.l2ProviderUrl);
 
     // TODO initialize once globally
     await Promise.all([l1Provider.detectNetwork(), l2Provider.detectNetwork()]);

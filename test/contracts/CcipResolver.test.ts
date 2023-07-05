@@ -66,7 +66,7 @@ describe("CCIpResolver Test", () => {
     describe("setResolverForDomain", () => {
         it("reverts if node is 0x0", async () => {
             await ccipResolver
-                .setResolverForDomain(ethers.constants.HashZero, bedrockCcipVerifier.address, "http://localhost:8080/{sender}/{data}")
+                .setVerifierForDomain(ethers.constants.HashZero, bedrockCcipVerifier.address, "http://localhost:8080/{sender}/{data}")
                 .then((res) => {
                     expect.fail("Should have thrown an error");
                 })
@@ -77,7 +77,7 @@ describe("CCIpResolver Test", () => {
         it("reverts if resolverAddress is 0x0", async () => {
             await ccipResolver
                 .connect(alice)
-                .setResolverForDomain(
+                .setVerifierForDomain(
                     ethers.utils.namehash("alice.eth"),
                     ethers.constants.AddressZero,
                     "http://localhost:8080/{sender}/{data}"
@@ -86,13 +86,13 @@ describe("CCIpResolver Test", () => {
                     expect.fail("Should have thrown an error");
                 })
                 .catch((e) => {
-                    expect(e.message).to.contains("resolverAddress is 0x0");
+                    expect(e.message).to.contains("verifierAddress is 0x0");
                 });
         });
         it("reverts if resolverAddress does not support resolveWithProofInterface", async () => {
             await ccipResolver
                 .connect(alice)
-                .setResolverForDomain(
+                .setVerifierForDomain(
                     ethers.utils.namehash("alice.eth"),
                     // Alice is an EOA, so this is not a valid resolver
                     alice.address,
@@ -103,13 +103,13 @@ describe("CCIpResolver Test", () => {
                 })
                 .catch((e) => {
                     console.log(e);
-                    expect(e.message).to.contains("resolverAddress is not a CCIP Resolver");
+                    expect(e.message).to.contains("verifierAddress is not a CCIP Verifier");
                 });
         });
         it("reverts if url string is empty", async () => {
             await ccipResolver
                 .connect(alice)
-                .setResolverForDomain(
+                .setVerifierForDomain(
                     ethers.utils.namehash("alice.eth"),
                     // Alice is an EOA, so this is not a valid resolver
                     bedrockCcipVerifier.address,
@@ -124,7 +124,7 @@ describe("CCIpResolver Test", () => {
                 });
         });
         it("adds resolver + event contains node, url, and resolverAddress", async () => {
-            const tx = await ccipResolver.connect(alice).setResolverForDomain(
+            const tx = await ccipResolver.connect(alice).setVerifierForDomain(
                 ethers.utils.namehash("alice.eth"),
                 // Alice is an EOA, so this is not a valid resolver
                 bedrockCcipVerifier.address,
@@ -145,7 +145,7 @@ describe("CCIpResolver Test", () => {
         describe("Legacy ENS name", () => {
             it("reverts if msg.sender is not the profile owner", async () => {
                 await ccipResolver
-                    .setResolverForDomain(
+                    .setVerifierForDomain(
                         ethers.utils.namehash("vitalik.eth"),
                         bedrockCcipVerifier.address,
                         "http://localhost:8080/{sender}/{data}"
