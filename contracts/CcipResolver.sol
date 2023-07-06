@@ -5,7 +5,7 @@ import {IExtendedResolver, IResolverService} from "./IExtendedResolver.sol";
 import {IContextResolver} from "./IContextResolver.sol";
 import {SupportsInterface} from "./SupportsInterface.sol";
 import {CcipResponseVerifier, ICcipResponseVerifier} from "./verifier/CcipResponseVerifier.sol";
-import {ENS} from "@ensdomains/ens-contracts/contracts/registry/ENS.sol";
+import {ENSRegistry} from "@ensdomains/ens-contracts/contracts/registry/ENSRegistry.sol";
 import {INameWrapper} from "@ensdomains/ens-contracts/contracts/wrapper/INameWrapper.sol";
 import {BytesUtils} from "@ensdomains/ens-contracts/contracts/wrapper/BytesUtils.sol";
 
@@ -29,7 +29,7 @@ contract CcipResolver is IExtendedResolver, IContextResolver, SupportsInterface 
     error OffchainLookup(address sender, string[] urls, bytes callData, bytes4 callbackFunction, bytes extraData);
     error InvalidOperation();
 
-    ENS public ensRegistry;
+    ENSRegistry public ensRegistry;
     INameWrapper public nameWrapper;
 
     address public owner;
@@ -41,7 +41,7 @@ contract CcipResolver is IExtendedResolver, IContextResolver, SupportsInterface 
         //The owner of the resolver
         address _owner,
         //The ENS registry
-        ENS _ensRegistry,
+        ENSRegistry _ensRegistry,
         INameWrapper _nameWrapper,
         //The graphQl Url
         string memory _graphqlUrl
