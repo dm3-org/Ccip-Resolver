@@ -11,9 +11,13 @@ To store records on L2 you've to set the CcipResolver as the default resolver an
 1. Go to scripts/setCcipResolver.ts and replace ENS_NAME with the node you want to change the resolver for.
 2. Run npx hardhat run ./scripts/setCcipResolver.ts --network goerli
 
+## Deploy CCIP Signature Verifier
+1. TBD
+
 ## Set Verifier for domain
 
 1. Go to scripts/setResolverForDomain.ts and replace ENS_NAME with the node you want to change the resolver for.
+2. Run npx hardhat run ./scripts/signature/setResolverForDomain.ts --network goerli
 
 # Setup Gateway
 
@@ -25,6 +29,9 @@ To run a gateway perform the following steps
 
 # Deployments
 
-## Optimsim **Goerli**
+##Goerli
+
+CCIP Resolver : 0x410EBbabB4471e9c18CC36642F4057812E125e94
+## Optimsim Goerli
 
 L2PublicResolver: 0x39Dc8A3A607970FA9F417D284E958D4cA69296C8
