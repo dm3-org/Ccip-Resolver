@@ -7,7 +7,6 @@ import "@nomiclabs/hardhat-etherscan";
 import "@nomiclabs/hardhat-solhint";
 import "@typechain/hardhat";
 import "dotenv/config";
-import "hardhat-deploy";
 import "solidity-coverage";
 import "hardhat-storage-layout";
 import "hardhat-tracer";
@@ -23,9 +22,9 @@ module.exports = {
     defaultNetwork: "hardhat",
     networks: {
         hardhat: {
-            forking: {
-                url: "http://localhost:8545",
-            },
+            /*      forking: {
+                     url: "http://localhost:8545",
+                 }, */
         },
         optimismGoerli: {
             url: "https://goerli.optimism.io",
@@ -38,7 +37,20 @@ module.exports = {
         localhost: {},
     },
     etherscan: {
-        apiKey: ETHERSCAN_API_KEY,
+        apiKey: {
+            optimismGoerli: OPTIMISTIC_ETHERSCAN_API_KEY
+        },
+        customChains: [
+            {
+                network: "optimismGoerli",
+                chainId: 420,
+                urls: {
+                    apiURL: "https://api-goerli-optimism.etherscan.io/api",
+                    browserURL: "https://goerli-optimism.etherscan.io"
+                }
+            }
+        ]
+
     },
     namedAccounts: {
         deployer: {
@@ -48,7 +60,7 @@ module.exports = {
     solidity: {
         compilers: [
             {
-                version: "0.8.17",
+                version: "0.8.19",
             },
         ],
     },

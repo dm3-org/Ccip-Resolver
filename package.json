@@ -1,16 +1,18 @@
 {
-    "name": "optimism-resolver",
+    "name": "ens_bedrock_resolver",
     "version": "1.0.0",
     "description": "",
     "scripts": {
+        "debug":"npx hardhat run ./scripts/signature/getText.ts --network goerli",
         "compile": "hardhat compile",
         "test": "hardhat test ",
         "lint:fix": "prettier --write 'scripts/**/*.{js,ts}' 'test/**/*.{js,ts}' 'tasks/**/*.{js,ts}' && tslint --fix --config tslint.json --project tsconfig.json && solhint contracts/**/*.sol",
         "lint": "tslint --config tslint.json --project tsconfig.json && solhint contracts/**/*.sol",
         "format": "prettier --check \"**/*.{ts,js,sol}\"",
         "format:fix": "prettier --write \"**/*.{ts,js,sol}\"",
-        "deploy:l2": " hardhat run --network optimism deploy/l2/01_L2Public_Resolver.ts",
-        "e2e:setup": "hardhat run ./test/e2e/setupEnvironment.ts"
+        "build": "yarn hardhat compile && yarn tsc -p tsconfig-build.json",
+        "start": "docker compose up -d && node dist/server/index.js",
+        "docker:build": "docker build -t ens_bedrock_resolver -f ./Dockerfile ."
     },
     "files": [
         "dist/src/",
@@ -22,7 +24,7 @@
     "license": "MIT",
     "devDependencies": {
         "@nomiclabs/hardhat-ethers": "^2.0.3",
-        "@nomiclabs/hardhat-etherscan": "^2.1.8",
+        "@nomiclabs/hardhat-etherscan": "^3.1.7",
         "@nomiclabs/hardhat-solhint": "^2.0.0",
         "@nomiclabs/hardhat-web3": "^2.0.0",
         "@openzeppelin/contracts": "^4.4.0",
@@ -30,6 +32,8 @@
         "@typechain/ethers-v5": "^8.0.5",
         "@typechain/hardhat": "^3.0.0",
         "@types/chai": "^4.3.0",
+        "@types/cors": "^2.8.13",
+        "@types/express": "^4.17.17",
         "@types/mocha": "^9.0.0",
         "@types/node": "^16.11.12",
         "axios-mock-adapter": "^1.21.5",
@@ -75,6 +79,7 @@
         "@ensdomains/ens-contracts": "^0.0.19",
         "@eth-optimism/contracts": "^0.5.40",
         "@eth-optimism/sdk": "^2.0.2",
+        "cors": "^2.8.5",
         "ens-contracts-legacy": "https://github.com/ensdomains/resolvers.git#v0.1.7",
         "express": "^4.18.2",
         "solidity-bytes-utils": "^0.8.0",
