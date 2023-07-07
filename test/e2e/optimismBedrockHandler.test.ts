@@ -4,6 +4,7 @@ import axios from "axios";
 import MockAdapter from "axios-mock-adapter";
 import bodyParser from "body-parser";
 import { expect } from "chai";
+import exp from "constants";
 import { ethers, Wallet } from "ethers";
 import express from "express";
 import { config, ethers as hreEthers } from "hardhat";
@@ -21,7 +22,6 @@ import {
     INameWrapper,
 } from "../../typechain";
 import { getGateWayUrl } from "../helper/getGatewayUrl";
-import exp from "constants";
 
 describe("Optimism Bedrock Handler", () => {
     let ccipApp: express.Express;
@@ -130,9 +130,8 @@ describe("Optimism Bedrock Handler", () => {
         expect(response.status).to.equal(200);
 
         const responseEncoded = await ccipResolver.resolveWithProof(response.body.data, callData);
-        const [responseDecoded] = ethers.utils.defaultAbiCoder.decode(["string"], responseEncoded)
+        const [responseDecoded] = ethers.utils.defaultAbiCoder.decode(["string"], responseEncoded);
         expect(responseDecoded).to.equal("Hello from Alice");
-
     });
     it("Returns valid bytes32 data from resolver", async () => {
         process.env.SIGNER_PRIVATE_KEY = signer.privateKey;
@@ -175,6 +174,5 @@ describe("Optimism Bedrock Handler", () => {
         const responseEncoded = await ccipResolver.resolveWithProof(response.body.data, callData);
 
         expect(responseEncoded).to.equal(ethers.utils.namehash("alice.eth"));
-
     });
 });
