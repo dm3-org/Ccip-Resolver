@@ -22,7 +22,6 @@ export async function optimismBedrockHandler(calldata: string, resolverAddr: str
     // Input arg for resolveWithProof
     const { proof } = await new ProofService(l1Provider, l2Provider).createProof(target, slot, layout);
 
-
     const proofParamType = await getProofParamType();
     return ethers.utils.defaultAbiCoder.encode(["bytes", proofParamType], [result, proof]);
 }

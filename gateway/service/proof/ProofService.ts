@@ -34,7 +34,7 @@ export class ProofService {
             l2ChainId: l2Provider.network.chainId,
             l1SignerOrProvider: this.l1Provider,
             l2SignerOrProvider: this.l2Provider,
-            bedrock:true
+            bedrock: true,
         });
     }
 
