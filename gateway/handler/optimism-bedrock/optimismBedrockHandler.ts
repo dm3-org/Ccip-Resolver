@@ -7,7 +7,7 @@ import { ProofService } from "../../service/proof/ProofService";
 
 export async function optimismBedrockHandler(calldata: string, resolverAddr: string, configEntry: OptimismBedrockConfigEntry) {
     // Data source has to return target,
-    const { target, slot, layout } = (await axios.get(`${configEntry.handlerUrl}/${resolverAddr}/${calldata}`)).data;
+    const { target, slot, layout, result } = (await axios.get(`${configEntry.handlerUrl}/${resolverAddr}/${calldata}`)).data;
 
     if (!target || !slot || layout === undefined) {
         throw new Error("optimismBedrockHandler : Invalid data source response");
@@ -20,7 +20,8 @@ export async function optimismBedrockHandler(calldata: string, resolverAddr: str
     await Promise.all([l1Provider.detectNetwork(), l2Provider.detectNetwork()]);
 
     // Input arg for resolveWithProof
-    const { proof, result } = await new ProofService(l1Provider, l2Provider).createProof(target, slot, layout);
+    const { proof } = await new ProofService(l1Provider, l2Provider).createProof(target, slot, layout);
+
 
     const proofParamType = await getProofParamType();
     return ethers.utils.defaultAbiCoder.encode(["bytes", proofParamType], [result, proof]);
