@@ -21,6 +21,7 @@ import {
     INameWrapper,
 } from "../../typechain";
 import { getGateWayUrl } from "../helper/getGatewayUrl";
+import exp from "constants";
 
 describe("Optimism Bedrock Handler", () => {
     let ccipApp: express.Express;
@@ -90,18 +91,19 @@ describe("Optimism Bedrock Handler", () => {
         };
     });
 
-    it("Returns valid data from resolver", async () => {
+    it("Returns valid string data from resolver", async () => {
         process.env.SIGNER_PRIVATE_KEY = signer.privateKey;
 
         const mock = new MockAdapter(axios);
 
         await ccipResolver
             .connect(alice)
-            .setResolverForDomain(ethers.utils.namehash("alice.eth"), bedrockCcipVerifier.address, "http://test/{sender}/{data}");
+            .setVerifierForDomain(ethers.utils.namehash("alice.eth"), bedrockCcipVerifier.address, "http://test/{sender}/{data}");
 
         const { callData } = await getGateWayUrl("alice.eth", "foo", ccipResolver);
 
         const result = {
+            result: ethers.utils.defaultAbiCoder.encode(["string"], ["Hello from Alice"]),
             target: "0x5FbDB2315678afecb367f032d93F642f64180aa3",
             slot: "0x0000000000000000000000000000000000000000000000000000000000000005",
             layout: StorageLayout.DYNAMIC,
@@ -112,8 +114,10 @@ describe("Optimism Bedrock Handler", () => {
         ccipConfig[bedrockCcipVerifier.address] = {
             type: "optimism-bedrock",
             handlerUrl: "http://test",
-            l1providerUrl: "http://localhost:8545",
-            l2providerUrl: "http://localhost:9545",
+            l1ProviderUrl: "http://localhost:8545",
+            l2ProviderUrl: "http://localhost:9545",
+            l1chainId: 900,
+            l2chainId: 901,
         };
 
         config[bedrockCcipVerifier.address] = ccipApp.use(ccipGateway(ccipConfig));
@@ -125,8 +129,52 @@ describe("Optimism Bedrock Handler", () => {
 
         expect(response.status).to.equal(200);
 
-        const responseBytes = await ccipResolver.resolveWithProof(response.body.data, callData);
-        const responseString = Buffer.from(responseBytes.slice(2), "hex").toString();
-        expect(responseString).to.eql("Hello from Alice");
+        const responseEncoded = await ccipResolver.resolveWithProof(response.body.data, callData);
+        const [responseDecoded] = ethers.utils.defaultAbiCoder.decode(["string"], responseEncoded)
+        expect(responseDecoded).to.equal("Hello from Alice");
+
+    });
+    it("Returns valid bytes32 data from resolver", async () => {
+        process.env.SIGNER_PRIVATE_KEY = signer.privateKey;
+
+        const mock = new MockAdapter(axios);
+
+        await ccipResolver
+            .connect(alice)
+            .setVerifierForDomain(ethers.utils.namehash("alice.eth"), bedrockCcipVerifier.address, "http://test/{sender}/{data}");
+
+        const { callData } = await getGateWayUrl("alice.eth", "foo", ccipResolver);
+
+        const result = {
+            result: ethers.utils.namehash("alice.eth"),
+            target: "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+            slot: "0x0000000000000000000000000000000000000000000000000000000000000001",
+            layout: StorageLayout.FIXED,
+        };
+        mock.onGet(`http://test/${bedrockCcipVerifier.address}/${callData}`).reply(200, result);
+
+        const ccipConfig = {};
+        ccipConfig[bedrockCcipVerifier.address] = {
+            type: "optimism-bedrock",
+            handlerUrl: "http://test",
+            l1ProviderUrl: "http://localhost:8545",
+            l2ProviderUrl: "http://localhost:9545",
+            l1chainId: 900,
+            l2chainId: 901,
+        };
+
+        config[bedrockCcipVerifier.address] = ccipApp.use(ccipGateway(ccipConfig));
+
+        const sender = bedrockCcipVerifier.address;
+
+        // You the url returned by he contract to fetch the profile from the ccip gateway
+        const response = await request(ccipApp).get(`/${sender}/${callData}`).send();
+
+        expect(response.status).to.equal(200);
+
+        const responseEncoded = await ccipResolver.resolveWithProof(response.body.data, callData);
+
+        expect(responseEncoded).to.equal(ethers.utils.namehash("alice.eth"));
+
     });
 });
