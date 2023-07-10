@@ -13,9 +13,11 @@ export function ccipGateway(config: Config) {
         const calldata = req.params.calldata.replace(".json", "");
 
         try {
-            const configEntry = config[ethers.utils.getAddress(resolverAddr)];
+            const configEntry = config[resolverAddr];
 
             if (!configEntry) {
+                console.log(`Unknown resolver selector pair for resolverAddr: ${resolverAddr}`)
+                console.log(config)
                 res.status(404).send({
                     message: "Unknown resolver selector pair",
                 });
