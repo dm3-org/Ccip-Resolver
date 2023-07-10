@@ -1,0 +1,20 @@
+services:
+  ens-data-source:
+    image: ens_bedrock_resolver:latest
+    restart: always
+    environment:
+        RPC_URL: "http://localhost:9545"
+        L2_RESOLVER_ADDRESS: "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0"  
+  ccip-resolver:
+    image: dm3org/offchain-resolver:v0.0.2
+    restart: always
+    environment:
+         CONFIG: '{"0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512":{"type":"optimism-bedrock","handlerUrl":"http://localhost:8887","l1ProviderUrl":"http://localhost:8545","l2ProviderUrl":"http://localhost:9545","l1chainId":"900","l2chainId":"901"}}'
+    ports:
+    - "8081:8081"
+        
+
+
+
+
+
