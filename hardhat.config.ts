@@ -12,10 +12,9 @@ import "hardhat-storage-layout";
 import "hardhat-tracer";
 import { ethers } from "ethers";
 
-const ETHERSCAN_API_KEY = process.env.ETHERSCAN_API_KEY;
 const OPTIMISTIC_ETHERSCAN_API_KEY = process.env.OPTIMISTIC_ETHERSCAN_API_KEY;
 
-const GOERLI_URL = process.env.GOERLI_RPC_URL ?? "";
+const GOERLI_URL = process.env.L1_PROVIDER_URL ?? "";
 const DEPLOYER_PRIVATE_KEY = process.env.DEPLOYER_PRIVATE_KEY ?? ethers.Wallet.createRandom().privateKey;
 
 module.exports = {

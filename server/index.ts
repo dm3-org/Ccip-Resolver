@@ -31,11 +31,11 @@ app.use(bodyParser.json());
         transports: [new winston.transports.Console()],
     });
 
-    const RPC_URL = process.env.RPC_URL;
-    if (!RPC_URL) {
-        throw new Error('RPC_URL not set');
+    const L2_PROVIDER_URL = process.env.L2_PROVIDER_URL;
+    if (!L2_PROVIDER_URL) {
+        throw new Error('L2_PROVIDER_URL not set');
     }
-    const provider = new ethers.providers.StaticJsonRpcProvider(RPC_URL);
+    const provider = new ethers.providers.StaticJsonRpcProvider(L2_PROVIDER_URL);
 
     app.use('/', EnsBedrockHandler(provider, resolverAddress));
 })();
