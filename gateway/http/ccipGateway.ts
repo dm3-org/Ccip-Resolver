@@ -1,3 +1,4 @@
+import { ethers } from "ethers";
 import express from "express";
 
 import { Config } from "../config/Config";
@@ -15,6 +16,8 @@ export function ccipGateway(config: Config) {
             const configEntry = config[resolverAddr];
 
             if (!configEntry) {
+                console.log(`Unknown resolver selector pair for resolverAddr: ${resolverAddr}`);
+                console.log(config);
                 res.status(404).send({
                     message: "Unknown resolver selector pair",
                 });
@@ -28,6 +31,7 @@ export function ccipGateway(config: Config) {
                 }
                 case "optimism-bedrock": {
                     const response = await optimismBedrockHandler(calldata, resolverAddr, configEntry);
+                    // console.log(response);
                     res.status(200).send({ data: response });
                     break;
                 }

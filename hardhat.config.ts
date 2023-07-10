@@ -8,6 +8,7 @@ import "@nomiclabs/hardhat-solhint";
 import "@typechain/hardhat";
 import "dotenv/config";
 import { ethers } from "ethers";
+import "hardhat-abi-exporter";
 import "hardhat-deploy";
 import "hardhat-storage-layout";
 import "hardhat-tracer";
@@ -62,5 +63,14 @@ module.exports = {
     typechain: {
         outDir: "typechain",
         target: "ethers-v5",
+    },
+    abiExporter: {
+        path: "./build/contracts",
+        runOnCompile: true,
+        clear: true,
+        flat: true,
+        except: [],
+        spacing: 2,
+        pretty: true,
     },
 };
