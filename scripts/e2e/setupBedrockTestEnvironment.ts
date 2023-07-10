@@ -1,9 +1,16 @@
-import { BedrockCcipVerifier, BedrockCcipVerifier__factory, BedrockProofVerifier, BedrockProofVerifier__factory, CcipResolver, CcipResolver__factory, ENSRegistry__factory } from "ccip-resolver/typechain/";
+import {
+    BedrockCcipVerifier,
+    BedrockCcipVerifier__factory,
+    BedrockProofVerifier,
+    BedrockProofVerifier__factory,
+    CcipResolver,
+    CcipResolver__factory,
+    ENSRegistry__factory,
+} from "ccip-resolver/typechain/";
 import { dnsEncode, keccak256, toUtf8Bytes } from "ethers/lib/utils";
 import { ethers } from "hardhat";
 import { ENS, L2PublicResolver, L2PublicResolver__factory } from "../../typechain";
 import { dnsWireFormat } from "../helper/encodednsWireFormat";
-
 
 /**
  * This script is used to setup the environment for the e2e tests.
@@ -28,9 +35,9 @@ const setupBedrockTestEnvironment = async () => {
         console.error("Please ensure that you're running the local development environment for OP bedrock");
         return;
     }
+    console.log("Start setting up environment for bedrock e2e tests");
     //Ens registry
     let ensRegistry: ENS;
-
 
     //CcipResolver
     let ccipResolver: CcipResolver;
@@ -42,7 +49,7 @@ const setupBedrockTestEnvironment = async () => {
     //The resolver that is linked in the OptimismResolver contract
     let l2PublicResolver: L2PublicResolver;
     //Another resolver contract not related to the OptimismResolver contract
-    let foreignResolver: L2PublicResolver
+    let foreignResolver: L2PublicResolver;
 
     const l1Whale = whale.connect(l1Provider);
     const l2Whale = whale.connect(l2Provider);
@@ -68,40 +75,45 @@ const setupBedrockTestEnvironment = async () => {
         value: ethers.utils.parseEther("100"),
     });
 
-
     await Promise.all([fundAliceL1Tx.wait(), fundAlicel2Tx.wait(), fundTxbob.wait()]);
+
+    console.log("Funded accounts");
+    console.log("Alice L1 balance", ethers.utils.formatEther(await l1Provider.getBalance(alice.address)));
+    console.log("Alice L2 balance", ethers.utils.formatEther(await l2Provider.getBalance(alice.address)));
+    console.log("Bob L2 balance", ethers.utils.formatEther(await l2Provider.getBalance(bob.address)));
+
     const l1Alice = alice.connect(l1Provider);
-
-
-
-
     /**
      * ///////////////////////////////////////////////////////////////
      * MOCK ENS REGISTRY
      * ///////////////////////////////////////////////////////////////
      * */
-    ensRegistry = await new ENSRegistry__factory().connect(l1Alice).deploy()
+    ensRegistry = await new ENSRegistry__factory().connect(l1Alice).deploy();
 
-    await ensRegistry.connect(l1Alice).setOwner(ethers.constants.HashZero, l1Alice.address,
-    );
+    await ensRegistry.connect(l1Alice).setOwner(ethers.constants.HashZero, l1Alice.address);
 
-    await ensRegistry.connect(l1Alice).setSubnodeOwner(
-        ethers.constants.HashZero,
-        ethers.utils.keccak256(ethers.utils.toUtf8Bytes("eth")),
-        l1Alice.address,
-        {
-            gasLimit: 500000
-        }
-    );
+    await ensRegistry
+        .connect(l1Alice)
+        .setSubnodeOwner(ethers.constants.HashZero, ethers.utils.keccak256(ethers.utils.toUtf8Bytes("eth")), l1Alice.address, {
+            gasLimit: 500000,
+        });
 
-    await ensRegistry.connect(l1Alice).setSubnodeOwner(
-        ethers.utils.namehash("eth"),
-        ethers.utils.keccak256(ethers.utils.toUtf8Bytes("alice")),
-        l1Alice.address,
-        {
-            gasLimit: 500000
-        }
-    );
+    await ensRegistry
+        .connect(l1Alice)
+        .setSubnodeOwner(ethers.utils.namehash("eth"), ethers.utils.keccak256(ethers.utils.toUtf8Bytes("alice")), l1Alice.address, {
+            gasLimit: 500000,
+        });
+
+    /**
+     * ///////////////////////////////////////////////////////////////
+     * DEPLOY L2 RESOLVER
+     */
+
+    l2PublicResolver = await new L2PublicResolver__factory().connect(l2Whale).deploy();
+    console.log(`L2 Resolver deployed at ${l2PublicResolver.address}`);
+
+    foreignResolver = await new L2PublicResolver__factory().connect(l2Whale).deploy();
+    console.log(`L2 Foreign resolver deployed at ${foreignResolver.address}`);
 
     ccipResolver = await new CcipResolver__factory().connect(l1Whale).deploy(
         whale.address,
@@ -110,40 +122,25 @@ const setupBedrockTestEnvironment = async () => {
         //TBD add namewrapper address
         ethers.constants.AddressZero,
         "localhost:8000/graphql"
-    )
+    );
     console.log(`CcipResolver deployed at ${ccipResolver.address}`);
 
     bedrockProofVerifier = await new BedrockProofVerifier__factory().connect(l1Whale).deploy("0x6900000000000000000000000000000000000000");
 
     console.log(`BedrockProofVerifier deployed at ${bedrockProofVerifier.address}`);
 
-    bedrockCcipVerifier = await new BedrockCcipVerifier__factory().connect(l1Whale).deploy(bedrockProofVerifier.address, ccipResolver.address)
-
+    bedrockCcipVerifier = await new BedrockCcipVerifier__factory()
+        .connect(l1Whale)
+        .deploy(bedrockProofVerifier.address, l2PublicResolver.address);
 
     console.log(`BedrockCcipVerifier deployed at ${bedrockCcipVerifier.address}`);
 
-
-
-
-
     //Setup resolver for alice.eth
-    await ccipResolver.connect(l1Alice).setVerifierForDomain(
-        ethers.utils.namehash("alice.eth"),
-        bedrockCcipVerifier.address,
-        "http://localhost:8081/{sender}/{data}",
-        {
-
-            gasLimit: 1000000
-        }
-    )
-    l2PublicResolver = await new L2PublicResolver__factory().connect(l2Whale).deploy();
-    console.log(`L2 Resolver deployed at ${l2PublicResolver.address}`);
-
-    foreignResolver = await new L2PublicResolver__factory().connect(l2Whale).deploy();
-    console.log(`L2 Foreign resolver deployed at ${foreignResolver.address}`);
-
-
-
+    await ccipResolver
+        .connect(l1Alice)
+        .setVerifierForDomain(ethers.utils.namehash("alice.eth"), bedrockCcipVerifier.address, "http://localhost:8081/{sender}/{data}", {
+            gasLimit: 1000000,
+        });
 
     console.log(`${alice.address} funded with ${await l2Provider.getBalance(alice.address)}`);
     console.log(`${bob.address} funded with ${await l2Provider.getBalance(bob.address)}`);
@@ -155,10 +152,10 @@ const setupBedrockTestEnvironment = async () => {
 
         const recordName = "foo";
         const value = "bar";
-        await l2PublicResolver.connect(alice.connect(l2Provider)).setText(name, recordName, value), {
-            gasLimit: 1000000
-        };
-
+        await l2PublicResolver.connect(alice.connect(l2Provider)).setText(name, recordName, value),
+            {
+                gasLimit: 1000000,
+            };
     };
 
     //Prepare test 31 byte
@@ -168,7 +165,7 @@ const setupBedrockTestEnvironment = async () => {
         const value = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
 
         await l2PublicResolver.connect(alice.connect(l2Provider)).setText(name, recordName, value, {
-            gasLimit: 1000000
+            gasLimit: 1000000,
         });
     };
 
@@ -184,92 +181,78 @@ const setupBedrockTestEnvironment = async () => {
         };
 
         await l2PublicResolver.connect(alice.connect(l2Provider)).setText(name, recordName, JSON.stringify(profile), {
-            gasLimit: 1000000
+            gasLimit: 1000000,
         });
     };
 
     //Prepare setAddr
     const prepareSetAddr = async () => {
         const name = dnsEncode("alice.eth");
-        await l2PublicResolver.connect(alice.connect(l2Provider))["setAddr(bytes,address)"](name, alice.
-            address,
-            {
-                gasLimit: 1000000
-            });
-
+        await l2PublicResolver.connect(alice.connect(l2Provider))["setAddr(bytes,address)"](name, alice.address, {
+            gasLimit: 1000000,
+        });
     };
     const prepareSetAbi = async () => {
         const name = dnsEncode("alice.eth");
         const abi = l2PublicResolver.interface.format(ethers.utils.FormatTypes.json);
 
         await l2PublicResolver.connect(alice.connect(l2Provider)).setABI(name, 1, ethers.utils.toUtf8Bytes(abi.toString()), {
-            gasLimit: 1000000
+            gasLimit: 1000000,
         });
-
-    }
+    };
     const prepareSetContentHash = async () => {
         const name = dnsEncode("alice.eth");
 
-        await l2PublicResolver.connect(alice.connect(l2Provider)).setContenthash(name, "0xe3010170122029f2d17be6139079dc48696d1f582a8530eb9805b561eda517e22a892c7e3f1f", {
-            gasLimit: 1000000
-        })
-    }
+        await l2PublicResolver
+            .connect(alice.connect(l2Provider))
+            .setContenthash(name, "0xe3010170122029f2d17be6139079dc48696d1f582a8530eb9805b561eda517e22a892c7e3f1f", {
+                gasLimit: 1000000,
+            });
+    };
     const prepareSetName = async () => {
         const nodeName = dnsEncode("alice.eth");
         const name = "alice";
 
-        await l2PublicResolver.connect(alice.connect(l2Provider)).setName(nodeName, name,
-            {
-                gasLimit: 1000000
-            }
-        )
-
-    }
+        await l2PublicResolver.connect(alice.connect(l2Provider)).setName(nodeName, name, {
+            gasLimit: 1000000,
+        });
+    };
     const prepareSetPubkey = async () => {
         const name = dnsEncode("alice.eth");
 
         const x = ethers.utils.formatBytes32String("foo");
         const y = ethers.utils.formatBytes32String("bar");
 
-        const tx = await l2PublicResolver.connect(alice.connect(l2Provider)).setPubkey(name, x, y)
+        const tx = await l2PublicResolver.connect(alice.connect(l2Provider)).setPubkey(name, x, y);
         const rec = await tx.wait();
-    }
+    };
     const prepareSetDNS = async () => {
         const node = ethers.utils.namehash("alice.eth");
 
-        const record = dnsWireFormat("a.example.com", 3600, 1, 1, "1.2.3.4")
+        const record = dnsWireFormat("a.example.com", 3600, 1, 1, "1.2.3.4");
 
-        await l2PublicResolver.connect(alice.connect(l2Provider)).setDNSRecords(
-            node,
-            "0x" + record
-            , {
-                gasLimit: 1000000
-            }
-        )
-    }
+        await l2PublicResolver.connect(alice.connect(l2Provider)).setDNSRecords(node, "0x" + record, {
+            gasLimit: 1000000,
+        });
+    };
     const prepareSetZonehash = async () => {
         const node = ethers.utils.namehash("alice.eth");
 
-        const record = dnsWireFormat("a.example.com", 3600, 1, 1, "1.2.3.4")
+        const record = dnsWireFormat("a.example.com", 3600, 1, 1, "1.2.3.4");
 
-        await l2PublicResolver.connect(alice.connect(l2Provider)).setZonehash(
-            node,
-            keccak256(toUtf8Bytes("foo")),
-            {
-                gasLimit: 1000000
-            }
-        )
-    }
+        await l2PublicResolver.connect(alice.connect(l2Provider)).setZonehash(node, keccak256(toUtf8Bytes("foo")), {
+            gasLimit: 1000000,
+        });
+    };
 
     const prepareTestSubdomain = async () => {
         const name = dnsEncode("a.b.c.alice.eth");
         const recordName = "my-slot";
         const value = "my-subdomain-record";
 
-        await l2PublicResolver.connect(alice.connect(l2Provider)).setText(name, recordName, value,
-            {
-                gasLimit: 1000000
-            });
+        await l2PublicResolver.connect(alice.connect(l2Provider)).setText(name, recordName, value, {
+            gasLimit: 1000000,
+        });
     };
     const prepareTestSubdomain2 = async () => {
         const name = dnsEncode("alice.eth");
@@ -277,29 +260,25 @@ const setupBedrockTestEnvironment = async () => {
         const recordName = "bobs-slot";
         const value = "bobs-subdomain-record";
 
-
-        await l2PublicResolver.connect(bob.connect(l2Provider)).setText(name, recordName, value,
-            {
-                gasLimit: 1000000
-            });
+        await l2PublicResolver.connect(bob.connect(l2Provider)).setText(name, recordName, value, {
+            gasLimit: 1000000,
+        });
     };
     const nameWrapperProfile = async () => {
         const name = dnsEncode("namewrapper.alice.eth");
         const recordName = "namewrapper-slot";
         const value = "namewrapper-subdomain-record";
 
-        await l2PublicResolver.connect(alice.connect(l2Provider)).setText(name, recordName, value,
-            {
-                gasLimit: 1000000
-            });
-    }
+        await l2PublicResolver.connect(alice.connect(l2Provider)).setText(name, recordName, value, {
+            gasLimit: 1000000,
+        });
+    };
     //Prepare foreign resolver
     const prepareForeign = async () => {
         const name = dnsEncode("alice.eth");
-        await foreignResolver.connect(alice.connect(l2Provider))["setAddr(bytes,address)"](name, alice.address,
-            {
-                gasLimit: 1000000
-            });
+        await foreignResolver.connect(alice.connect(l2Provider))["setAddr(bytes,address)"](name, alice.address, {
+            gasLimit: 1000000,
+        });
     };
     await prepareTestSingleSlot();
     await prepareTest31yte();

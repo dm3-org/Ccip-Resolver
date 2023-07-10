@@ -20,6 +20,7 @@ import { decodeHasDNSRecords } from "../profiles/dns/hasDnsRecord/decodeHasDnsRe
 import { decodeZonehash } from "../profiles/dns/zonehash/decodeZonehash";
 import { L2PublicResolver } from "../../typechain";
 import { StorageLayout } from "../profiles/StorageLayout";
+import { ethers } from "ethers";
 
 export async function handleBedrockCcipRequest(l2PubicResolver: L2PublicResolver, calldata: string) {
     try {
@@ -38,13 +39,19 @@ export async function handleBedrockCcipRequest(l2PubicResolver: L2PublicResolver
             case "text(bytes32,string)":
                 {
                     const { node, record } = decodeText(context, args);
+                    console.log(context, node, record);
 
-                    const slot = await getSlotForText(l2PubicResolver, context, node, record)
+                    const slot = await getSlotpForText(l2PubicResolver, context, node, record)
                     const result = await l2PubicResolver.text(context, node, record)
 
                     console.log(result)
+                    console.log(l2Resolverinterface.encodeFunctionResult("text(bytes32,string)", [result]))
+                    console.log(ethers.utils.defaultAbiCoder.encode(["string"], [result]))
 
-                    return { slot, target: l2PubicResolver.address, layout: StorageLayout.DYNAMIC, result: l2Resolverinterface.encodeFunctionResult("text(bytes32,string)", [result]) }
+                    return {
+                        slot, target: l2PubicResolver.address, layout: StorageLayout.DYNAMIC, 
+                        result: l2Resolverinterface.encodeFunctionResult("text(bytes32,string)", [result])
+                    }
                 }
             case "addr(bytes32)":
                 {
@@ -102,7 +109,7 @@ export async function handleBedrockCcipRequest(l2PubicResolver: L2PublicResolver
                 return null
         }
     } catch (err: any) {
-        console.log("[Decode Calldata] Can't decode calldata ");
+        console.log("[Handle Bedrock request Calldata] Cant resolve request ");
         console.log(err);
         throw err;
     }

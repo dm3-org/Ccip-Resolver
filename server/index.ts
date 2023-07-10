@@ -5,7 +5,7 @@ import { ethers } from 'ethers';
 import express from 'express';
 import http from 'http';
 import winston from 'winston';
-import { EnsSigningHandler } from './http/EnsSigningHandler';
+import { EnsBedrockHandler } from './http/EnsBedrockHandler';
 
 
 dotenv.config();
@@ -37,7 +37,7 @@ app.use(bodyParser.json());
     }
     const provider = new ethers.providers.StaticJsonRpcProvider(RPC_URL);
 
-    app.use('/', EnsSigningHandler(provider, resolverAddress));
+    app.use('/', EnsBedrockHandler(provider, resolverAddress));
 })();
 const port = process.env.PORT || '8887';
 server.listen(port, () => {
