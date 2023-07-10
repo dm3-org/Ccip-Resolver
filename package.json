@@ -15,7 +15,7 @@
         "build": "yarn hardhat compile && yarn tsc -p tsconfig-build.json",
         "dev": " node dist/server/index.js",
         "docker:build": "docker build -t ens_bedrock_resolver -f ./Dockerfile .",
-        "start":"docker compose up "
+        "start":"docker compose up -d "
     },
     "files": [
         "dist/src/",

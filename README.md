@@ -8,7 +8,7 @@ This is an App specific handler to store ENS records on Optimism. It uses a fork
 
 1. Clone the repo `git clone git@github.com:corpus-io/ENS-Bedrock-Resolver.git`
 2. run `yarn install`
-3. Create an Env file using `cp ./example.env .env`
+3. Create an Env file using `cp env.example .env`
 
 ## Prepare environment
 
