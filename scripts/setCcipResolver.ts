@@ -1,7 +1,6 @@
 import { BigNumber } from "ethers";
 import hre, { ethers } from "hardhat";
 
-//const ENS_NAME = "alice123.eth"
 const ENS_NAME = "bob123.eth";
 
 const CCIP_RESOLVER_ADDRESS = "0x410EBbabB4471e9c18CC36642F4057812E125e94";

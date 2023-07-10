@@ -41,7 +41,7 @@ export async function handleBedrockCcipRequest(l2PubicResolver: L2PublicResolver
                     const { node, record } = decodeText(context, args);
                     console.log(context, node, record);
 
-                    const slot = await getSlotpForText(l2PubicResolver, context, node, record)
+                    const slot = await getSlotForText(l2PubicResolver, context, node, record)
                     const result = await l2PubicResolver.text(context, node, record)
 
                     console.log(result)
@@ -49,7 +49,7 @@ export async function handleBedrockCcipRequest(l2PubicResolver: L2PublicResolver
                     console.log(ethers.utils.defaultAbiCoder.encode(["string"], [result]))
 
                     return {
-                        slot, target: l2PubicResolver.address, layout: StorageLayout.DYNAMIC, 
+                        slot, target: l2PubicResolver.address, layout: StorageLayout.DYNAMIC,
                         result: l2Resolverinterface.encodeFunctionResult("text(bytes32,string)", [result])
                     }
                 }
@@ -57,7 +57,12 @@ export async function handleBedrockCcipRequest(l2PubicResolver: L2PublicResolver
                 {
                     const { node } = decodeAddr(context, args);
                     const slot = await getSlotForAddr(l2PubicResolver, context, node, 60);
-                    return { slot, target: l2PubicResolver.address, layout: StorageLayout.DYNAMIC }
+                    const result = await l2PubicResolver["addr(bytes,bytes32)"](context, node,)
+
+                    return {
+                        slot, target: l2PubicResolver.address, layout: StorageLayout.DYNAMIC,
+                        result: l2Resolverinterface.encodeFunctionResult("addr(bytes,bytes32)", [result])
+                    }
                 }
             case "ABI(bytes,bytes32,uint256)":
                 {
