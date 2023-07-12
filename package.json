@@ -1,12 +1,13 @@
 {
     "name": "ccip-resolver",
-    "version": "0.0.1",
+    "version": "0.0.2",
     "description": "",
+    "types": "dist/index.d.ts",
     "scripts": {
         "compile": "hardhat compile",
         "test:contracts": "hardhat test ./test/contracts/**",
         "test:gateway": "hardhat test ./test/gateway/**",
-        "e2e:setup": "npx hardhat run ./scripts/setupEnvironment.ts",
+        "test:e2e-setup": "npx hardhat run ./scripts/setupEnvironment.ts",
         "test:e2e": "hardhat test ./test/e2e/** ",
         "test": "yarn run test:contracts && yarn run test:gateway ",
         "lint:fix": "prettier --write 'scripts/**/*.{js,ts}' 'test/**/*.{js,ts}' 'deploy/**/*.{js,ts}'  && tslint --fix --config tslint.json --project tsconfig.json && solhint contracts/**/*.sol",
@@ -22,7 +23,7 @@
         "start": "node dist/gateway/index.js"
     },
     "files": [
-        "dist/src/",
+        "dist",
         "LICENSE",
         "README.md",
         "build",
