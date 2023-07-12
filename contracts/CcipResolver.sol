@@ -102,7 +102,7 @@ contract CcipResolver is IExtendedResolver, IContextResolver, SupportsInterface 
         address nodeOwner = getNodeOwner(node);
 
         bytes memory context = abi.encodePacked(nodeOwner);
-        bytes memory callData = abi.encodeWithSelector(IResolverService.resolve.selector, context, data);
+        bytes memory callData = abi.encodeWithSelector(IResolverService.resolveWithContext.selector, name, data, context);
 
         string[] memory urls = new string[](1);
         urls[0] = _verifier.gatewayUrl;
@@ -145,11 +145,11 @@ contract CcipResolver is IExtendedResolver, IContextResolver, SupportsInterface 
 
     function metadata() external view returns (string memory, uint256, string memory, uint8, bytes memory) {
         return (
-            string("OPTIMISM RESOLVER"), //The name of the resolver
+            string("CCIP RESOLVER"), //The name of the resolver
             uint256(60), //Resolvers coin type => Etheruem
             graphqlUrl, //The GraphQl Url
             uint8(0), //Storage Type 0 => EVM
-            bytes(string.concat("OPTIMISM RESOLVER: ", "{NODE_OWNER}"))
+            bytes(string.concat("CCIP RESOLVER"))
         );
     }
 
