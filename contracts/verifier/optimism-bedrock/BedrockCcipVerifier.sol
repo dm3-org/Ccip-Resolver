@@ -13,7 +13,7 @@ contract BedrockCcipVerifier is CcipResponseVerifier {
         target = _target;
     }
 
-    function resolveWithProof(bytes calldata response, bytes calldata extraData) external view override returns (bytes memory) {
+    function resolveWithProof(bytes calldata response, bytes calldata extraData) public view virtual override returns (bytes memory) {
         (bytes memory responseEncoded, IBedrockProofVerifier.BedrockStateProof memory proof) = abi.decode(
             response,
             (bytes, IBedrockProofVerifier.BedrockStateProof)
