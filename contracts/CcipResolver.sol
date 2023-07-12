@@ -73,14 +73,15 @@ contract CcipResolver is IExtendedResolver, IContextResolver, SupportsInterface 
 
         require(msg.sender == getNodeOwner(node), "only subdomain owner");
 
-        (bool success, bytes memory response) = verifierAddress.staticcall(
-            abi.encodeWithSignature("supportsInterface(bytes4)", ICcipResponseVerifier.resolveWithProof.selector)
+        //TODO Sanitize
+        /*         (bool success, bytes memory response) = verifierAddress.staticcall(
+            abi.encodeWithSignature("supportsInterface(bytes4)", type(ICcipResponseVerifier).interfaceId)
         );
-
-        require(
+ */
+        /*     require(
             success && response.length == 32 && (response[response.length - 1] & 0x01) == 0x01,
             "verifierAddress is not a CCIP Verifier"
-        );
+        ); */
 
         require(bytes(url).length > 0, "url is empty");
 
@@ -98,11 +99,14 @@ contract CcipResolver is IExtendedResolver, IContextResolver, SupportsInterface 
      */
     function resolve(bytes calldata name, bytes calldata data) external view override returns (bytes memory) {
         (CcipVerifier memory _verifier, bytes32 node) = getVerifierOfDomain(name);
+        bytes4 selector = ICcipResponseVerifier(_verifier.verifierAddress).onResolveWithProof(name, data);
+
+        require(selector != bytes4(0), "No selector found");
 
         address nodeOwner = getNodeOwner(node);
 
         bytes memory context = abi.encodePacked(nodeOwner);
-        bytes memory callData = abi.encodeWithSelector(IResolverService.resolveWithContext.selector, name, data, context);
+        bytes memory callData = abi.encodeWithSelector(selector, name, data, context);
 
         string[] memory urls = new string[](1);
         urls[0] = _verifier.gatewayUrl;
