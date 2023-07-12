@@ -9,4 +9,8 @@ abstract contract CcipResponseVerifier is ICcipResponseVerifier, SupportsInterfa
         //Supports both ICcipResponseVerifier and ISupportsInterface
         return interfaceID == type(ICcipResponseVerifier).interfaceId || super.supportsInterface(interfaceID);
     }
+
+    function onResolveWithProof(bytes calldata, bytes calldata) public pure virtual override returns (bytes4) {
+        return this.resolveWithProof.selector;
+    }
 }
