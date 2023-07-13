@@ -99,14 +99,11 @@ contract CcipResolver is IExtendedResolver, IContextResolver, SupportsInterface 
      */
     function resolve(bytes calldata name, bytes calldata data) external view override returns (bytes memory) {
         (CcipVerifier memory _verifier, bytes32 node) = getVerifierOfDomain(name);
-        bytes4 selector = ICcipResponseVerifier(_verifier.verifierAddress).onResolveWithProof(name, data);
-
-        require(selector != bytes4(0), "No selector found");
 
         address nodeOwner = getNodeOwner(node);
 
         bytes memory context = abi.encodePacked(nodeOwner);
-        bytes memory callData = abi.encodeWithSelector(selector, name, data, context);
+        bytes memory callData = abi.encodeWithSelector(IResolverService.resolveWithContext.selector, name, data, context);
 
         string[] memory urls = new string[](1);
         urls[0] = _verifier.gatewayUrl;
