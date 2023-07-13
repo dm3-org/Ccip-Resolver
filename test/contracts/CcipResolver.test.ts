@@ -89,7 +89,7 @@ describe("CCIpResolver Test", () => {
                     expect(e.message).to.contains("verifierAddress is 0x0");
                 });
         });
-    
+
         it.skip("reverts if resolverAddress does not support resolveWithProofInterface", async () => {
             await ccipResolver
                 .connect(alice)
@@ -152,19 +152,19 @@ describe("CCIpResolver Test", () => {
                     "http://localhost:8080/{sender}/{data}"
                 );
 
-
-
                 const iface = new ethers.utils.Interface([
                     "function onResolveWithProof(bytes calldata name, bytes calldata data) public pure override returns (bytes4)",
-                    "function addr(bytes32 node) external view returns (address)"
-                ])
+                    "function addr(bytes32 node) external view returns (address)",
+                ]);
 
-                const r = await ccipResolver.resolve(ethers.utils.dnsEncode("alice.eth"), iface.encodeFunctionData("addr", [ethers.utils.namehash("alice.eth")]))
+                const r = await ccipResolver.resolve(
+                    ethers.utils.dnsEncode("alice.eth"),
+                    iface.encodeFunctionData("addr", [ethers.utils.namehash("alice.eth")])
+                );
 
-                console.log(r)
-
+                console.log(r);
             });
-        })
+        });
 
         describe("Legacy ENS name", () => {
             it("reverts if msg.sender is not the profile owner", async () => {
