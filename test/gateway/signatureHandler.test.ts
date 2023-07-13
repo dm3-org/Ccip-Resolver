@@ -102,6 +102,6 @@ describe("Signature Handler", () => {
         expect(response.status).to.equal(200);
         const resultString = await signatureResolver.resolveWithProof(response.body.data, callData);
 
-        expect(resultString).to.equal(result);
+        expect(ethers.utils.defaultAbiCoder.decode(["bytes"], resultString)[0]).to.equal(result);
     });
 });

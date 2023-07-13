@@ -99,14 +99,11 @@ contract CcipResolver is IExtendedResolver, IContextResolver, SupportsInterface 
      */
     function resolve(bytes calldata name, bytes calldata data) external view override returns (bytes memory) {
         (CcipVerifier memory _verifier, bytes32 node) = getVerifierOfDomain(name);
-        bytes4 selector = ICcipResponseVerifier(_verifier.verifierAddress).onResolveWithProof(name, data);
-
-        require(selector != bytes4(0), "No selector found");
 
         address nodeOwner = getNodeOwner(node);
 
         bytes memory context = abi.encodePacked(nodeOwner);
-        bytes memory callData = abi.encodeWithSelector(selector, name, data, context);
+        bytes memory callData = abi.encodeWithSelector(IResolverService.resolveWithContext.selector, name, data, context);
 
         string[] memory urls = new string[](1);
         urls[0] = _verifier.gatewayUrl;
@@ -135,12 +132,20 @@ contract CcipResolver is IExtendedResolver, IContextResolver, SupportsInterface 
      * extraData -> the original call data
      */
     function resolveWithProof(bytes calldata response, bytes calldata extraData) external view returns (bytes memory) {
-        (, bytes memory data) = abi.decode(extraData[4:], (bytes, bytes));
+        (bytes memory name, bytes memory data) = abi.decode(extraData[4:], (bytes, bytes));
 
         bytes32 node = bytes32(BytesLib.slice(data, 4, 32));
         CcipVerifier memory _ccipVerifier = ccipVerifier[node];
 
-        return ICcipResponseVerifier(_ccipVerifier.verifierAddress).resolveWithProof(response, extraData);
+        bytes4 callBackSelector = ICcipResponseVerifier(_ccipVerifier.verifierAddress).onResolveWithProof(name, data);
+
+        require(callBackSelector != bytes4(0), "No callback selector found");
+        (bool success, bytes memory resolveWithProofResponse) = address(_ccipVerifier.verifierAddress).staticcall(
+            abi.encodeWithSelector(callBackSelector, response, extraData)
+        );
+
+        require(success, "ResolveWithProof call failed");
+        return resolveWithProofResponse;
     }
 
     function supportsInterface(bytes4 interfaceID) public pure override returns (bool) {
