@@ -101,7 +101,7 @@ The BedrockCCIPVerifier just supports one contract on Optimism. If you want to u
 
 Ccip Resolver: 0x410EBbabB4471e9c18CC36642F4057812E125e94
 
-SignatureVerifier : 0x124fbbf2dD047bBc1B622596905A47854f7CE747(Signers : [0xA2a3b487fe4abbbb79888685284cD304D66405a7])
+SignatureVerifier : 0x0C25389fc41b392C7cEAD6f0a82e22BD2Cc358F1(Signers : [0xA2a3b487fe4abbbb79888685284cD304D66405a7])
 
 BedrockProofVerifier : 0x49FA2e3dc397d6AcA8e2DAe402eB2fD6164EebAC
 BedrockCcipVerifier : 0x6eFc563E6c269B137F1362580Cc04F054204a352

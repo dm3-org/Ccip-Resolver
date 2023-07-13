@@ -144,7 +144,9 @@ describe("CCIpResolver Test", () => {
         });
 
         describe.skip("resolve", () => {
+
             it("returns the resolver address", async () => {
+
                 await ccipResolver.connect(alice).setVerifierForDomain(
                     ethers.utils.namehash("alice.eth"),
                     // Alice is an EOA, so this is not a valid resolver
