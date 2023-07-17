@@ -1,27 +1,36 @@
 import { ethers } from "ethers";
-import { ConfigEntry } from "./Config";
 
+import { ConfigEntry } from "./Config";
 
 export function getConfigReader(config?: string) {
     if (!config) {
-        throw "CONFIG IS MISSING"
+        throw new Error("CONFIG IS MISSING");
     }
-    const configJson = JSON.parse(config);
+
+    let configJson;
+    
+    try {
+        configJson = JSON.parse(config);
+    } catch (e) {
+        throw new Error("Invalid JSON");
+    }
 
     Object.keys(configJson).forEach((address: string) => {
-        const normalizedAddress = ethers.utils.getAddress(address)
-        configJson[normalizedAddress] = configJson[address]
-    })
-
+        if (!ethers.utils.isAddress(address)) {
+            throw new Error(`Invalid address ${address}`);
+        }
+        const normalizedAddress = ethers.utils.getAddress(address);
+        configJson[normalizedAddress] = configJson[address];
+    });
 
     function getConfigForResolver(resolverAddr: string): ConfigEntry {
-        return configJson[resolverAddr]
+        return configJson[resolverAddr];
     }
     return {
-        getConfigForResolver
-    }
+        getConfigForResolver,
+    };
 }
 
 export type ConfigReader = {
-    getConfigForResolver: (resolverAddr: string) => ConfigEntry
+    getConfigForResolver: (resolverAddr: string) => ConfigEntry;
 };
