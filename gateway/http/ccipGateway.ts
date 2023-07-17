@@ -1,11 +1,10 @@
-import { ethers } from "ethers";
 import express from "express";
 
-import { Config } from "../config/Config";
+import { ConfigReader } from "../config/ConfigReader";
 import { optimismBedrockHandler } from "../handler/optimism-bedrock/optimismBedrockHandler";
 import { signingHandler } from "../handler/signing/signingHandler";
 
-export function ccipGateway(config: Config) {
+export function ccipGateway(config: ConfigReader) {
     const router = express.Router();
 
     router.get("/:resolverAddr/:calldata", async (req: express.Request, res: express.Response) => {
@@ -13,7 +12,7 @@ export function ccipGateway(config: Config) {
         const calldata = req.params.calldata.replace(".json", "");
 
         try {
-            const configEntry = config[resolverAddr];
+            const configEntry = config.getConfigForResolver(resolverAddr);
 
             if (!configEntry) {
                 console.log(`Unknown resolver selector pair for resolverAddr: ${resolverAddr}`);

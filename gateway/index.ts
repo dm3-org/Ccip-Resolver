@@ -6,6 +6,7 @@ import cors from "cors";
 import winston from "winston";
 
 import { ccipGateway } from "./http/ccipGateway";
+import { getConfigReader } from "./config/ConfigReader";
 
 dotenv.config();
 
@@ -23,7 +24,7 @@ app.use(bodyParser.json());
         transports: [new winston.transports.Console()],
     });
 
-    const config = JSON.parse(process.env.CONFIG as string);
+    const config = getConfigReader(process.env.CONFIG);
     app.use("/", ccipGateway(config));
 })();
 const port = process.env.PORT || "8081";
