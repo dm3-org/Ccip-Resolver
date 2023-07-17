@@ -4,12 +4,12 @@ import axios from "axios";
 import MockAdapter from "axios-mock-adapter";
 import bodyParser from "body-parser";
 import { expect } from "chai";
-import exp from "constants";
 import { ethers, Wallet } from "ethers";
 import express from "express";
 import { config, ethers as hreEthers } from "hardhat";
 import request from "supertest";
 
+import { getConfigReader } from "../../gateway/config/ConfigReader";
 import { ccipGateway } from "../../gateway/http/ccipGateway";
 import { StorageLayout } from "../../gateway/service/proof/ProofService";
 import {
@@ -120,7 +120,8 @@ describe("Optimism Bedrock Handler", () => {
             l2chainId: 901,
         };
 
-        config[bedrockCcipVerifier.address] = ccipApp.use(ccipGateway(ccipConfig));
+        const configReader = getConfigReader(JSON.stringify(ccipConfig));
+        config[bedrockCcipVerifier.address] = ccipApp.use(ccipGateway(configReader));
 
         const sender = bedrockCcipVerifier.address;
 
@@ -130,7 +131,10 @@ describe("Optimism Bedrock Handler", () => {
         expect(response.status).to.equal(200);
 
         const responseEncoded = await ccipResolver.resolveWithProof(response.body.data, callData);
-        const [responseDecoded] = ethers.utils.defaultAbiCoder.decode(["string"], responseEncoded);
+
+        const [decodedBytes] = ethers.utils.defaultAbiCoder.decode(["bytes"], responseEncoded);
+        const [responseDecoded] = ethers.utils.defaultAbiCoder.decode(["string"], decodedBytes);
+
         expect(responseDecoded).to.equal("Hello from Alice");
     });
     it("Returns valid bytes32 data from resolver", async () => {
@@ -162,7 +166,8 @@ describe("Optimism Bedrock Handler", () => {
             l2chainId: 901,
         };
 
-        config[bedrockCcipVerifier.address] = ccipApp.use(ccipGateway(ccipConfig));
+        const configReader = getConfigReader(JSON.stringify(ccipConfig));
+        config[bedrockCcipVerifier.address] = ccipApp.use(ccipGateway(configReader));
 
         const sender = bedrockCcipVerifier.address;
 
@@ -173,6 +178,7 @@ describe("Optimism Bedrock Handler", () => {
 
         const responseEncoded = await ccipResolver.resolveWithProof(response.body.data, callData);
 
-        expect(responseEncoded).to.equal(ethers.utils.namehash("alice.eth"));
+        const [decodedResponse] = ethers.utils.defaultAbiCoder.decode(["bytes"], responseEncoded);
+        expect(decodedResponse).to.equal(ethers.utils.namehash("alice.eth"));
     });
 });
