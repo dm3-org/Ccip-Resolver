@@ -1,30 +1,30 @@
 import { ethers } from "ethers";
 
-import { ConfigEntry } from "./Config";
+import { Config, ConfigEntry } from "./Config";
 
-export function getConfigReader(config?: string) {
-    if (!config) {
+export function getConfigReader(_config?: string) {
+    if (!_config) {
         throw new Error("CONFIG IS MISSING");
     }
 
-    let configJson;
+    let config: Config;
 
     try {
-        configJson = JSON.parse(config);
+        config = JSON.parse(_config);
     } catch (e) {
         throw new Error("Invalid JSON");
     }
 
-    Object.keys(configJson).forEach((address: string) => {
+    Object.keys(config).forEach((address: string) => {
         if (!ethers.utils.isAddress(address)) {
             throw new Error(`Invalid address ${address}`);
         }
         const normalizedAddress = ethers.utils.getAddress(address);
-        configJson[normalizedAddress] = configJson[address];
+        config[normalizedAddress] = config[address] as ConfigEntry;
     });
 
     function getConfigForResolver(resolverAddr: string): ConfigEntry {
-        return configJson[resolverAddr];
+        return config[resolverAddr];
     }
     return {
         getConfigForResolver,
