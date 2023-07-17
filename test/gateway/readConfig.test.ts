@@ -2,7 +2,7 @@ import { expect } from "chai";
 
 import { getConfigReader } from "../../gateway/config/ConfigReader";
 
-describe.only("ReadConfig Test", () => {
+describe("ReadConfig Test", () => {
     it("Reads config for Signiture Resolver", () => {
         const configString = JSON.stringify({
             "0xafb5b5032d920c8158e541c6326ce63baf60aabf": {

@@ -8,7 +8,7 @@ export function getConfigReader(config?: string) {
     }
 
     let configJson;
-    
+
     try {
         configJson = JSON.parse(config);
     } catch (e) {

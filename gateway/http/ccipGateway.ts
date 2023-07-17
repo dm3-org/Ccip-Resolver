@@ -16,7 +16,7 @@ export function ccipGateway(configReader: ConfigReader) {
 
             if (!configEntry) {
                 console.log(`Unknown resolver selector pair for resolverAddr: ${resolverAddr}`);
-                
+
                 res.status(404).send({
                     message: "Unknown resolver selector pair",
                 });
