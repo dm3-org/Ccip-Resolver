@@ -89,6 +89,20 @@ describe("CCIpResolver Test", () => {
                     expect(e.message).to.contains("verifierAddress is 0x0");
                 });
         });
+        it("reverts if msg.sender is not the profile owner", async () => {
+            await ccipResolver
+                .setVerifierForDomain(
+                    ethers.utils.namehash("vitalik.eth"),
+                    bedrockCcipVerifier.address,
+                    "http://localhost:8080/{sender}/{data}"
+                )
+                .then((res) => {
+                    expect.fail("Should have thrown an error");
+                })
+                .catch((e) => {
+                    expect(e.message).to.contains("only node owner");
+                });
+        });
 
         it("reverts if resolverAddress does not support resolveWithProofInterface", async () => {
             await ccipResolver
@@ -124,7 +138,7 @@ describe("CCIpResolver Test", () => {
                     expect(e.message).to.contains("url is empty");
                 });
         });
-        it("adds resolver + event contains node, url, and resolverAddress", async () => {
+        it("adds verifier + event contains node, url, and resolverAddress", async () => {
             const tx = await ccipResolver.connect(alice).setVerifierForDomain(
                 ethers.utils.namehash("alice.eth"),
                 // Alice is an EOA, so this is not a valid resolver
@@ -136,9 +150,27 @@ describe("CCIpResolver Test", () => {
 
             const [ResolverAddedEvent] = receipt.events;
 
-            const [node, gatewayUrl, resolverAddress] = ResolverAddedEvent.args;
+            const [node, resolverAddress, gatewayUrl] = ResolverAddedEvent.args;
 
             expect(node).to.equal(ethers.utils.namehash("alice.eth"));
+            expect(gatewayUrl).to.equal("http://localhost:8080/{sender}/{data}");
+            expect(resolverAddress).to.equal(bedrockCcipVerifier.address);
+        });
+        it("adds verifier + event contains node, url, and resolverAddress for NameWrapperProfile", async () => {
+            const tx = await ccipResolver.connect(alice).setVerifierForDomain(
+                ethers.utils.namehash("namewrapper.alice.eth"),
+                // Alice is an EOA, so this is not a valid resolver
+                bedrockCcipVerifier.address,
+                "http://localhost:8080/{sender}/{data}"
+            );
+
+            const receipt = await tx.wait();
+
+            const [ResolverAddedEvent] = receipt.events;
+
+            const [node, resolverAddress, gatewayUrl] = ResolverAddedEvent.args;
+
+            expect(node).to.equal(ethers.utils.namehash("namewrapper.alice.eth"));
             expect(gatewayUrl).to.equal("http://localhost:8080/{sender}/{data}");
             expect(resolverAddress).to.equal(bedrockCcipVerifier.address);
         });
@@ -166,21 +198,6 @@ describe("CCIpResolver Test", () => {
             });
         });
 
-        describe("Legacy ENS name", () => {
-            it("reverts if msg.sender is not the profile owner", async () => {
-                await ccipResolver
-                    .setVerifierForDomain(
-                        ethers.utils.namehash("vitalik.eth"),
-                        bedrockCcipVerifier.address,
-                        "http://localhost:8080/{sender}/{data}"
-                    )
-                    .then((res) => {
-                        expect.fail("Should have thrown an error");
-                    })
-                    .catch((e) => {
-                        expect(e.message).to.contains("only subdomain owner");
-                    });
-            });
-        });
+
     });
 });

@@ -10,6 +10,7 @@ import {INameWrapper} from "@ensdomains/ens-contracts/contracts/wrapper/INameWra
 import {BytesUtils} from "@ensdomains/ens-contracts/contracts/wrapper/BytesUtils.sol";
 
 import {BytesLib} from "solidity-bytes-utils/contracts/BytesLib.sol";
+
 /**
  * Implements an ENS resolver that directs all queries to a CCIP read gateway.
  * Callers must implement EIP 3668 and ENSIP 10.
@@ -23,7 +24,7 @@ contract CcipResolver is IExtendedResolver, IContextResolver, SupportsInterface 
     }
     event GraphQlUrlChanged(string newGraphQlUrl);
     event OwnerChanged(address newOwner);
-    event VerifierAdded(bytes32 indexed node, string gatewayUrl, address verifierAddress);
+    event VerifierAdded(bytes32 indexed node, address verifierAddress, string gatewayUrl);
 
     error OffchainLookup(address sender, string[] urls, bytes callData, bytes4 callbackFunction, bytes extraData);
     error InvalidOperation();
@@ -66,29 +67,56 @@ contract CcipResolver is IExtendedResolver, IContextResolver, SupportsInterface 
         emit OwnerChanged(_owner);
     }
 
+    /**
+     * @notice Sets a Cross-chain Information Protocol (CCIP) Verifier for a specific domain node.
+     * @param node The domain node for which the CCIP Verifier is set.
+     * @param verifierAddress The address of the CcipResponseVerifier contract.
+     * @param url The gateway url that should handle the OffchainLookup.
+     * Requirements:
+     *   - The provided node must not be the zero address (0x0).
+     *   - The provided verifierAddress must not be the zero address (0x0).
+     *   - The caller of this function must be the owner of the given node.
+     *   - The verifierAddress must implement the ICcipResponseVerifier interface.
+     *   - The URL must not be empty.
+     */
     function setVerifierForDomain(bytes32 node, address verifierAddress, string memory url) external {
         require(node != bytes32(0), "node is 0x0");
         require(verifierAddress != address(0), "verifierAddress is 0x0");
 
-        require(msg.sender == getNodeOwner(node), "only subdomain owner");
-
+        /**
+         *Only the node owner can set the verifier for a node. NameWrapper profiles are supported too.
+         */
+        require(msg.sender == getNodeOwner(node), "only node owner");
+        /**
+         * We're doing a staticcall here to check if the verifierAddress implements the ICcipResponseVerifier interface.
+         * This is done to prevent the user from setting an arbitrary address as the verifierAddress.
+         */
         (bool success, bytes memory response) = verifierAddress.staticcall(
             abi.encodeWithSignature("supportsInterface(bytes4)", type(ICcipResponseVerifier).interfaceId)
         );
 
-        // console.logBytes4(type(ICcipResponseVerifier).interfaceId);
-        // =>0xf3af9cc4
+        /**
+         * A successfull static call wil return 0x0000000000000000000000000000000000000000000000000000000000000001
+         * Hence we've to check that the last bit is set.
+         */
         require(
             success && response.length == 32 && (response[response.length - 1] & 0x01) == 0x01,
             "verifierAddress is not a CCIP Verifier"
         );
-
+        /**
+         * Check that the url is non null.
+         * Although it may not be a sufficient url check it prevents users from passing undefined or empty strings.
+         * @dev Maybe we should add a more sofisticated url check. Maybe not ??
+         */
         require(bytes(url).length > 0, "url is empty");
 
+        /**
+         * Set the new verifier for the given node.
+         */
         CcipVerifier memory _ccipVerifier = CcipVerifier(url, ICcipResponseVerifier(verifierAddress));
         ccipVerifier[node] = _ccipVerifier;
 
-        emit VerifierAdded(node, url, verifierAddress);
+        emit VerifierAdded(node, verifierAddress, url);
     }
 
     /**
