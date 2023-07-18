@@ -120,25 +120,36 @@ contract CcipResolver is IExtendedResolver, IContextResolver, SupportsInterface 
     }
 
     /**
-     * Resolves a name, as specified by ENSIP 10.
+     * Resolves arbitrary data for a particular name, as specified by ENSIP 10.
      * @param name The DNS-encoded name to resolve.
      * @param data The ABI encoded data for the underlying resolution function (Eg, addr(bytes32), text(bytes32,string), etc).
      * @return The return data, ABI encoded identically to the underlying function.
      */
     function resolve(bytes calldata name, bytes calldata data) external view override returns (bytes memory) {
+        /**
+         * Get the verifier for the given name.
+         * reverts if no verifier was set in advance
+         */
         (CcipVerifier memory _verifier, bytes32 node) = getVerifierOfDomain(name);
-
+        /**
+         * Retrives the owner of the node. NameWrapper profiles are supported too. This will be the context of the request.
+         */
         address nodeOwner = getNodeOwner(node);
-
         bytes memory context = abi.encodePacked(nodeOwner);
+        /**
+         * The calldata the gateway has to resolve
+         */
         bytes memory callData = abi.encodeWithSelector(IResolverService.resolveWithContext.selector, name, data, context);
-
+        /**
+         * The gateway url that should handle the OffchainLookup.
+         * @dev At the moement we just support a single URL. Maybe we should support multiple URLs in the future. Before entering the audit
+         */
         string[] memory urls = new string[](1);
         urls[0] = _verifier.gatewayUrl;
         revert OffchainLookup(address(this), urls, callData, CcipResolver.resolveWithProof.selector, callData);
     }
 
-    function getVerifierOfDomain(bytes calldata name) public view returns (CcipVerifier memory, bytes32) {
+    function getVerifierOfDomain(bytes memory name) public view returns (CcipVerifier memory, bytes32) {
         uint offset = 0;
 
         while (offset < name.length - 1) {
@@ -160,9 +171,7 @@ contract CcipResolver is IExtendedResolver, IContextResolver, SupportsInterface 
      */
     function resolveWithProof(bytes calldata response, bytes calldata extraData) external view returns (bytes memory) {
         (bytes memory name, bytes memory data) = abi.decode(extraData[4:], (bytes, bytes));
-
-        bytes32 node = bytes32(BytesLib.slice(data, 4, 32));
-        CcipVerifier memory _ccipVerifier = ccipVerifier[node];
+        (CcipVerifier memory _ccipVerifier, ) = getVerifierOfDomain(name);
 
         bytes4 callBackSelector = ICcipResponseVerifier(_ccipVerifier.verifierAddress).onResolveWithProof(name, data);
 
