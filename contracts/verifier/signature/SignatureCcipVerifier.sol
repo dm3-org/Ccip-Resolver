@@ -54,6 +54,7 @@ contract SignatureCcipVerifier is CcipResponseVerifier {
     function resolveWithProof(bytes calldata response, bytes calldata extraData) external view override returns (bytes memory) {
         (address signer, bytes memory result) = SignatureVerifier.verify(resolver, extraData, response);
         require(signers[signer], "SignatureVerifier: Invalid sigature");
-        return result;
+        bytes memory decodedResponse = abi.decode(result, (bytes));
+        return decodedResponse;
     }
 }
