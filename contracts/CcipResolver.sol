@@ -27,7 +27,7 @@ contract CcipResolver is IExtendedResolver, IContextResolver, SupportsInterface 
     event VerifierAdded(bytes32 indexed node, address verifierAddress, string gatewayUrl);
 
     error OffchainLookup(address sender, string[] urls, bytes callData, bytes4 callbackFunction, bytes extraData);
-    error InvalidOperation();
+    error UnknownVerfier();
 
     ENSRegistry public ensRegistry;
     INameWrapper public nameWrapper;
@@ -151,7 +151,7 @@ contract CcipResolver is IExtendedResolver, IContextResolver, SupportsInterface 
             (, offset) = name.readLabel(offset);
         }
 
-        revert InvalidOperation();
+        revert UnknownVerfier();
     }
 
     /**

@@ -1,6 +1,7 @@
 import { FakeContract, smock } from "@defi-wonderland/smock";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { expect } from "chai";
+import { error } from "console";
 import { ethers } from "ethers";
 import { ethers as hreEthers } from "hardhat";
 import {
@@ -175,7 +176,17 @@ describe("CCIpResolver Test", () => {
             expect(resolverAddress).to.equal(bedrockCcipVerifier.address);
         });
 
-        describe.skip("resolve", () => {
+        describe.only("resolve", () => {
+
+            it("reverts if requested node has no verifier", async () => {
+
+                try {
+                    await ccipResolver.resolve(ethers.utils.dnsEncode("foo.eth"), "0x")
+                } catch (e) {
+                    expect(e.errorName).to.equal("UnknownVerfier")
+                }
+
+            })
             it("returns the resolver address", async () => {
                 await ccipResolver.connect(alice).setVerifierForDomain(
                     ethers.utils.namehash("alice.eth"),
@@ -187,17 +198,36 @@ describe("CCIpResolver Test", () => {
                 const iface = new ethers.utils.Interface([
                     "function onResolveWithProof(bytes calldata name, bytes calldata data) public pure override returns (bytes4)",
                     "function addr(bytes32 node) external view returns (address)",
+                    "error OffchainLookup(address sender, string[] urls, bytes callData, bytes4 callbackFunction, bytes extraData)",
+                    "function resolveWithContext(bytes calldata name,bytes calldata data,bytes calldata context) external view returns (bytes memory result)",
+
+                    "function resolveWithProof(bytes calldata response, bytes calldata extraData) external view returns (bytes memory)"
                 ]);
 
-                const r = await ccipResolver.resolve(
-                    ethers.utils.dnsEncode("alice.eth"),
-                    iface.encodeFunctionData("addr", [ethers.utils.namehash("alice.eth")])
-                );
+                const name = ethers.utils.dnsEncode("alice.eth");
+                const data = iface.encodeFunctionData("addr", [ethers.utils.namehash("alice.eth")]);
 
-                console.log(r);
+                let errorString;
+                try {
+                    await ccipResolver.resolve(name, data);
+                } catch (e) {
+                    errorString = e.data;
+                }
+
+                const decodedError = iface.decodeErrorResult("OffchainLookup", errorString);
+                const [sender, urls, callData, callbackFunction, extraData] = decodedError;
+
+
+
+                expect(sender).to.equal(ccipResolver.address);
+                expect(urls[0]).to.equal("http://localhost:8080/{sender}/{data}");
+                expect(callData).to.equal(iface.encodeFunctionData("resolveWithContext", [name, data, alice.address]));
+                expect(callbackFunction).to.equal(iface.getSighash("resolveWithProof"));
+                expect(extraData).to.equal(iface.encodeFunctionData("resolveWithContext", [name, data, alice.address]));
+
+
+
             });
         });
-
-
     });
 });
