@@ -10,7 +10,6 @@ import {INameWrapper} from "@ensdomains/ens-contracts/contracts/wrapper/INameWra
 import {BytesUtils} from "@ensdomains/ens-contracts/contracts/wrapper/BytesUtils.sol";
 
 import {BytesLib} from "solidity-bytes-utils/contracts/BytesLib.sol";
-
 /**
  * Implements an ENS resolver that directs all queries to a CCIP read gateway.
  * Callers must implement EIP 3668 and ENSIP 10.
@@ -73,15 +72,16 @@ contract CcipResolver is IExtendedResolver, IContextResolver, SupportsInterface 
 
         require(msg.sender == getNodeOwner(node), "only subdomain owner");
 
-        //TODO Sanitize
-        /*         (bool success, bytes memory response) = verifierAddress.staticcall(
+        (bool success, bytes memory response) = verifierAddress.staticcall(
             abi.encodeWithSignature("supportsInterface(bytes4)", type(ICcipResponseVerifier).interfaceId)
         );
- */
-        /*     require(
+
+        // console.logBytes4(type(ICcipResponseVerifier).interfaceId);
+        // =>0xf3af9cc4
+        require(
             success && response.length == 32 && (response[response.length - 1] & 0x01) == 0x01,
             "verifierAddress is not a CCIP Verifier"
-        ); */
+        );
 
         require(bytes(url).length > 0, "url is empty");
 
@@ -107,7 +107,6 @@ contract CcipResolver is IExtendedResolver, IContextResolver, SupportsInterface 
 
         string[] memory urls = new string[](1);
         urls[0] = _verifier.gatewayUrl;
-        //TODO add move callback to external interface
         revert OffchainLookup(address(this), urls, callData, CcipResolver.resolveWithProof.selector, callData);
     }
 

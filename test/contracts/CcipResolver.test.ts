@@ -63,7 +63,7 @@ describe("CCIpResolver Test", () => {
         )) as CcipResolver;
     });
 
-    describe("setResolverForDomain", () => {
+    describe("setVerifierForDomain", () => {
         it("reverts if node is 0x0", async () => {
             await ccipResolver
                 .setVerifierForDomain(ethers.constants.HashZero, bedrockCcipVerifier.address, "http://localhost:8080/{sender}/{data}")
@@ -90,13 +90,13 @@ describe("CCIpResolver Test", () => {
                 });
         });
 
-        it.skip("reverts if resolverAddress does not support resolveWithProofInterface", async () => {
+        it("reverts if resolverAddress does not support resolveWithProofInterface", async () => {
             await ccipResolver
                 .connect(alice)
                 .setVerifierForDomain(
                     ethers.utils.namehash("alice.eth"),
                     // Alice is an EOA, so this is not a valid resolver
-                    alice.address,
+                    bedrockProofVerifier.address,
                     "http://localhost:8080/{sender}/{data}"
                 )
                 .then((res) => {
