@@ -29,8 +29,8 @@ contract CcipResolver is IExtendedResolver, IContextResolver, SupportsInterface 
     error OffchainLookup(address sender, string[] urls, bytes callData, bytes4 callbackFunction, bytes extraData);
     error UnknownVerfier();
 
-    ENSRegistry public ensRegistry;
-    INameWrapper public nameWrapper;
+    ENSRegistry public immutable ensRegistry;
+    INameWrapper public immutable nameWrapper;
 
     address public owner;
     string public graphqlUrl;
@@ -42,6 +42,7 @@ contract CcipResolver is IExtendedResolver, IContextResolver, SupportsInterface 
         address _owner,
         //The ENS registry
         ENSRegistry _ensRegistry,
+        //The name wrapper
         INameWrapper _nameWrapper,
         //The graphQl Url
         string memory _graphqlUrl
@@ -166,21 +167,45 @@ contract CcipResolver is IExtendedResolver, IContextResolver, SupportsInterface 
     }
 
     /**
-     * Callback used by CCIP read compatible clients to verify and parse the response.
-     * extraData -> the original call data
+     * @dev Function to resolve a domain name with proof using an off-chain callback mechanism.
+     * @param response The response received from off-chain resolution.
+     * @param extraData The actual calldata that was called on the gateway.
+     * @return the result of the offchain lookup
      */
     function resolveWithProof(bytes calldata response, bytes calldata extraData) external view returns (bytes memory) {
+        /**
+         * decode the calldata that was encdoed in the the resolve function for IResolverService.resolveWithContext()
+         * bytes memory callData = abi.encodeWithSelector(IResolverService.resolveWithContext.selector, name, data context);
+         */
         (bytes memory name, bytes memory data) = abi.decode(extraData[4:], (bytes, bytes));
+        /**
+         * Get the verifier for the given name.
+         * reverts if no verifier was set in advance
+         */
         (CcipVerifier memory _ccipVerifier, ) = getVerifierOfDomain(name);
-
+        /**
+         * to enable the CcipResolver to return data other than bytes it might be possible to override the
+         * resolvewithProofCallback function.
+         */
         bytes4 callBackSelector = ICcipResponseVerifier(_ccipVerifier.verifierAddress).onResolveWithProof(name, data);
-
+        /**
+         * Reverts when no callback selector was found. This should normally never happen because setVerifier() checks * that the verifierAddress implements the ICcipResponseVerifier interface. However it might by possbible by
+         * overtiding the onResolveWithProof function and return 0x. In that case the contract reverts here.
+         */
         require(callBackSelector != bytes4(0), "No callback selector found");
+
+        /**
+         * staticcall to the callback function on the verifier contract.
+         * This function always returns bytes even the called function returns a Fixed type due to the return type of staticcall in solidity.
+         * So you might want to decode the result using abi.decode(resolveWithProofResponse,(bytes))
+         */
         (bool success, bytes memory resolveWithProofResponse) = address(_ccipVerifier.verifierAddress).staticcall(
             abi.encodeWithSelector(callBackSelector, response, extraData)
         );
-
-        require(success, "ResolveWithProof call failed");
+        /**
+         * Reverts if the call is not successful
+         */
+        require(success, "staticcall to verifier failed");
         return resolveWithProofResponse;
     }
 
@@ -194,7 +219,7 @@ contract CcipResolver is IExtendedResolver, IContextResolver, SupportsInterface 
             uint256(60), //Resolvers coin type => Etheruem
             graphqlUrl, //The GraphQl Url
             uint8(0), //Storage Type 0 => EVM
-            bytes(string.concat("CCIP RESOLVER"))
+            abi.encodePacked("CCIP RESOLVER")
         );
     }
 
