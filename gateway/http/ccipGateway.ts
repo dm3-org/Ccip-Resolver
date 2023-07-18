@@ -10,6 +10,7 @@ export function ccipGateway(configReader: ConfigReader) {
     router.get("/:resolverAddr/:calldata", async (req: express.Request, res: express.Response) => {
         const { resolverAddr } = req.params;
         const calldata = req.params.calldata.replace(".json", "");
+        req.app.locals.logger.info({message: 'GET /:resolverAddr/:calldata', resolverAddr, calldata});
 
         try {
             const configEntry = configReader.getConfigForResolver(resolverAddr);
@@ -24,7 +25,7 @@ export function ccipGateway(configReader: ConfigReader) {
             }
             switch (configEntry.type) {
                 case "signing": {
-                    const response = await signingHandler(calldata, resolverAddr, configEntry);
+                    const response = await signingHandler(calldata, resolverAddr, configEntry, req.app.locals.logger);
                     res.status(200).send({ data: response });
                     break;
                 }

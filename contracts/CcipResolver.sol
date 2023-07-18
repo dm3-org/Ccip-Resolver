@@ -138,7 +138,7 @@ contract CcipResolver is IExtendedResolver, IContextResolver, SupportsInterface 
         revert OffchainLookup(address(this), urls, callData, CcipResolver.resolveWithProof.selector, callData);
     }
 
-    function getVerifierOfDomain(bytes calldata name) public view returns (CcipVerifier memory, bytes32) {
+    function getVerifierOfDomain(bytes memory name) public view returns (CcipVerifier memory, bytes32) {
         uint offset = 0;
 
         while (offset < name.length - 1) {
@@ -161,8 +161,7 @@ contract CcipResolver is IExtendedResolver, IContextResolver, SupportsInterface 
     function resolveWithProof(bytes calldata response, bytes calldata extraData) external view returns (bytes memory) {
         (bytes memory name, bytes memory data) = abi.decode(extraData[4:], (bytes, bytes));
 
-        bytes32 node = bytes32(BytesLib.slice(data, 4, 32));
-        CcipVerifier memory _ccipVerifier = ccipVerifier[node];
+        (CcipVerifier memory _ccipVerifier,) = getVerifierOfDomain(name);
 
         bytes4 callBackSelector = ICcipResponseVerifier(_ccipVerifier.verifierAddress).onResolveWithProof(name, data);
 
