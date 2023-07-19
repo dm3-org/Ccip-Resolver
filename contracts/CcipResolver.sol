@@ -22,12 +22,30 @@ contract CcipResolver is IExtendedResolver, IContextResolver, SupportsInterface 
         string gatewayUrl;
         ICcipResponseVerifier verifierAddress;
     }
+
+    /**
+     *   --------------------------------------------------
+     *    EVENTS
+     *   --------------------------------------------------
+     */
+
     event GraphQlUrlChanged(string newGraphQlUrl);
     event OwnerChanged(address newOwner);
     event VerifierAdded(bytes32 indexed node, address verifierAddress, string gatewayUrl);
+    /**
+     *   --------------------------------------------------
+     *    Errors
+     *   --------------------------------------------------
+     */
 
     error OffchainLookup(address sender, string[] urls, bytes callData, bytes4 callbackFunction, bytes extraData);
     error UnknownVerfier();
+
+    /**
+     *   --------------------------------------------------
+     *    State Variables
+     *   --------------------------------------------------
+     */
 
     ENSRegistry public immutable ensRegistry;
     INameWrapper public immutable nameWrapper;
@@ -36,6 +54,12 @@ contract CcipResolver is IExtendedResolver, IContextResolver, SupportsInterface 
     string public graphqlUrl;
 
     mapping(bytes32 => CcipVerifier) public ccipVerifier;
+
+    /**
+     *   --------------------------------------------------
+     *    Constructor
+     *   --------------------------------------------------
+     */
 
     constructor(
         //The owner of the resolver
@@ -53,16 +77,38 @@ contract CcipResolver is IExtendedResolver, IContextResolver, SupportsInterface 
         graphqlUrl = _graphqlUrl;
     }
 
+    /**
+     *   --------------------------------------------------
+     *    Modifier
+     *   --------------------------------------------------
+     */
+
     modifier onlyOwner() {
         require(msg.sender == owner, "only owner");
         _;
     }
 
+    /**
+     *   --------------------------------------------------
+     *    External Functions
+     *   --------------------------------------------------
+     */
+
+    /**
+     * @notice Set the GraphQL endpoint URL for the contract
+     * @dev This function can only be called by the current owner.
+     * @param _graphqlUrl The new GraphQL endpoint URL to be set
+     */
     function setGraphUrl(string memory _graphqlUrl) external onlyOwner {
         graphqlUrl = _graphqlUrl;
         emit GraphQlUrlChanged(_graphqlUrl);
     }
 
+    /**
+     * @notice Set the new owner of the contract
+     * @dev This function can only be called by the current owner.
+     * @param _owner The address of the new owner
+     */
     function setOwner(address _owner) external onlyOwner {
         owner = _owner;
         emit OwnerChanged(_owner);
@@ -150,22 +196,6 @@ contract CcipResolver is IExtendedResolver, IContextResolver, SupportsInterface 
         revert OffchainLookup(address(this), urls, callData, CcipResolver.resolveWithProof.selector, callData);
     }
 
-    function getVerifierOfDomain(bytes memory name) public view returns (CcipVerifier memory, bytes32) {
-        uint offset = 0;
-
-        while (offset < name.length - 1) {
-            bytes32 node = name.namehash(offset);
-
-            CcipVerifier memory _ccipVerifier = ccipVerifier[node];
-            if (address(_ccipVerifier.verifierAddress) != address(0)) {
-                return (_ccipVerifier, node);
-            }
-            (, offset) = name.readLabel(offset);
-        }
-
-        revert UnknownVerfier();
-    }
-
     /**
      * @dev Function to resolve a domain name with proof using an off-chain callback mechanism.
      * @param response The response received from off-chain resolution.
@@ -209,10 +239,15 @@ contract CcipResolver is IExtendedResolver, IContextResolver, SupportsInterface 
         return resolveWithProofResponse;
     }
 
-    function supportsInterface(bytes4 interfaceID) public pure override returns (bool) {
-        return interfaceID == type(IExtendedResolver).interfaceId || super.supportsInterface(interfaceID);
-    }
-
+    /**
+     * @notice Get metadata about the CCIP Resolver
+     * @dev This function provides metadata about the CCIP Resolver, including its name, coin type, GraphQL URL, storage type, and encoded information.
+     * @return name The name of the resolver ("CCIP RESOLVER")
+     * @return coinType Resolvers coin type (60 for Ethereum)
+     * @return graphqlUrl The GraphQL URL used by the resolver
+     * @return storageType Storage Type (0 for EVM)
+     * @return encodedData Encoded data representing the resolver ("CCIP RESOLVER")
+     */
     function metadata() external view returns (string memory, uint256, string memory, uint8, bytes memory) {
         return (
             string("CCIP RESOLVER"), //The name of the resolver
@@ -223,6 +258,69 @@ contract CcipResolver is IExtendedResolver, IContextResolver, SupportsInterface 
         );
     }
 
+    /**
+     *   --------------------------------------------------
+     *    Public Functions
+     *   --------------------------------------------------
+     */
+
+    /**
+     * @notice Get the CCIP Verifier and node for a given domain name
+     * @dev This function allows retrieving the CCIP Verifier and its associated node for a given domain name. For subdomians it will return the CCIP Verifier of the closest parent.
+     * @param name The domain name in bytes format (encoded as per the ENS specification)
+     * @return _ccipVerifier The CCIP Verifier associated with the given domain name
+     * @return node The node associated with the given domain name
+     */
+    function getVerifierOfDomain(bytes memory name) public view returns (CcipVerifier memory, bytes32) {
+        /**
+         * We start with the entrire name and iterate over the labels until we find a verifier.
+         */
+        uint offset = 0;
+
+        while (offset < name.length - 1) {
+            /**
+             * Get the node of the current label
+             */
+            bytes32 node = name.namehash(offset);
+
+            CcipVerifier memory _ccipVerifier = ccipVerifier[node];
+            /**
+             * If the verifier is set return it
+             */
+            if (address(_ccipVerifier.verifierAddress) != address(0)) {
+                return (_ccipVerifier, node);
+            }
+            /**
+             * Otherwise continue with the next label
+             */
+            (, offset) = name.readLabel(offset);
+        }
+
+        revert UnknownVerfier();
+    }
+
+    /**
+     * @notice Check if the contract supports a specific interface
+     * @dev Implements the ERC-165 standard to check for interface support.
+     * @param interfaceID The interface identifier to check
+     * @return True if the contract supports the given interface, otherwise false
+     */
+    function supportsInterface(bytes4 interfaceID) public pure override returns (bool) {
+        return interfaceID == type(IExtendedResolver).interfaceId || super.supportsInterface(interfaceID);
+    }
+
+    /**
+     *   --------------------------------------------------
+     *    Internal Functions
+     *   --------------------------------------------------
+     */
+
+    /**
+     * @notice Get the owner of the ENS node either from the ENS registry or the NameWrapper contract
+     * @dev This function adds support for ENS nodes owned by the NameWrapper contract.
+     * @param node The ENS node to query for the owner
+     * @return nodeOwner The address of the owner of the ENS node
+     */
     function getNodeOwner(bytes32 node) internal view returns (address nodeOwner) {
         nodeOwner = ensRegistry.owner(node);
         if (nodeOwner == address(nameWrapper)) {
