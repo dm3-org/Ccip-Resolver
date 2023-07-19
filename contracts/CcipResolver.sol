@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.17;
+pragma solidity ^0.8.15;
 
 import {IExtendedResolver, IResolverService} from "./IExtendedResolver.sol";
 import {IContextResolver} from "./IContextResolver.sol";
