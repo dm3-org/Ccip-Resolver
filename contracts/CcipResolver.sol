@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.15;
+pragma solidity 0.8.17;
 
 import {IExtendedResolver, IResolverService} from "./IExtendedResolver.sol";
 import {IContextResolver} from "./IContextResolver.sol";
@@ -19,7 +19,7 @@ contract CcipResolver is IExtendedResolver, IContextResolver, SupportsInterface 
     using BytesUtils for bytes;
 
     struct CcipVerifier {
-        string gatewayUrl;
+        string[] gatewayUrls;
         ICcipResponseVerifier verifierAddress;
     }
 
@@ -31,7 +31,7 @@ contract CcipResolver is IExtendedResolver, IContextResolver, SupportsInterface 
 
     event GraphQlUrlChanged(string newGraphQlUrl);
     event OwnerChanged(address newOwner);
-    event VerifierAdded(bytes32 indexed node, address verifierAddress, string gatewayUrl);
+    event VerifierAdded(bytes32 indexed node, address verifierAddress, string[] gatewayUrls);
     /**
      *   --------------------------------------------------
      *    Errors
@@ -118,7 +118,7 @@ contract CcipResolver is IExtendedResolver, IContextResolver, SupportsInterface 
      * @notice Sets a Cross-chain Information Protocol (CCIP) Verifier for a specific domain node.
      * @param node The domain node for which the CCIP Verifier is set.
      * @param verifierAddress The address of the CcipResponseVerifier contract.
-     * @param url The gateway url that should handle the OffchainLookup.
+     * @param urls The gateway url that should handle the OffchainLookup.
      * Requirements:
      *   - The provided node must not be the zero address (0x0).
      *   - The provided verifierAddress must not be the zero address (0x0).
@@ -126,7 +126,7 @@ contract CcipResolver is IExtendedResolver, IContextResolver, SupportsInterface 
      *   - The verifierAddress must implement the ICcipResponseVerifier interface.
      *   - The URL must not be empty.
      */
-    function setVerifierForDomain(bytes32 node, address verifierAddress, string memory url) external {
+    function setVerifierForDomain(bytes32 node, address verifierAddress, string[] memory urls) external {
         require(node != bytes32(0), "node is 0x0");
         require(verifierAddress != address(0), "verifierAddress is 0x0");
 
@@ -155,15 +155,15 @@ contract CcipResolver is IExtendedResolver, IContextResolver, SupportsInterface 
          * Although it may not be a sufficient url check it prevents users from passing undefined or empty strings.
          * @dev Maybe we should add a more sofisticated url check. Maybe not ??
          */
-        require(bytes(url).length > 0, "url is empty");
+        require(urls.length > 0, "at least one gateway url has to be provided");
 
         /**
          * Set the new verifier for the given node.
          */
-        CcipVerifier memory _ccipVerifier = CcipVerifier(url, ICcipResponseVerifier(verifierAddress));
+        CcipVerifier memory _ccipVerifier = CcipVerifier(urls, ICcipResponseVerifier(verifierAddress));
         ccipVerifier[node] = _ccipVerifier;
 
-        emit VerifierAdded(node, verifierAddress, url);
+        emit VerifierAdded(node, verifierAddress, urls);
     }
 
     /**
@@ -191,9 +191,8 @@ contract CcipResolver is IExtendedResolver, IContextResolver, SupportsInterface 
          * The gateway url that should handle the OffchainLookup.
          * @dev At the moement we just support a single URL. Maybe we should support multiple URLs in the future. Before entering the audit
          */
-        string[] memory urls = new string[](1);
-        urls[0] = _verifier.gatewayUrl;
-        revert OffchainLookup(address(this), urls, callData, CcipResolver.resolveWithProof.selector, callData);
+
+        revert OffchainLookup(address(this), _verifier.gatewayUrls, callData, CcipResolver.resolveWithProof.selector, callData);
     }
 
     /**

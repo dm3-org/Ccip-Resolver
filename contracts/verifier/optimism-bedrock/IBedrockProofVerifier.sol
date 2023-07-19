@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.15;
+pragma solidity 0.8.17;
 import {Types} from "@eth-optimism/contracts-bedrock/contracts/libraries/Types.sol";
 
 interface IBedrockProofVerifier {

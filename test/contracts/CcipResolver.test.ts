@@ -92,7 +92,7 @@ describe("CCIpResolver Test", () => {
     describe("setVerifierForDomain", () => {
         it("reverts if node is 0x0", async () => {
             await ccipResolver
-                .setVerifierForDomain(ethers.constants.HashZero, bedrockCcipVerifier.address, "http://localhost:8080/{sender}/{data}")
+                .setVerifierForDomain(ethers.constants.HashZero, bedrockCcipVerifier.address, ["http://localhost:8080/{sender}/{data}"])
                 .then((res) => {
                     expect.fail("Should have thrown an error");
                 })
@@ -106,7 +106,7 @@ describe("CCIpResolver Test", () => {
                 .setVerifierForDomain(
                     ethers.utils.namehash("alice.eth"),
                     ethers.constants.AddressZero,
-                    "http://localhost:8080/{sender}/{data}"
+                    ["http://localhost:8080/{sender}/{data}"]
                 )
                 .then((res) => {
                     expect.fail("Should have thrown an error");
@@ -120,7 +120,7 @@ describe("CCIpResolver Test", () => {
                 .setVerifierForDomain(
                     ethers.utils.namehash("vitalik.eth"),
                     bedrockCcipVerifier.address,
-                    "http://localhost:8080/{sender}/{data}"
+                    ["http://localhost:8080/{sender}/{data}"]
                 )
                 .then((res) => {
                     expect.fail("Should have thrown an error");
@@ -137,7 +137,7 @@ describe("CCIpResolver Test", () => {
                     ethers.utils.namehash("alice.eth"),
                     // Alice is an EOA, so this is not a valid resolver
                     bedrockProofVerifier.address,
-                    "http://localhost:8080/{sender}/{data}"
+                    ["http://localhost:8080/{sender}/{data}"]
                 )
                 .then((res) => {
                     expect.fail("Should have thrown an error");
@@ -154,14 +154,14 @@ describe("CCIpResolver Test", () => {
                     ethers.utils.namehash("alice.eth"),
                     // Alice is an EOA, so this is not a valid resolver
                     bedrockCcipVerifier.address,
-                    ""
+                    []
                 )
                 .then((res) => {
                     expect.fail("Should have thrown an error");
                 })
                 .catch((e) => {
                     console.log(e);
-                    expect(e.message).to.contains("url is empty");
+                    expect(e.message).to.contains("at least one gateway url has to be provided");
                 });
         });
         it("adds verifier + event contains node, url, and resolverAddress", async () => {
@@ -169,17 +169,17 @@ describe("CCIpResolver Test", () => {
                 ethers.utils.namehash("alice.eth"),
                 // Alice is an EOA, so this is not a valid resolver
                 bedrockCcipVerifier.address,
-                "http://localhost:8080/{sender}/{data}"
+                ["http://localhost:8080/{sender}/{data}"]
             );
 
             const receipt = await tx.wait();
 
             const [ResolverAddedEvent] = receipt.events;
 
-            const [node, resolverAddress, gatewayUrl] = ResolverAddedEvent.args;
+            const [node, resolverAddress, gatewayUrls] = ResolverAddedEvent.args;
 
             expect(node).to.equal(ethers.utils.namehash("alice.eth"));
-            expect(gatewayUrl).to.equal("http://localhost:8080/{sender}/{data}");
+            expect(gatewayUrls).to.eql(["http://localhost:8080/{sender}/{data}"]);
             expect(resolverAddress).to.equal(bedrockCcipVerifier.address);
         });
         it("adds verifier + event contains node, url, and resolverAddress for NameWrapperProfile", async () => {
@@ -187,17 +187,17 @@ describe("CCIpResolver Test", () => {
                 ethers.utils.namehash("namewrapper.alice.eth"),
                 // Alice is an EOA, so this is not a valid resolver
                 bedrockCcipVerifier.address,
-                "http://localhost:8080/{sender}/{data}"
+                ["http://localhost:8080/{sender}/{data}"]
             );
 
             const receipt = await tx.wait();
 
             const [ResolverAddedEvent] = receipt.events;
 
-            const [node, resolverAddress, gatewayUrl] = ResolverAddedEvent.args;
+            const [node, resolverAddress, gatewayUrls] = ResolverAddedEvent.args;
 
             expect(node).to.equal(ethers.utils.namehash("namewrapper.alice.eth"));
-            expect(gatewayUrl).to.equal("http://localhost:8080/{sender}/{data}");
+            expect(gatewayUrls).to.eql(["http://localhost:8080/{sender}/{data}"]);
             expect(resolverAddress).to.equal(bedrockCcipVerifier.address);
         });
 
@@ -214,7 +214,7 @@ describe("CCIpResolver Test", () => {
                     ethers.utils.namehash("alice.eth"),
                     // Alice is an EOA, so this is not a valid resolver
                     bedrockCcipVerifier.address,
-                    "http://localhost:8080/{sender}/{data}"
+                    ["http://localhost:8080/{sender}/{data}"]
                 );
 
                 const iface = new ethers.utils.Interface([
@@ -240,7 +240,7 @@ describe("CCIpResolver Test", () => {
                 const [sender, urls, callData, callbackFunction, extraData] = decodedError;
 
                 expect(sender).to.equal(ccipResolver.address);
-                expect(urls[0]).to.equal("http://localhost:8080/{sender}/{data}");
+                expect(urls).to.eql(["http://localhost:8080/{sender}/{data}"]);
                 expect(callData).to.equal(iface.encodeFunctionData("resolveWithContext", [name, data, alice.address]));
                 expect(callbackFunction).to.equal(iface.getSighash("resolveWithProof"));
                 expect(extraData).to.equal(iface.encodeFunctionData("resolveWithContext", [name, data, alice.address]));
@@ -250,7 +250,7 @@ describe("CCIpResolver Test", () => {
                     ethers.utils.namehash("alice.eth"),
                     // Alice is an EOA, so this is not a valid resolver
                     bedrockCcipVerifier.address,
-                    "http://localhost:8080/{sender}/{data}"
+                    ["http://localhost:8080/{sender}/{data}"]
                 );
 
                 const iface = new ethers.utils.Interface([
@@ -276,7 +276,7 @@ describe("CCIpResolver Test", () => {
                 const [sender, urls, callData, callbackFunction, extraData] = decodedError;
 
                 expect(sender).to.equal(ccipResolver.address);
-                expect(urls[0]).to.equal("http://localhost:8080/{sender}/{data}");
+                expect(urls).to.eql(["http://localhost:8080/{sender}/{data}"]);
                 expect(callData).to.equal(iface.encodeFunctionData("resolveWithContext", [name, data, alice.address]));
                 expect(callbackFunction).to.equal(iface.getSighash("resolveWithProof"));
                 expect(extraData).to.equal(iface.encodeFunctionData("resolveWithContext", [name, data, alice.address]));
@@ -286,7 +286,7 @@ describe("CCIpResolver Test", () => {
                     ethers.utils.namehash("namewrapper.alice.eth"),
                     // Alice is an EOA, so this is not a valid resolver
                     bedrockCcipVerifier.address,
-                    "http://localhost:8080/{sender}/{data}"
+                    ["http://localhost:8080/{sender}/{data}"]
                 );
 
                 const iface = new ethers.utils.Interface([
@@ -312,7 +312,7 @@ describe("CCIpResolver Test", () => {
                 const [sender, urls, callData, callbackFunction, extraData] = decodedError;
 
                 expect(sender).to.equal(ccipResolver.address);
-                expect(urls[0]).to.equal("http://localhost:8080/{sender}/{data}");
+                expect(urls).to.eql(["http://localhost:8080/{sender}/{data}"]);
                 expect(callData).to.equal(iface.encodeFunctionData("resolveWithContext", [name, data, alice.address]));
                 expect(callbackFunction).to.equal(iface.getSighash("resolveWithProof"));
                 expect(extraData).to.equal(iface.encodeFunctionData("resolveWithContext", [name, data, alice.address]));
@@ -325,7 +325,7 @@ describe("CCIpResolver Test", () => {
                     .setVerifierForDomain(
                         ethers.utils.namehash("alice.eth"),
                         verifierWithoutCallbackSelector.address,
-                        "http://localhost:8080/{sender}/{data}"
+                        ["http://localhost:8080/{sender}/{data}"]
                     );
 
                 const iface = new ethers.utils.Interface([
@@ -353,7 +353,7 @@ describe("CCIpResolver Test", () => {
                     ethers.utils.namehash("alice.eth"),
                     // Alice is an EOA, so this is not a valid resolver
                     bedrockCcipVerifier.address,
-                    "http://localhost:8080/{sender}/{data}"
+                    ["http://localhost:8080/{sender}/{data}"]
                 );
 
                 const iface = new ethers.utils.Interface([
@@ -381,7 +381,7 @@ describe("CCIpResolver Test", () => {
                     ethers.utils.namehash("alice.eth"),
                     // Alice is an EOA, so this is not a valid resolver
                     signitureVerifier.address,
-                    "http://localhost:8080/{sender}/{data}"
+                    ["http://localhost:8080/{sender}/{data}"]
                 );
 
                 const iface = new ethers.utils.Interface([
@@ -406,7 +406,7 @@ describe("CCIpResolver Test", () => {
                     ethers.utils.namehash("alice.eth"),
                     // Alice is an EOA, so this is not a valid resolver
                     signitureVerifier.address,
-                    "http://localhost:8080/{sender}/{data}"
+                    ["http://localhost:8080/{sender}/{data}"]
                 );
 
                 const iface = new ethers.utils.Interface([
