@@ -98,7 +98,7 @@ describe("Optimism Bedrock Handler", () => {
 
         await ccipResolver
             .connect(alice)
-            .setVerifierForDomain(ethers.utils.namehash("alice.eth"), bedrockCcipVerifier.address, "http://test/{sender}/{data}");
+            .setVerifierForDomain(ethers.utils.namehash("alice.eth"), bedrockCcipVerifier.address, ["http://test/{sender}/{data}"]);
 
         const { callData } = await getGateWayUrl("alice.eth", "foo", ccipResolver);
 
@@ -144,7 +144,7 @@ describe("Optimism Bedrock Handler", () => {
 
         await ccipResolver
             .connect(alice)
-            .setVerifierForDomain(ethers.utils.namehash("alice.eth"), bedrockCcipVerifier.address, "http://test/{sender}/{data}");
+            .setVerifierForDomain(ethers.utils.namehash("alice.eth"), bedrockCcipVerifier.address, ["http://test/{sender}/{data}"]);
 
         const { callData } = await getGateWayUrl("alice.eth", "foo", ccipResolver);
 
