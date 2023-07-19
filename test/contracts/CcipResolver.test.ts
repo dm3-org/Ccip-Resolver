@@ -3,7 +3,6 @@ import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { expect } from "chai";
 import { error } from "console";
 import { ethers } from "ethers";
-import { signAndEncodeResponse } from "../../gateway/handler/signing/signAndEncodeResponse";
 import { ethers as hreEthers } from "hardhat";
 import {
     BedrockCcipVerifier,
@@ -19,11 +18,13 @@ import {
     SignatureCcipVerifier__factory,
 } from "typechain";
 
+import { signAndEncodeResponse } from "../../gateway/handler/signing/signAndEncodeResponse";
+
 describe("CCIpResolver Test", () => {
     let owner: SignerWithAddress;
     // Example user alice
     let alice: SignerWithAddress;
-    //Singer for signing responses
+    // Singer for signing responses
     let signer: ethers.Wallet;
 
     // ENS
@@ -39,7 +40,7 @@ describe("CCIpResolver Test", () => {
     let bedrockCcipVerifier: BedrockCcipVerifier;
 
     let signitureVerifier: SignatureCcipVerifier;
-    //Dummy contract to test if the reverts when callback selector is not supported
+    // Dummy contract to test if the reverts when callback selector is not supported
     let verifierWithoutCallbackSelector: FakeContract<CcipResponseVerifier>;
 
     beforeEach(async () => {
@@ -69,9 +70,8 @@ describe("CCIpResolver Test", () => {
             "0x5FbDB2315678afecb367f032d93F642f64180aa3"
         );
 
-
         verifierWithoutCallbackSelector = (await smock.fake("CcipResponseVerifier")) as FakeContract<CcipResponseVerifier>;
-        //Supports CCIPVerifierInterface
+        // Supports CCIPVerifierInterface
         verifierWithoutCallbackSelector.supportsInterface.whenCalledWith("0xf3af9cc4").returns(true);
 
         const OptimismResolverFactory = await hreEthers.getContractFactory("CcipResolver");
@@ -82,15 +82,11 @@ describe("CCIpResolver Test", () => {
             "http://localhost:8080/graphql"
         )) as CcipResolver;
 
+        const SignatureCcipVerifierFactory = (await hreEthers.getContractFactory(
+            "SignatureCcipVerifier"
+        )) as SignatureCcipVerifier__factory;
 
-        const SignatureCcipVerifierFactory = (await hreEthers.getContractFactory("SignatureCcipVerifier")) as SignatureCcipVerifier__factory;
-
-        signitureVerifier = await SignatureCcipVerifierFactory.deploy(
-            owner.address,
-            ccipResolver.address,
-            [signer.address],
-        )
-
+        signitureVerifier = await SignatureCcipVerifierFactory.deploy(owner.address, ccipResolver.address, [signer.address]);
     });
 
     describe("setVerifierForDomain", () => {
@@ -208,11 +204,11 @@ describe("CCIpResolver Test", () => {
         describe("resolve", () => {
             it("reverts if requested node has no verifier", async () => {
                 try {
-                    await ccipResolver.resolve(ethers.utils.dnsEncode("foo.eth"), "0x")
+                    await ccipResolver.resolve(ethers.utils.dnsEncode("foo.eth"), "0x");
                 } catch (e) {
-                    expect(e.errorName).to.equal("UnknownVerfier")
+                    expect(e.errorName).to.equal("UnknownVerfier");
                 }
-            })
+            });
             it("returns Offchain lookup for parent domain", async () => {
                 await ccipResolver.connect(alice).setVerifierForDomain(
                     ethers.utils.namehash("alice.eth"),
@@ -227,7 +223,7 @@ describe("CCIpResolver Test", () => {
                     "error OffchainLookup(address sender, string[] urls, bytes callData, bytes4 callbackFunction, bytes extraData)",
                     "function resolveWithContext(bytes calldata name,bytes calldata data,bytes calldata context) external view returns (bytes memory result)",
 
-                    "function resolveWithProof(bytes calldata response, bytes calldata extraData) external view returns (bytes memory)"
+                    "function resolveWithProof(bytes calldata response, bytes calldata extraData) external view returns (bytes memory)",
                 ]);
 
                 const name = ethers.utils.dnsEncode("alice.eth");
@@ -263,7 +259,7 @@ describe("CCIpResolver Test", () => {
                     "error OffchainLookup(address sender, string[] urls, bytes callData, bytes4 callbackFunction, bytes extraData)",
                     "function resolveWithContext(bytes calldata name,bytes calldata data,bytes calldata context) external view returns (bytes memory result)",
 
-                    "function resolveWithProof(bytes calldata response, bytes calldata extraData) external view returns (bytes memory)"
+                    "function resolveWithProof(bytes calldata response, bytes calldata extraData) external view returns (bytes memory)",
                 ]);
 
                 const name = ethers.utils.dnsEncode("sub.alice.eth");
@@ -299,7 +295,7 @@ describe("CCIpResolver Test", () => {
                     "error OffchainLookup(address sender, string[] urls, bytes callData, bytes4 callbackFunction, bytes extraData)",
                     "function resolveWithContext(bytes calldata name,bytes calldata data,bytes calldata context) external view returns (bytes memory result)",
 
-                    "function resolveWithProof(bytes calldata response, bytes calldata extraData) external view returns (bytes memory)"
+                    "function resolveWithProof(bytes calldata response, bytes calldata extraData) external view returns (bytes memory)",
                 ]);
 
                 const name = ethers.utils.dnsEncode("namewrapper.alice.eth");
@@ -324,16 +320,17 @@ describe("CCIpResolver Test", () => {
         });
         describe("resolveWithProof", () => {
             it("Revert if ccip verifier returns no callback selector", async () => {
-                await ccipResolver.connect(alice).setVerifierForDomain(
-                    ethers.utils.namehash("alice.eth"),
-                    verifierWithoutCallbackSelector.address,
-                    "http://localhost:8080/{sender}/{data}"
-                );
+                await ccipResolver
+                    .connect(alice)
+                    .setVerifierForDomain(
+                        ethers.utils.namehash("alice.eth"),
+                        verifierWithoutCallbackSelector.address,
+                        "http://localhost:8080/{sender}/{data}"
+                    );
 
                 const iface = new ethers.utils.Interface([
                     "function addr(bytes32)",
                     "function resolveWithContext(bytes calldata name,bytes calldata data,bytes calldata context) external view returns (bytes memory result)",
-
                 ]);
 
                 const name = ethers.utils.dnsEncode("alice.eth");
@@ -344,13 +341,13 @@ describe("CCIpResolver Test", () => {
                 let errorString;
 
                 try {
-                    await ccipResolver.resolveWithProof(response, extraData)
+                    await ccipResolver.resolveWithProof(response, extraData);
                 } catch (e) {
                     errorString = e.errorArgs[0];
                 }
 
-                expect(errorString).to.equal("No callback selector found")
-            })
+                expect(errorString).to.equal("No callback selector found");
+            });
             it("Revert if resolveWithProofCall fails", async () => {
                 await ccipResolver.connect(alice).setVerifierForDomain(
                     ethers.utils.namehash("alice.eth"),
@@ -362,7 +359,6 @@ describe("CCIpResolver Test", () => {
                 const iface = new ethers.utils.Interface([
                     "function addr(bytes32)",
                     "function resolveWithContext(bytes calldata name,bytes calldata data,bytes calldata context) external view returns (bytes memory result)",
-
                 ]);
 
                 const name = ethers.utils.dnsEncode("alice.eth");
@@ -373,13 +369,13 @@ describe("CCIpResolver Test", () => {
                 let errorString;
 
                 try {
-                    await ccipResolver.resolveWithProof(response, extraData)
+                    await ccipResolver.resolveWithProof(response, extraData);
                 } catch (e) {
                     errorString = e.errorArgs[0];
                 }
 
-                expect(errorString).to.equal("staticcall to verifier failed")
-            })
+                expect(errorString).to.equal("staticcall to verifier failed");
+            });
             it("ResolveWithProf for parentDomain using verifier ", async () => {
                 await ccipResolver.connect(alice).setVerifierForDomain(
                     ethers.utils.namehash("alice.eth"),
@@ -391,7 +387,6 @@ describe("CCIpResolver Test", () => {
                 const iface = new ethers.utils.Interface([
                     "function addr(bytes32)",
                     "function resolveWithContext(bytes calldata name,bytes calldata data,bytes calldata context) external view returns (bytes memory result)",
-
                 ]);
 
                 const result = ethers.utils.defaultAbiCoder.encode(["bytes"], [alice.address]);
@@ -399,13 +394,13 @@ describe("CCIpResolver Test", () => {
                 const name = ethers.utils.dnsEncode("alice.eth");
                 const data = iface.encodeFunctionData("addr", [ethers.utils.namehash("alice.eth")]);
                 const extraData = iface.encodeFunctionData("resolveWithContext", [name, data, alice.address]);
-                const response = await signAndEncodeResponse(signer, ccipResolver.address, result, extraData)
+                const response = await signAndEncodeResponse(signer, ccipResolver.address, result, extraData);
 
-                const encodedResponse = await ccipResolver.resolveWithProof(response, extraData)
-                const [decodedResponse] = ethers.utils.defaultAbiCoder.decode(["bytes"], encodedResponse)
+                const encodedResponse = await ccipResolver.resolveWithProof(response, extraData);
+                const [decodedResponse] = ethers.utils.defaultAbiCoder.decode(["bytes"], encodedResponse);
 
-                expect(ethers.utils.getAddress(decodedResponse)).to.equal(alice.address)
-            })
+                expect(ethers.utils.getAddress(decodedResponse)).to.equal(alice.address);
+            });
             it("ResolveWithProf for sub domain using verifier ", async () => {
                 await ccipResolver.connect(alice).setVerifierForDomain(
                     ethers.utils.namehash("alice.eth"),
@@ -417,7 +412,6 @@ describe("CCIpResolver Test", () => {
                 const iface = new ethers.utils.Interface([
                     "function addr(bytes32)",
                     "function resolveWithContext(bytes calldata name,bytes calldata data,bytes calldata context) external view returns (bytes memory result)",
-
                 ]);
 
                 const result = ethers.utils.defaultAbiCoder.encode(["bytes"], [alice.address]);
@@ -425,14 +419,13 @@ describe("CCIpResolver Test", () => {
                 const name = ethers.utils.dnsEncode("foo.alice.eth");
                 const data = iface.encodeFunctionData("addr", [ethers.utils.namehash("foo.alice.eth")]);
                 const extraData = iface.encodeFunctionData("resolveWithContext", [name, data, alice.address]);
-                const response = await signAndEncodeResponse(signer, ccipResolver.address, result, extraData)
+                const response = await signAndEncodeResponse(signer, ccipResolver.address, result, extraData);
 
-                const encodedResponse = await ccipResolver.resolveWithProof(response, extraData)
-                const [decodedResponse] = ethers.utils.defaultAbiCoder.decode(["bytes"], encodedResponse)
+                const encodedResponse = await ccipResolver.resolveWithProof(response, extraData);
+                const [decodedResponse] = ethers.utils.defaultAbiCoder.decode(["bytes"], encodedResponse);
 
-                expect(ethers.utils.getAddress(decodedResponse)).to.equal(alice.address)
-            })
-
-        })
+                expect(ethers.utils.getAddress(decodedResponse)).to.equal(alice.address);
+            });
+        });
     });
 });

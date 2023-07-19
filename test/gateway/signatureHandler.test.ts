@@ -100,7 +100,7 @@ describe("Signature Handler", () => {
         const response = await request(ccipApp).get(`/${sender}/${callData}`).send();
 
         expect(response.status).to.equal(200);
-        console.log("check")
+        console.log("check");
         const resultString = await signatureVerifier.resolveWithProof(response.body.data, callData);
 
         expect(resultString).to.equal(result);
