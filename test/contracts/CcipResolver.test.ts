@@ -103,11 +103,9 @@ describe("CCIpResolver Test", () => {
         it("reverts if resolverAddress is 0x0", async () => {
             await ccipResolver
                 .connect(alice)
-                .setVerifierForDomain(
-                    ethers.utils.namehash("alice.eth"),
-                    ethers.constants.AddressZero,
-                    ["http://localhost:8080/{sender}/{data}"]
-                )
+                .setVerifierForDomain(ethers.utils.namehash("alice.eth"), ethers.constants.AddressZero, [
+                    "http://localhost:8080/{sender}/{data}",
+                ])
                 .then((res) => {
                     expect.fail("Should have thrown an error");
                 })
@@ -117,11 +115,9 @@ describe("CCIpResolver Test", () => {
         });
         it("reverts if msg.sender is not the profile owner", async () => {
             await ccipResolver
-                .setVerifierForDomain(
-                    ethers.utils.namehash("vitalik.eth"),
-                    bedrockCcipVerifier.address,
-                    ["http://localhost:8080/{sender}/{data}"]
-                )
+                .setVerifierForDomain(ethers.utils.namehash("vitalik.eth"), bedrockCcipVerifier.address, [
+                    "http://localhost:8080/{sender}/{data}",
+                ])
                 .then((res) => {
                     expect.fail("Should have thrown an error");
                 })
@@ -322,11 +318,9 @@ describe("CCIpResolver Test", () => {
             it("Revert if ccip verifier returns no callback selector", async () => {
                 await ccipResolver
                     .connect(alice)
-                    .setVerifierForDomain(
-                        ethers.utils.namehash("alice.eth"),
-                        verifierWithoutCallbackSelector.address,
-                        ["http://localhost:8080/{sender}/{data}"]
-                    );
+                    .setVerifierForDomain(ethers.utils.namehash("alice.eth"), verifierWithoutCallbackSelector.address, [
+                        "http://localhost:8080/{sender}/{data}",
+                    ]);
 
                 const iface = new ethers.utils.Interface([
                     "function addr(bytes32)",
