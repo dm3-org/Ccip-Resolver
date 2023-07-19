@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.15;
+pragma solidity 0.8.15;
 
 import {CcipResponseVerifier} from "../CcipResponseVerifier.sol";
 import {IBedrockProofVerifier} from "./IBedrockProofVerifier.sol";
