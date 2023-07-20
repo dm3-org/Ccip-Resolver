@@ -17,8 +17,14 @@ export function ccipGateway(configReader: ConfigReader) {
         const calldata = req.params.calldata.replace(".json", "");
 
         try {
+            // eslint-disable max-line-length
             /**
-             * To get the right handler for a resolverAddr, we need to look up the config entry for that resolverAddr. The host of the gateway has to specifiy in the CONFIG environment variable which config file to use. The config file is a JSON file that maps resolverAddr to config entries. The config entries are either signing or optimism-bedrock config entries. The config entries contain the handlerUrl, which is the URL of the handler that should be used for that resolverAddr.
+             * To get the right handler for a resolverAddr, we need to look up the config entry
+             * for that resolverAddr.
+             * The host of the gateway has to specifiy in the CONFIG environment variable which config file to use.
+             * The config file is a JSON file that maps resolverAddr to config entries. The config entries are either
+             * signing or optimism-bedrock config entries. The config entries contain the handlerUrl,
+             * which is the URL of the handler that should be used for that resolverAddr.
              */
             const configEntry = configReader.getConfigForResolver(resolverAddr);
 
@@ -34,7 +40,8 @@ export function ccipGateway(configReader: ConfigReader) {
                 return;
             }
             /**
-             *To get the data from the offchain resolver we make a request to the corosspeding handlerUrl. That handler has to return the data in the format that the resolver expects.
+             * To get the data from the offchain resolver we make a request to the corosspeding handlerUrl.
+             * That handler has to return the data in the format that the resolver expects.
              */
             switch (configEntry.type) {
                 case "signing": {
