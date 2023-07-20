@@ -46,7 +46,7 @@ export class ProofService {
 
     public async createProof(target: string, slot: string, layout: StorageLayout = StorageLayout.DYNAMIC): Promise<CreateProofResult> {
         /**
-         * use the most recent block,posted to L1, to build the proof 
+         * use the most recent block,posted to L1, to build the proof
          */
         const { l2OutputIndex, number, stateRoot, hash } = await this.getLatestProposedBlock();
 
@@ -93,7 +93,7 @@ export class ProofService {
         /**
          * Get the latest ouput from the L2Oracle. We're building the proove with this batch
          * We go 5 batches backwards to avoid errors like delays between nodes
-         * 
+         *
          */
 
         const l2OutputIndex = (await this.crossChainMessenger.contracts.l1.L2OutputOracle.latestOutputIndex()).sub(5);
@@ -233,8 +233,8 @@ export class ProofService {
         const slots = [...Array(totalSlots).keys()].map((i) => BigNumber.from(firstSlot).add(i).toHexString());
 
         /*
-        * After we know every slot that has to be proven we can call eth_getProof. 
-        */
+         * After we know every slot that has to be proven we can call eth_getProof.
+         */
         const { accountProof, storageProof, storageHash } = await this.makeGetProofRpcCall(resolverAddr, slots, blocknr);
 
         return {

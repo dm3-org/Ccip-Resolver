@@ -21,15 +21,15 @@ export async function signingHandler(calldata: string, resolverAddr: string, con
     try {
         result = (await axios.get(`${configEntry.handlerUrl}/${resolverAddr}/${calldata}`)).data;
     } catch (e) {
-        throw "signingHandler : Invalid data source response";
+        throw new Error("signingHandler : Invalid data source response");
     }
     /**
      * Read the private key from the environment variable.
      */
-    const singerPk = process.env.SIGNER_PRIVATE_KEY
+    const singerPk = process.env.SIGNER_PRIVATE_KEY;
 
     if (!singerPk) {
-        throw "signingHandler : no private key provided";
+        throw new Error("signingHandler : no private key provided");
     }
 
     /**
