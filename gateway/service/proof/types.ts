@@ -1,5 +1,8 @@
 import { StorageLayout } from "./ProofService";
 
+/**
+ * Response of the eth_getProof RPC method.
+ */
 export interface EthGetProofResponse {
     accountProof: string;
     balance: string;
@@ -12,7 +15,9 @@ export interface EthGetProofResponse {
         proof: string[];
     }[];
 }
-
+/**
+ * The ProofInputObject that will be passed to the BedrockProofVerifier contract
+ */
 export interface ProofInputObject {
     layout: StorageLayout;
     target: string;

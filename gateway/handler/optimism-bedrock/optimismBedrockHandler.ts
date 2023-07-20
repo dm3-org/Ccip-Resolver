@@ -6,7 +6,12 @@ import { getProofParamType } from "../../service/encoding/proof/getProofParamTyp
 import { ProofService } from "../../service/proof/ProofService";
 
 export async function optimismBedrockHandler(calldata: string, resolverAddr: string, configEntry: OptimismBedrockConfigEntry) {
-    // Data source has to return target,
+    /**
+     * The optimism-handler has to return the following data:
+     * 1. The target contract address. This is the contract deployed on Optimism that contains the state we want to resolve.
+     * 2. The slot of the state we want to resolve.
+     * 3. The layout of the state we want to resolve. This can be either fixed(address,bytes32,uint256) or dynamic(string,bytes,array).
+     */
     const { target, slot, layout, result } = (await axios.get(`${configEntry.handlerUrl}/${resolverAddr}/${calldata}`)).data;
 
     if (!target || !slot || layout === undefined) {
@@ -16,7 +21,9 @@ export async function optimismBedrockHandler(calldata: string, resolverAddr: str
     const l1Provider = new ethers.providers.StaticJsonRpcProvider(configEntry.l1ProviderUrl);
     const l2Provider = new ethers.providers.StaticJsonRpcProvider(configEntry.l2ProviderUrl);
 
-    // TODO initialize once globally
+    /**
+     * Detect the network of the providers. This is required to create the proof.
+     */
     await Promise.all([l1Provider.detectNetwork(), l2Provider.detectNetwork()]);
 
     // Input arg for resolveWithProof
