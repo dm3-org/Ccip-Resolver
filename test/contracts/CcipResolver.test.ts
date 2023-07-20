@@ -66,27 +66,32 @@ describe("CCIpResolver Test", () => {
         const BedrockCcipVerifierFactory = (await hreEthers.getContractFactory("BedrockCcipVerifier")) as BedrockCcipVerifier__factory;
 
         bedrockCcipVerifier = await BedrockCcipVerifierFactory.deploy(
+            owner.address,
+            "http://localhost:8081/graphql",
             bedrockProofVerifier.address,
             "0x5FbDB2315678afecb367f032d93F642f64180aa3"
         );
 
         verifierWithoutCallbackSelector = (await smock.fake("CcipResponseVerifier")) as FakeContract<CcipResponseVerifier>;
         // Supports CCIPVerifierInterface
-        verifierWithoutCallbackSelector.supportsInterface.whenCalledWith("0xf3af9cc4").returns(true);
+        verifierWithoutCallbackSelector.supportsInterface.whenCalledWith("0x79f6f27a").returns(true);
 
         const OptimismResolverFactory = await hreEthers.getContractFactory("CcipResolver");
         ccipResolver = (await OptimismResolverFactory.deploy(
-            owner.address,
             ensRegistry.address,
             nameWrapper.address,
-            "http://localhost:8080/graphql"
         )) as CcipResolver;
 
         const SignatureCcipVerifierFactory = (await hreEthers.getContractFactory(
             "SignatureCcipVerifier"
         )) as SignatureCcipVerifier__factory;
 
-        signitureVerifier = await SignatureCcipVerifierFactory.deploy(owner.address, ccipResolver.address, [signer.address]);
+        signitureVerifier = await SignatureCcipVerifierFactory.deploy(
+            owner.address,
+            "http://localhost:8081/graphql",
+            ccipResolver.address,
+            [signer.address]
+        );
     });
 
     describe("setVerifierForDomain", () => {

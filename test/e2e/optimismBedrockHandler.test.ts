@@ -64,6 +64,8 @@ describe("Optimism Bedrock Handler", () => {
         const BedrockCcipVerifierFactory = (await hreEthers.getContractFactory("BedrockCcipVerifier")) as BedrockCcipVerifier__factory;
 
         bedrockCcipVerifier = await BedrockCcipVerifierFactory.deploy(
+            owner.address,
+            "http://localhost:8081/graphql",
             bedrockProofVerifier.address,
             "0x5FbDB2315678afecb367f032d93F642f64180aa3"
         );

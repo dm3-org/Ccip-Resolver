@@ -29,8 +29,6 @@ contract CcipResolver is IExtendedResolver, IContextResolver, SupportsInterface 
      *   --------------------------------------------------
      */
 
-    event GraphQlUrlChanged(string newGraphQlUrl);
-    event OwnerChanged(address newOwner);
     event VerifierAdded(bytes32 indexed node, address verifierAddress, string[] gatewayUrls);
     /**
      *   --------------------------------------------------
@@ -50,9 +48,6 @@ contract CcipResolver is IExtendedResolver, IContextResolver, SupportsInterface 
     ENSRegistry public immutable ensRegistry;
     INameWrapper public immutable nameWrapper;
 
-    address public owner;
-    string public graphqlUrl;
-
     mapping(bytes32 => CcipVerifier) public ccipVerifier;
 
     /**
@@ -62,57 +57,20 @@ contract CcipResolver is IExtendedResolver, IContextResolver, SupportsInterface 
      */
 
     constructor(
-        //The owner of the resolver
-        address _owner,
         //The ENS registry
         ENSRegistry _ensRegistry,
         //The name wrapper
-        INameWrapper _nameWrapper,
-        //The graphQl Url
-        string memory _graphqlUrl
+        INameWrapper _nameWrapper
     ) {
-        owner = _owner;
         ensRegistry = _ensRegistry;
         nameWrapper = _nameWrapper;
-        graphqlUrl = _graphqlUrl;
     }
 
     /**
      *   --------------------------------------------------
-     *    Modifier
+     *    External functions
      *   --------------------------------------------------
      */
-
-    modifier onlyOwner() {
-        require(msg.sender == owner, "only owner");
-        _;
-    }
-
-    /**
-     *   --------------------------------------------------
-     *    External Functions
-     *   --------------------------------------------------
-     */
-
-    /**
-     * @notice Set the GraphQL endpoint URL for the contract
-     * @dev This function can only be called by the current owner.
-     * @param _graphqlUrl The new GraphQL endpoint URL to be set
-     */
-    function setGraphUrl(string memory _graphqlUrl) external onlyOwner {
-        graphqlUrl = _graphqlUrl;
-        emit GraphQlUrlChanged(_graphqlUrl);
-    }
-
-    /**
-     * @notice Set the new owner of the contract
-     * @dev This function can only be called by the current owner.
-     * @param _owner The address of the new owner
-     */
-    function setOwner(address _owner) external onlyOwner {
-        owner = _owner;
-        emit OwnerChanged(_owner);
-    }
 
     /**
      * @notice Sets a Cross-chain Information Protocol (CCIP) Verifier for a specific domain node.
@@ -241,20 +199,20 @@ contract CcipResolver is IExtendedResolver, IContextResolver, SupportsInterface 
     /**
      * @notice Get metadata about the CCIP Resolver
      * @dev This function provides metadata about the CCIP Resolver, including its name, coin type, GraphQL URL, storage type, and encoded information.
+     * @param name The domain name in format (dnsEncoded)
      * @return name The name of the resolver ("CCIP RESOLVER")
      * @return coinType Resolvers coin type (60 for Ethereum)
      * @return graphqlUrl The GraphQL URL used by the resolver
      * @return storageType Storage Type (0 for EVM)
      * @return encodedData Encoded data representing the resolver ("CCIP RESOLVER")
      */
-    function metadata() external view returns (string memory, uint256, string memory, uint8, bytes memory) {
-        return (
-            string("CCIP RESOLVER"), //The name of the resolver
-            uint256(60), //Resolvers coin type => Etheruem
-            graphqlUrl, //The GraphQl Url
-            uint8(0), //Storage Type 0 => EVM
-            abi.encodePacked("CCIP RESOLVER")
-        );
+    function metadata(bytes calldata name) external view returns (string memory, uint256, string memory, uint8, bytes memory) {
+        /**
+         * Get the verifier for the given name.
+         * reverts if no verifier was set in advance
+         */
+        (CcipVerifier memory _ccipVerifier, ) = getVerifierOfDomain(name);
+        return ICcipResponseVerifier(_ccipVerifier.verifierAddress).metadata(name);
     }
 
     /**
@@ -266,7 +224,7 @@ contract CcipResolver is IExtendedResolver, IContextResolver, SupportsInterface 
     /**
      * @notice Get the CCIP Verifier and node for a given domain name
      * @dev This function allows retrieving the CCIP Verifier and its associated node for a given domain name. For subdomians it will return the CCIP Verifier of the closest parent.
-     * @param name The domain name in bytes format (encoded as per the ENS specification)
+     * @param name The domain name in bytes (dnsEncoded)
      * @return _ccipVerifier The CCIP Verifier associated with the given domain name
      * @return node The node associated with the given domain name
      */

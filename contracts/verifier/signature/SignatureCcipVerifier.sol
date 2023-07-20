@@ -5,7 +5,6 @@ import {CcipResponseVerifier} from "../CcipResponseVerifier.sol";
 import {SignatureVerifier} from "./SignatureVerifier.sol";
 
 contract SignatureCcipVerifier is CcipResponseVerifier {
-    address public owner;
     address public immutable resolver;
 
     mapping(address => bool) public signers;
@@ -14,22 +13,12 @@ contract SignatureCcipVerifier is CcipResponseVerifier {
     event NewSigners(address[] signers);
     event SignerRemoved(address removedSinger);
 
-    modifier onlyOwner() {
-        require(msg.sender == owner, "only owner");
-        _;
-    }
-
-    /**
-     * @notice Set the new owner of the contract
-     * @dev This function can only be called by the current contract owner. It allows changing the ownership by setting a new owner address.
-     * @param _newOwner The address of the new owner to be set
-     */
-    function setOwner(address _newOwner) external onlyOwner {
-        owner = _newOwner;
-        emit NewOwner(owner);
-    }
-
-    constructor(address _owner, address _resolver, address[] memory _signers) {
+    constructor(
+        address _owner,
+        string memory graphQlUrl,
+        address _resolver,
+        address[] memory _signers
+    ) CcipResponseVerifier(owner, graphQlUrl) {
         owner = _owner;
         resolver = _resolver;
 
@@ -82,5 +71,25 @@ contract SignatureCcipVerifier is CcipResponseVerifier {
          */
         bytes memory decodedResponse = abi.decode(result, (bytes));
         return decodedResponse;
+    }
+
+    /**
+     * @notice Get metadata about the CCIP Resolver
+     * @dev This function provides metadata about the CCIP Resolver, including its name, coin type, GraphQL URL, storage type, and encoded information.
+     * @param name The domain name in format (dnsEncoded)
+     * @return name The name of the resolver ("CCIP RESOLVER")
+     * @return coinType Resolvers coin type (60 for Ethereum)
+     * @return graphqlUrl The GraphQL URL used by the resolver
+     * @return storageType Storage Type (0 for EVM)
+     * @return encodedData Encoded data representing the resolver ("CCIP RESOLVER")
+     */
+    function metadata(bytes calldata name) external view override returns (string memory, uint256, string memory, uint8, bytes memory) {
+        return (
+            string("Signature Ccip Resolver"), //The name of the resolver
+            uint256(60), //Resolvers coin type => Etheruem
+            this.graphqlUrl(), //The GraphQl Url
+            uint8(1), //Storage Type 0 => Offchain Databas
+            abi.encodePacked("Signature Ccip Resolver")
+        );
     }
 }
