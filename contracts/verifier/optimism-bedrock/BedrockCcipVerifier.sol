@@ -68,7 +68,7 @@ contract BedrockCcipVerifier is CcipResponseVerifier {
             uint256(420), //Resolvers coin type => Optimism
             this.graphqlUrl(), //The GraphQl Url
             uint8(0), //Storage Type 0 => EVM
-            abi.encodePacked("Signature Ccip Resolver")
+            abi.encodePacked("Bedrock Ccip Verifier")
         );
     }
 }
