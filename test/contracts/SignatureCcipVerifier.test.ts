@@ -1,22 +1,24 @@
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import exp from "constants";
+import { BigNumber, ethers } from "ethers";
+import { dnsEncode } from "ethers/lib/utils";
 import { ethers as hreEthers } from "hardhat";
 
+import { signAndEncodeResponse } from "../../gateway/handler/signing/signAndEncodeResponse";
 import { expect } from "../../test/chai-setup";
 import { SignatureCcipVerifier__factory } from "../../typechain";
-import { dnsEncode } from "ethers/lib/utils";
-import { BigNumber, ethers } from "ethers";
 
 describe("Signature Handler", () => {
     let owner: SignerWithAddress;
     let signer1: SignerWithAddress;
     let signer2: SignerWithAddress;
     let rando: SignerWithAddress;
+    let alice: SignerWithAddress;
     let resolver: SignerWithAddress;
 
     beforeEach(async () => {
         // Get signers
-        [owner, signer1, signer2, rando, resolver] = await hreEthers.getSigners();
+        [owner, signer1, signer2, rando, alice, resolver] = await hreEthers.getSigners();
     });
     describe("Constructor", () => {
         it("Initially set the owner,url and signers using the constructor ", async () => {
@@ -200,6 +202,55 @@ describe("Signature Handler", () => {
 
             const signerIsStillEnabled = await signatureCcipVerifier.signers(signer1.address);
             expect(signerIsStillEnabled).to.be.true;
+        });
+    });
+
+    describe("resolveWithProof", () => {
+        it("returns result if signed correctly ", async () => {
+            const signatureCcipVerifier = await new SignatureCcipVerifier__factory()
+                .connect(owner)
+                .deploy(owner.address, "http://localhost:8080/graphql", resolver.address, [signer1.address]);
+
+            const iface = new ethers.utils.Interface([
+                "function addr(bytes32)",
+                "function resolveWithContext(bytes calldata name,bytes calldata data,bytes calldata context) external view returns (bytes memory result)",
+            ]);
+
+            const result = ethers.utils.defaultAbiCoder.encode(["bytes"], [alice.address]);
+
+            const name = ethers.utils.dnsEncode("alice.eth");
+            const data = iface.encodeFunctionData("addr", [ethers.utils.namehash("alice.eth")]);
+            const extraData = iface.encodeFunctionData("resolveWithContext", [name, data, alice.address]);
+            const response = await signAndEncodeResponse(signer1, resolver.address, result, extraData);
+
+            const decodedResponse = await signatureCcipVerifier.resolveWithProof(response, extraData);
+            expect(ethers.utils.getAddress(decodedResponse)).to.equal(alice.address);
+        });
+
+        it("reverts if response was signed from rando ", async () => {
+            const signatureCcipVerifier = await new SignatureCcipVerifier__factory()
+                .connect(owner)
+                .deploy(owner.address, "http://localhost:8080/graphql", resolver.address, [signer1.address]);
+
+            const iface = new ethers.utils.Interface([
+                "function addr(bytes32)",
+                "function resolveWithContext(bytes calldata name,bytes calldata data,bytes calldata context) external view returns (bytes memory result)",
+            ]);
+
+            const result = ethers.utils.defaultAbiCoder.encode(["bytes"], [alice.address]);
+
+            const name = ethers.utils.dnsEncode("alice.eth");
+            const data = iface.encodeFunctionData("addr", [ethers.utils.namehash("alice.eth")]);
+            const extraData = iface.encodeFunctionData("resolveWithContext", [name, data, alice.address]);
+            const response = await signAndEncodeResponse(rando, resolver.address, result, extraData);
+
+            try {
+                await signatureCcipVerifier.resolveWithProof(response, extraData);
+                expect.fail("should have reverted");
+            } catch (e) {
+                console.log(e);
+                expect(e.reason).to.equal("SignatureVerifier: Invalid sigature");
+            }
         });
     });
     describe("Metadata", () => {

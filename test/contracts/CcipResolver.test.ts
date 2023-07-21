@@ -40,7 +40,7 @@ describe("CCIpResolver Test", () => {
     // Bedrock CCIP resolver
     let bedrockCcipVerifier: BedrockCcipVerifier;
 
-    let signitureVerifier: SignatureCcipVerifier;
+    let signatureVerifier: SignatureCcipVerifier;
     // Dummy contract to test if the reverts when callback selector is not supported
     let verifierWithoutCallbackSelector: FakeContract<CcipResponseVerifier>;
 
@@ -84,7 +84,7 @@ describe("CCIpResolver Test", () => {
             "SignatureCcipVerifier"
         )) as SignatureCcipVerifier__factory;
 
-        signitureVerifier = await SignatureCcipVerifierFactory.deploy(
+        signatureVerifier = await SignatureCcipVerifierFactory.deploy(
             owner.address,
             "http://localhost:8081/graphql",
             ccipResolver.address,
@@ -375,7 +375,7 @@ describe("CCIpResolver Test", () => {
             await ccipResolver.connect(alice).setVerifierForDomain(
                 ethers.utils.namehash("alice.eth"),
                 // Alice is an EOA, so this is not a valid resolver
-                signitureVerifier.address,
+                signatureVerifier.address,
                 ["http://localhost:8080/{sender}/{data}"]
             );
 
@@ -400,7 +400,7 @@ describe("CCIpResolver Test", () => {
             await ccipResolver.connect(alice).setVerifierForDomain(
                 ethers.utils.namehash("alice.eth"),
                 // Alice is an EOA, so this is not a valid resolver
-                signitureVerifier.address,
+                signatureVerifier.address,
                 ["http://localhost:8080/{sender}/{data}"]
             );
 
