@@ -8,7 +8,7 @@ import { signAndEncodeResponse } from "../../gateway/handler/signing/signAndEnco
 import { expect } from "../../test/chai-setup";
 import { SignatureCcipVerifier__factory } from "../../typechain";
 
-describe("Signature Handler", () => {
+describe("Signature Ccip Verifier", () => {
     let owner: SignerWithAddress;
     let signer1: SignerWithAddress;
     let signer2: SignerWithAddress;
@@ -128,7 +128,7 @@ describe("Signature Handler", () => {
 
             const isSigner2Enabled = await signatureCcipVerifier.signers(signer2.address);
 
-            expect(isSigner1Enabled && isSigner2Enabled).to.be.true;
+            expect(isSigner1Enabled && isSigner2Enabled).to.equal(true);
         });
         it("Rando can't add new signers", async () => {
             const signatureCcipVerifier = await new SignatureCcipVerifier__factory()
@@ -150,7 +150,7 @@ describe("Signature Handler", () => {
                 .deploy(owner.address, "http://localhost:8080/graphql", "Signature Ccip Resolver", resolver.address, [signer1.address]);
 
             const signerIsEnabled = await signatureCcipVerifier.signers(signer1.address);
-            expect(signerIsEnabled).to.be.true;
+            expect(signerIsEnabled).to.equal(true);
 
             const tx = await signatureCcipVerifier.removeSigners([signer1.address]);
 
@@ -162,7 +162,7 @@ describe("Signature Handler", () => {
 
             const signerIsStillEnabled = await signatureCcipVerifier.signers(signer1.address);
 
-            expect(signerIsStillEnabled).to.be.false;
+            expect(signerIsStillEnabled).to.equal(false);
         });
         it("Only remove signers that were already created before", async () => {
             const signatureCcipVerifier = await new SignatureCcipVerifier__factory()
@@ -170,7 +170,7 @@ describe("Signature Handler", () => {
                 .deploy(owner.address, "http://localhost:8080/graphql", "Signature Ccip Resolver", resolver.address, [signer1.address]);
 
             const signerIsEnabled = await signatureCcipVerifier.signers(signer1.address);
-            expect(signerIsEnabled).to.be.true;
+            expect(signerIsEnabled).to.equal(true);
 
             const tx = await signatureCcipVerifier.removeSigners([signer1.address, signer2.address]);
 
@@ -183,7 +183,7 @@ describe("Signature Handler", () => {
             expect(events[0].decode!(events[0].data)[0]).to.equal(signer1.address);
 
             const signerIsStillEnabled = await signatureCcipVerifier.signers(signer1.address);
-            expect(signerIsStillEnabled).to.be.false;
+            expect(signerIsStillEnabled).to.equal(false);
         });
         it("Rando can't remove signers", async () => {
             const signatureCcipVerifier = await new SignatureCcipVerifier__factory()
@@ -191,7 +191,7 @@ describe("Signature Handler", () => {
                 .deploy(owner.address, "http://localhost:8080/graphql", "Signature Ccip Resolver", resolver.address, [signer1.address]);
 
             const signerIsEnabled = await signatureCcipVerifier.signers(signer1.address);
-            expect(signerIsEnabled).to.be.true;
+            expect(signerIsEnabled).to.equal(true);
 
             try {
                 await signatureCcipVerifier.connect(rando).removeSigners([signer1.address]);
@@ -201,7 +201,7 @@ describe("Signature Handler", () => {
             }
 
             const signerIsStillEnabled = await signatureCcipVerifier.signers(signer1.address);
-            expect(signerIsStillEnabled).to.be.true;
+            expect(signerIsStillEnabled).to.equal(true);
         });
     });
 

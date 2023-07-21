@@ -64,11 +64,11 @@ contract BedrockCcipVerifier is CcipResponseVerifier {
      */
     function metadata(bytes calldata name) external view override returns (string memory, uint256, string memory, uint8, bytes memory) {
         return (
-            string("Bedrock Ccip Verifier"), //The name of the resolver
+            string("Bedrock Ccip Resolver"), //The name of the resolver
             uint256(420), //Resolvers coin type => Optimism
             this.graphqlUrl(), //The GraphQl Url
             uint8(0), //Storage Type 0 => EVM
-            abi.encodePacked("Bedrock Ccip Verifier")
+            abi.encodePacked("Bedrock Ccip Resolver")
         );
     }
 }
