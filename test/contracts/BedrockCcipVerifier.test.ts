@@ -110,12 +110,6 @@ describe.only("Bedrock CcipVerifier", () => {
             }
         });
     });
-
-    describe("resolveWithProof", () => {
-        it("returns result if signed correctly ", async () => {});
-
-        it("reverts if response was signed from rando ", async () => {});
-    });
     describe("Metadata", () => {
         it("returns metadata", async () => {
             const bedrockCcipVerifier = await new BedrockCcipVerifier__factory()
