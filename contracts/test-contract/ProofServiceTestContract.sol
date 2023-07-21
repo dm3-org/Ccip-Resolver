@@ -9,6 +9,7 @@ contract ProofServiceTestContract {
 
     bytes public testBytes;
     string public testString;
+    string public longString;
 
     function setBool(bool _testBool) external {
         testBool = _testBool;
@@ -32,5 +33,9 @@ contract ProofServiceTestContract {
 
     function setString(string calldata _testString) external {
         testString = _testString;
+    }
+
+    function setLongString(string calldata _longString) external {
+        longString = _longString;
     }
 }

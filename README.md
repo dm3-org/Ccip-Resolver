@@ -99,9 +99,13 @@ The BedrockCCIPVerifier just supports one contract on Optimism. If you want to u
 
 ### Goerli
 
-Ccip Resolver: 0xAFb5B5032d920C8158E541c6326CE63BAF60aAbf
+Ccip Resolver: 0x49e0AeC78ec0dF50852E99116E524a43bE91B789
 
-SignatureVerifier : 0x0C25389fc41b392C7cEAD6f0a82e22BD2Cc358F1(Signers : [0xA2a3b487fe4abbbb79888685284cD304D66405a7])
+#### Optimism Verifier
 
-BedrockProofVerifier : 0x49FA2e3dc397d6AcA8e2DAe402eB2fD6164EebAC
-BedrockCcipVerifier : 0x6eFc563E6c269B137F1362580Cc04F054204a352
+BedrockProofVerifier : 0xFB0b8DA29664F75c01d24655cfA3D8a46A009447
+BedrockCcipVerifier : 0x60BfFf5a1Fc8420B911c6015361786e4a2f222c2
+
+#### Signature Verifier
+
+SignatureCcipVerifier : 0x97c56E2E0b08fEa62847a3801a3E0Eaf7E61F155

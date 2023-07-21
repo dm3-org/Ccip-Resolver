@@ -8,7 +8,12 @@ contract BedrockCcipVerifier is CcipResponseVerifier {
     IBedrockProofVerifier public immutable bedrockProofVerifier;
     address public immutable target;
 
-    constructor(IBedrockProofVerifier _bedrockProofVerifier, address _target) {
+    constructor(
+        address owner,
+        string memory graphQlUrl,
+        IBedrockProofVerifier _bedrockProofVerifier,
+        address _target
+    ) CcipResponseVerifier(owner, graphQlUrl) {
         bedrockProofVerifier = _bedrockProofVerifier;
         target = _target;
     }
@@ -45,5 +50,25 @@ contract BedrockCcipVerifier is CcipResponseVerifier {
         );
 
         return responseEncoded;
+    }
+
+    /**
+     * @notice Get metadata about the CCIP Resolver
+     * @dev This function provides metadata about the CCIP Resolver, including its name, coin type, GraphQL URL, storage type, and encoded information.
+     * @param name The domain name in format (dnsEncoded)
+     * @return name The name of the resolver ("CCIP RESOLVER")
+     * @return coinType Resolvers coin type (60 for Ethereum)
+     * @return graphqlUrl The GraphQL URL used by the resolver
+     * @return storageType Storage Type (0 for EVM)
+     * @return encodedData Encoded data representing the resolver ("CCIP RESOLVER")
+     */
+    function metadata(bytes calldata name) external view override returns (string memory, uint256, string memory, uint8, bytes memory) {
+        return (
+            string("Bedrock Ccip Resolver"), //The name of the resolver
+            uint256(420), //Resolvers coin type => Optimism
+            this.graphqlUrl(), //The GraphQl Url
+            uint8(0), //Storage Type 0 => EVM
+            abi.encodePacked("Bedrock Ccip Resolver")
+        );
     }
 }

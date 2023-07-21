@@ -45,12 +45,16 @@ export class ProofService {
      */
 
     public async createProof(target: string, slot: string, layout: StorageLayout = StorageLayout.DYNAMIC): Promise<CreateProofResult> {
-        // use the most recent block to build the proof posted to L1
+        /**
+         * use the most recent block,posted to L1, to build the proof
+         */
         const { l2OutputIndex, number, stateRoot, hash } = await this.getLatestProposedBlock();
 
         const { storageProof, storageHash, accountProof, length } = await this.getProofForSlot(slot, number, target, layout);
 
-        // The messengePasserStorageRoot is important for the verification on chain
+        /**
+         * The messengePasserStorageRoot is important for the verification on chain
+         */
         const messagePasserStorageRoot = await this.getMessagePasserStorageRoot(number);
 
         const proof = {
@@ -86,23 +90,45 @@ export class ProofService {
      * @throws An error if the state root for the block is not found.
      */
     private async getLatestProposedBlock() {
-        // Get the latest ouput from the L2Oracle. We're building the proove with this batch
-        // We go 5 batches backwards to avoid erros like delays between nodes
+        /**
+         * Get the latest ouput from the L2Oracle. We're building the proove with this batch
+         * We go 5 batches backwards to avoid errors like delays between nodes
+         *
+         */
+
         const l2OutputIndex = (await this.crossChainMessenger.contracts.l1.L2OutputOracle.latestOutputIndex()).sub(5);
-        const output = await this.crossChainMessenger.contracts.l1.L2OutputOracle.getL2Output(l2OutputIndex);
+        /**
+         *    struct OutputProposal {
+         *       bytes32 outputRoot;
+         *       uint128 timestamp;
+         *       uint128 l2BlockNumber;
+         *      }
+         */
+        const outputProposal = await this.crossChainMessenger.contracts.l1.L2OutputOracle.getL2Output(l2OutputIndex);
 
-        const { stateRoot, hash } = (await this.l2Provider.getBlock(output.l2BlockNumber.toNumber())) as any;
+        /**
+         * We're getting the block for that the output was created for. The stateRoot contains the storageRoot of the account we're prooving.
+         */
+        const { stateRoot, hash } = (await this.l2Provider.getBlock(outputProposal.l2BlockNumber.toNumber())) as any;
 
+        /**
+         * Although the stateRoot is not part of the ethers.Bock type it'll be returned by the Optimism RPC
+         */
         if (!stateRoot) {
-            throw new Error(`StateRoot for block ${output.l2BlockNumber.toNumber()} not found`);
+            throw new Error(`StateRoot for block ${outputProposal.l2BlockNumber.toNumber()} not found`);
         }
 
-        return { stateRoot, hash, number: output.l2BlockNumber.toNumber(), l2OutputIndex: l2OutputIndex.toNumber() };
+        return { stateRoot, hash, number: outputProposal.l2BlockNumber.toNumber(), l2OutputIndex: l2OutputIndex.toNumber() };
     }
 
     /**
-     * Creates the actual proof using the eth_proof RPC method.
+     * Gets the storage proof for a given slot based on the provided layout.
+     * @param initalSlot - The initial slot.
+     * @param blockNr - The block number.
+     * @param resolverAddr - The resolver address.
+     * @param layout - The storage layout (fixed or dynamic).
      * To get an better understanding how the storage layout looks like visit {@link https://docs.soliditylang.org/en/v0.8.17/internals/layout_in_storage.html}
+     * @returns The storage proof and related information.
      */
     private async getProofForSlot(
         initalSlot: string,
@@ -112,62 +138,108 @@ export class ProofService {
     ): Promise<{ storageProof: (StorageProof & { value: string })[]; accountProof: string; storageHash: string; length: number }> {
         if (layout === StorageLayout.FIXED) {
             /**
-             * Since we're prooving one entrie slot the length is always 32
+             * A fixed slot always is a single slot
              */
             return this.handleShortType(resolverAddr, initalSlot, blockNr, 32);
         }
-        // The initial value. We used it to determine how many slots we need to proof
-        // See https://docs.soliditylang.org/en/v0.8.17/internals/layout_in_storage.html#mappings-and-dynamic-arrays
-        const slotValue = await this.l2Provider.getStorageAt(resolverAddr, initalSlot, blockNr);
 
+        /**
+         * The initial value. We used it to determine how many slots we need to proof
+         * See https://docs.soliditylang.org/en/v0.8.17/internals/layout_in_storage.html#mappings-and-dynamic-arrays
+         */
+        const slotValue = await this.l2Provider.getStorageAt(resolverAddr, initalSlot, blockNr);
+        /**
+         * The length of the value is encoded in the last byte of the slot
+         */
         const length = this.decodeLength(slotValue);
 
-        // Handle slots at most 31 bytes long
+        /**
+         * Handle slots at most 31 bytes long
+         */
         if (length <= 31) {
             return this.handleShortType(resolverAddr, initalSlot, blockNr, length);
         }
         return this.handleLongType(initalSlot, resolverAddr, blockNr, length);
     }
+    /**
+     * Decodes the length of a storage slot based on the provided slot value. This is important to determine weher the slot is a short or long type.
+     * @param slot - The storage slot value as a hexadecimal string.
+     * @returns The decoded length of the storage slot.
+     */
     private decodeLength(slot: string) {
         const lastByte = slot.substring(slot.length - 2);
         const lastBit = parseInt(lastByte, 16) % 2;
 
-        // If the last bit is not set it is a short type
+        /**
+         * If the last bit is not set it is a short type
+         */
         if (lastBit === 0) {
-            // The length is encoded as length / 2
+            /**
+             * For short types the length can be encoded by calculating length / 2
+             */
             return BigNumber.from("0x" + lastByte)
                 .div(2)
                 .toNumber();
         }
-        // The length is encoded as length *2+1
+        /**
+         * For long types the length can be encoded by calculating length *2+1
+         */
         return BigNumber.from(slot).sub(1).div(2).toNumber();
     }
+    /**
+     * Handles the short type of storage layout (length <= 31).
+     * @param resolverAddr - The resolver address.
+     * @param slot - The storage slot value as a hexadecimal string.
+     * @param blockNr - The block number.
+     * @param length - The length of the slot (up to 31 bytes).
+     * @returns An object containing the account proof, storage proof, storage hash, and length.
+     */
     private async handleShortType(resolverAddr: string, slot: string, blockNr: number, length: number) {
-        const res = await this.makeGetProofRpcCall(resolverAddr, [slot], blockNr);
-        const { storageProof, accountProof, storageHash } = res;
+        /**
+         * Proving the short type is simple all we have to do is to call eth_getProof
+         */
+        const { storageProof, accountProof, storageHash } = await this.makeGetProofRpcCall(resolverAddr, [slot], blockNr);
+
         return {
             accountProof,
-            storageProof: this.mapStorageProof(storageProof),
+            storageProof: this.rlpEncodeStroageProof(storageProof),
             storageHash,
             length,
         };
     }
-
+    /**
+     * Handles the long type of storage layout (length > 31).
+     * @param initialSlot - The initial slot as a hexadecimal string, which contains the length of the entire data structure.
+     * @param resolverAddr - The resolver address.
+     * @param blockNr - The block number.
+     * @param length - The length of the slot (greater than 31 bytes).
+     * @returns An object containing the account proof, storage proof, storage hash, and length.
+     */
     private async handleLongType(initialSlot: string, resolverAddr: string, blocknr: number, length: number) {
-        // For long types the initial slot just contains the length of the entire data structure.
-        // We're using this information to calculate the number of slots we need to request.
+        /**
+         * At first we need do determine how many slots we need to proof. The initial slot just contains the length of the entire data structure.
+         * We're using this information to calculate the number of slots we need to request.
+         */
         const totalSlots = Math.ceil((length * 2 + 1) / 64);
 
-        // The first slot is the keccak256 hash of the initial slot. After that the slots are calculated by adding 1 to the previous slot.
+        /**
+         * The first slot is the keccak256 hash of the initial slot. After that the slots are calculated by adding 1 to the previous slot.
+         */
         const firstSlot = keccak256(initialSlot);
-        // Computing the address of every other slot
+
+        /**
+         * Computing the addresses of every other slot
+         */
         const slots = [...Array(totalSlots).keys()].map((i) => BigNumber.from(firstSlot).add(i).toHexString());
-        // After we've calculated all slots we can request the proof for all of them for the blockNr the stateRoot is based on
+
+        /*
+         * After we know every slot that has to be proven we can call eth_getProof.
+         */
         const { accountProof, storageProof, storageHash } = await this.makeGetProofRpcCall(resolverAddr, slots, blocknr);
 
         return {
             accountProof,
-            storageProof: this.mapStorageProof(storageProof),
+            storageProof: this.rlpEncodeStroageProof(storageProof),
             storageHash,
             length,
         };
@@ -203,7 +275,7 @@ export class ProofService {
      * @param storageProofs The storage proofs to be mapped.
      * @returns An array of mapped storage proofs.
      */
-    private mapStorageProof(storageProofs: EthGetProofResponse["storageProof"]): (StorageProof & { value: string })[] {
+    private rlpEncodeStroageProof(storageProofs: EthGetProofResponse["storageProof"]): (StorageProof & { value: string })[] {
         return storageProofs.map(({ key, proof, value }) => ({
             key,
             value,

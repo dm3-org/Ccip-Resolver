@@ -64,16 +64,13 @@ describe("Optimism Bedrock Handler", () => {
         const BedrockCcipVerifierFactory = (await hreEthers.getContractFactory("BedrockCcipVerifier")) as BedrockCcipVerifier__factory;
 
         bedrockCcipVerifier = await BedrockCcipVerifierFactory.deploy(
+            owner.address,
+            "http://localhost:8081/graphql",
             bedrockProofVerifier.address,
             "0x5FbDB2315678afecb367f032d93F642f64180aa3"
         );
         const CcipResolverFactory = await hreEthers.getContractFactory("CcipResolver");
-        ccipResolver = (await CcipResolverFactory.deploy(
-            owner.address,
-            ensRegistry.address,
-            nameWrapper.address,
-            "http://localhost:8080/graphql"
-        )) as CcipResolver;
+        ccipResolver = (await CcipResolverFactory.deploy(ensRegistry.address, nameWrapper.address)) as CcipResolver;
 
         await owner.sendTransaction({
             to: alice.address,

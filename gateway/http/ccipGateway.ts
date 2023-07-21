@@ -4,6 +4,11 @@ import { ConfigReader } from "../config/ConfigReader";
 import { optimismBedrockHandler } from "../handler/optimism-bedrock/optimismBedrockHandler";
 import { signingHandler } from "../handler/signing/signingHandler";
 
+/**
+ * Creates an Express router to handle requests for the CCIP gateway.
+ * @param configReader - The configuration reader that provides the necessary config entries.
+ * @returns The Express router for the CCIP gateway.
+ */
 export function ccipGateway(configReader: ConfigReader) {
     const router = express.Router();
 
@@ -12,9 +17,21 @@ export function ccipGateway(configReader: ConfigReader) {
         const calldata = req.params.calldata.replace(".json", "");
 
         try {
+            // eslint-disable max-line-length
+            /**
+             * To get the right handler for a resolverAddr, we need to look up the config entry
+             * for that resolverAddr.
+             * The host of the gateway has to specifiy in the CONFIG environment variable which config file to use.
+             * The config file is a JSON file that maps resolverAddr to config entries. The config entries are either
+             * signing or optimism-bedrock config entries. The config entries contain the handlerUrl,
+             * which is the URL of the handler that should be used for that resolverAddr.
+             */
             const configEntry = configReader.getConfigForResolver(resolverAddr);
 
             if (!configEntry) {
+                /**
+                 * If there is no config entry for the resolverAddr, we return a 404. As there is no way for the gateway to resolve the request
+                 */
                 console.log(`Unknown resolver selector pair for resolverAddr: ${resolverAddr}`);
 
                 res.status(404).send({
@@ -22,6 +39,10 @@ export function ccipGateway(configReader: ConfigReader) {
                 });
                 return;
             }
+            /**
+             * To get the data from the offchain resolver we make a request to the corosspeding handlerUrl.
+             * That handler has to return the data in the format that the resolver expects.
+             */
             switch (configEntry.type) {
                 case "signing": {
                     const response = await signingHandler(calldata, resolverAddr, configEntry);
@@ -42,7 +63,7 @@ export function ccipGateway(configReader: ConfigReader) {
             }
         } catch (e) {
             req.app.locals.logger.warn((e as Error).message);
-            res.status(400).send({ message: "Unknown error" });
+            res.status(400).send({ message: "ccip gateway error ," + e });
         }
     });
     return router;
