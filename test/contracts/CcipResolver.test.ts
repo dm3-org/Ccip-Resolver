@@ -1,7 +1,6 @@
 import { FakeContract, smock } from "@defi-wonderland/smock";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { expect } from "chai";
-import { error } from "console";
 import { BigNumber, ethers } from "ethers";
 import { dnsEncode } from "ethers/lib/utils";
 import { ethers as hreEthers } from "hardhat";
@@ -12,7 +11,6 @@ import {
     BedrockProofVerifier__factory,
     CcipResolver,
     CcipResponseVerifier,
-    CcipResponseVerifier__factory,
     ENS,
     INameWrapper,
     SignatureCcipVerifier,
@@ -87,6 +85,7 @@ describe("CCIpResolver Test", () => {
         signatureVerifier = await SignatureCcipVerifierFactory.deploy(
             owner.address,
             "http://localhost:8081/graphql",
+            "Signature Ccip Resolver",
             ccipResolver.address,
             [signer.address]
         );

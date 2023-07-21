@@ -53,6 +53,7 @@ describe("Signature Handler", () => {
         signerCcipVerifier = await SignerCcipVerifierFactory.deploy(
             owner.address,
             "http://localhost:8081/graphql",
+            "Signature Ccip Resolver",
             signatureVerifier.address,
             [signer.address]
         );

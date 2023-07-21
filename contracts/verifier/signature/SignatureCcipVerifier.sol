@@ -5,6 +5,7 @@ import {CcipResponseVerifier} from "../CcipResponseVerifier.sol";
 import {SignatureVerifier} from "./SignatureVerifier.sol";
 
 contract SignatureCcipVerifier is CcipResponseVerifier {
+    string public name;
     address public immutable resolver;
 
     mapping(address => bool) public signers;
@@ -15,11 +16,12 @@ contract SignatureCcipVerifier is CcipResponseVerifier {
 
     constructor(
         address _owner,
-        string memory graphQlUrl,
+        string memory _graphQlUrl,
+        string memory _name,
         address _resolver,
         address[] memory _signers
-    ) CcipResponseVerifier(owner, graphQlUrl) {
-        owner = _owner;
+    ) CcipResponseVerifier(_owner, _graphQlUrl) {
+        name = _name;
         resolver = _resolver;
 
         for (uint256 i = 0; i < _signers.length; i++) {
@@ -76,20 +78,22 @@ contract SignatureCcipVerifier is CcipResponseVerifier {
     /**
      * @notice Get metadata about the CCIP Resolver
      * @dev This function provides metadata about the CCIP Resolver, including its name, coin type, GraphQL URL, storage type, and encoded information.
-     * @param name The domain name in format (dnsEncoded)
+     * @param domainName The domain name in format (dnsEncoded)
      * @return name The name of the resolver ("CCIP RESOLVER")
      * @return coinType Resolvers coin type (60 for Ethereum)
      * @return graphqlUrl The GraphQL URL used by the resolver
      * @return storageType Storage Type (0 for EVM)
      * @return encodedData Encoded data representing the resolver ("CCIP RESOLVER")
      */
-    function metadata(bytes calldata name) external view override returns (string memory, uint256, string memory, uint8, bytes memory) {
+    function metadata(
+        bytes calldata domainName
+    ) external view override returns (string memory, uint256, string memory, uint8, bytes memory) {
         return (
-            string("Signature Ccip Resolver"), //The name of the resolver
+            string(name), //The name of the resolver
             uint256(60), //Resolvers coin type => Etheruem
             this.graphqlUrl(), //The GraphQl Url
             uint8(1), //Storage Type 0 => Offchain Databas
-            abi.encodePacked("Signature Ccip Resolver")
+            abi.encodePacked(name)
         );
     }
 }
