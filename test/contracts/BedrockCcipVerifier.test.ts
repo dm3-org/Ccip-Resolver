@@ -7,7 +7,7 @@ import { ethers as hreEthers } from "hardhat";
 import { expect } from "../../test/chai-setup";
 import { BedrockCcipVerifier__factory, BedrockProofVerifier } from "../../typechain";
 
-describe.only("Bedrock CcipVerifier", () => {
+describe("Bedrock CcipVerifier", () => {
     let owner: SignerWithAddress;
     let signer1: SignerWithAddress;
     let signer2: SignerWithAddress;

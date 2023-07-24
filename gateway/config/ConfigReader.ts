@@ -22,9 +22,11 @@ export function getConfigReader(_config?: string) {
         const normalizedAddress = ethers.utils.getAddress(address);
         config[normalizedAddress] = config[address] as ConfigEntry;
     });
+    console.log(config);
 
     function getConfigForResolver(resolverAddr: string): ConfigEntry {
-        return config[resolverAddr];
+        const normalizedAddr = ethers.utils.getAddress(resolverAddr);
+        return config[normalizedAddr];
     }
     return {
         getConfigForResolver,

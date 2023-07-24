@@ -429,11 +429,11 @@ describe("CCIpResolver Test", () => {
                     "http://localhost:8080/{sender}/{data}",
                 ]);
             const [name, coinType, graphqlUrl, storageType, encodedData] = await ccipResolver.metadata(dnsEncode("alice.eth"));
-            expect(name).to.equal("Bedrock Ccip Verifier");
+            expect(name).to.equal("Bedrock Ccip Resolver");
             expect(BigNumber.from(coinType).toNumber()).to.equal(420);
             expect(graphqlUrl).to.equal("http://localhost:8081/graphql");
             expect(storageType).to.equal(storageType);
-            expect(ethers.utils.toUtf8String(encodedData)).to.equal("Bedrock Ccip Verifier");
+            expect(ethers.utils.toUtf8String(encodedData)).to.equal("Bedrock Ccip Resolver");
         });
     });
 });
