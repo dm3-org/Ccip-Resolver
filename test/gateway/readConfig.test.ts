@@ -4,7 +4,7 @@ import { getConfigReader } from "../../gateway/config/ConfigReader";
 
 // 0x49e0aec78ec0df50852e99116e524a43be91b789
 // 0x49e0AeC78ec0dF50852E99116E524a43bE91B789
-describe.only("ReadConfig Test", () => {
+describe("ReadConfig Test", () => {
     it("Reads config for Signiture Resolver", () => {
         const configString = JSON.stringify({
             "0xafb5b5032d920c8158e541c6326ce63baf60aabf": {
