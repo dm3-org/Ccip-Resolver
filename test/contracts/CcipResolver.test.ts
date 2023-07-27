@@ -1,4 +1,5 @@
 import { FakeContract, smock } from "@defi-wonderland/smock";
+import { asL2Provider } from "@eth-optimism/sdk";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { expect } from "chai";
 import { BigNumber, ethers } from "ethers";
@@ -432,12 +433,12 @@ describe("CCIpResolver Test", () => {
                 .setVerifierForDomain(ethers.utils.namehash("alice.eth"), bedrockCcipVerifier.address, [
                     "http://localhost:8080/{sender}/{data}",
                 ]);
-            const [name, coinType, graphqlUrl, storageType, encodedData] = await ccipResolver.metadata(dnsEncode("alice.eth"));
+            const [name, coinType, graphqlUrl, storageType, context] = await ccipResolver.metadata(dnsEncode("alice.eth"));
             expect(name).to.equal("Optimism Goerli");
             expect(convertCoinTypeToEVMChainId(BigNumber.from(coinType).toNumber())).to.equal(420);
             expect(graphqlUrl).to.equal("http://localhost:8081/graphql");
             expect(storageType).to.equal(storageType);
-            expect(ethers.utils.toUtf8String(encodedData)).to.equal("Optimism Goerli");
+            expect(ethers.utils.getAddress(context)).to.equal("0x5FbDB2315678afecb367f032d93F642f64180aa3");
         });
     });
 });
