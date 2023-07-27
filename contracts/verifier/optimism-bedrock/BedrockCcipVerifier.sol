@@ -3,6 +3,7 @@ pragma solidity 0.8.17;
 
 import {CcipResponseVerifier} from "../CcipResponseVerifier.sol";
 import {IBedrockProofVerifier} from "./IBedrockProofVerifier.sol";
+import {convertEVMChainIdToCoinType} from "../../coinType/Ensip11CointType.sol";
 
 contract BedrockCcipVerifier is CcipResponseVerifier {
     IBedrockProofVerifier public immutable bedrockProofVerifier;
@@ -64,11 +65,11 @@ contract BedrockCcipVerifier is CcipResponseVerifier {
      */
     function metadata(bytes calldata name) external view override returns (string memory, uint256, string memory, uint8, bytes memory) {
         return (
-            string("Bedrock Ccip Resolver"), //The name of the resolver
-            uint256(420), //Resolvers coin type => Optimism
+            string("Optimism Goerli"), //The name of the resolver
+            convertEVMChainIdToCoinType(420), //CoinType Accoridng to ENSIP-11 for Chain Id 420
             this.graphqlUrl(), //The GraphQl Url
             uint8(0), //Storage Type 0 => EVM
-            abi.encodePacked("Bedrock Ccip Resolver")
+            abi.encodePacked("Optimism Goerli")
         );
     }
 }
