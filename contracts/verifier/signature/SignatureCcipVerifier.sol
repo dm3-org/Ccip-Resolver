@@ -3,6 +3,7 @@ pragma solidity 0.8.17;
 
 import {CcipResponseVerifier} from "../CcipResponseVerifier.sol";
 import {SignatureVerifier} from "./SignatureVerifier.sol";
+import {convertEVMChainIdToCoinType} from "../../coinType/Ensip11CointType.sol";
 
 contract SignatureCcipVerifier is CcipResponseVerifier {
     string public name;
@@ -90,7 +91,7 @@ contract SignatureCcipVerifier is CcipResponseVerifier {
     ) external view override returns (string memory, uint256, string memory, uint8, bytes memory) {
         return (
             string(name), //The name of the resolver
-            uint256(60), //Resolvers coin type => Etheruem
+            convertEVMChainIdToCoinType(60), //Resolvers coin type => Etheruem
             this.graphqlUrl(), //The GraphQl Url
             uint8(1), //Storage Type 0 => Offchain Databas
             abi.encodePacked(name)
