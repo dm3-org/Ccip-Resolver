@@ -112,9 +112,9 @@ describe("Bedrock CcipVerifier", () => {
     });
     describe("Metadata", () => {
         it("returns metadata", async () => {
-            const convertCoinTypeToEVMChainId = (coinType: number) => {
-                return (0x7fffffff & coinType) >> 0
-            }
+            const convertCoinTypeToEVMChainId = (_coinType: number) => {
+                return (0x7fffffff & _coinType) >> 0;
+            };
             const bedrockCcipVerifier = await new BedrockCcipVerifier__factory()
                 .connect(owner)
                 .deploy(owner.address, "http://localhost:8080/graphql", bedrockProofVerifier.address, resolver.address);

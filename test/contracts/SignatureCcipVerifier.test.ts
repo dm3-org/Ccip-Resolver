@@ -255,9 +255,9 @@ describe("Signature Ccip Verifier", () => {
     });
     describe("Metadata", () => {
         it("returns metadata", async () => {
-            const convertCoinTypeToEVMChainId = (coinType: number) => {
-                return (0x7fffffff & coinType) >> 0
-            }
+            const convertCoinTypeToEVMChainId = (_coinType: number) => {
+                return (0x7fffffff & _coinType) >> 0;
+            };
             const signatureCcipVerifier = await new SignatureCcipVerifier__factory()
                 .connect(owner)
                 .deploy(owner.address, "http://localhost:8080/graphql", "Signature Ccip Resolver", resolver.address, [signer1.address]);
