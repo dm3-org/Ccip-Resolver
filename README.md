@@ -51,7 +51,9 @@ App Specific handlers implement the actual data source and provide a REST interf
 -   **ENSIP-10: Wildcard Resolution:**
     Provides a mechanism to support wildcard resolution of ENS names (formerly EIP-2544). (36 kB)
     https://docs.ens.domains/ens-improvement-proposals/ensip-10-wildcard-resolution
--
+-   **ENSIP-11: Wildcard Resolution:**
+    Introduces coinType for EVM compatible chains (amending ENSIP9).
+https://docs.ens.domains/ens-improvement-proposals/ensip-11-evmchain-address-resolution
 
 ## Installation
 

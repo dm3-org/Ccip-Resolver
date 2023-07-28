@@ -255,13 +255,16 @@ describe("Signature Ccip Verifier", () => {
     });
     describe("Metadata", () => {
         it("returns metadata", async () => {
+            const convertCoinTypeToEVMChainId = (_coinType: number) => {
+                return (0x7fffffff & _coinType) >> 0;
+            };
             const signatureCcipVerifier = await new SignatureCcipVerifier__factory()
                 .connect(owner)
                 .deploy(owner.address, "http://localhost:8080/graphql", "Signature Ccip Resolver", resolver.address, [signer1.address]);
 
             const [name, coinType, graphqlUrl, storageType, encodedData] = await signatureCcipVerifier.metadata(dnsEncode("alice.eth"));
             expect(name).to.equal("Signature Ccip Resolver");
-            expect(BigNumber.from(coinType).toNumber()).to.equal(60);
+            expect(convertCoinTypeToEVMChainId(BigNumber.from(coinType).toNumber())).to.equal(60);
             expect(graphqlUrl).to.equal("http://localhost:8080/graphql");
             expect(storageType).to.equal(storageType);
             expect(ethers.utils.toUtf8String(encodedData)).to.equal("Signature Ccip Resolver");
