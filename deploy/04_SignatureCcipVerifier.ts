@@ -1,6 +1,6 @@
 import hre, { ethers } from "hardhat";
 
-const CCIP_RESOLVER_ADDRESS = "0x49e0AeC78ec0dF50852E99116E524a43bE91B789";
+const CCIP_RESOLVER_ADDRESS = "0x491316b83fDb7dC1370b0815775C8d2D2d0b6428";
 const NAME = "SignatureCcipVerifier";
 const GraphQlUrl = "http://localhost:8081/graphql";
 async function main() {
