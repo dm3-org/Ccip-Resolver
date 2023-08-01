@@ -61,7 +61,7 @@ contract BedrockCcipVerifier is CcipResponseVerifier {
      * @return coinType Resolvers coin type (60 for Ethereum)
      * @return graphqlUrl The GraphQL URL used by the resolver
      * @return storageType Storage Type (0 for EVM)
-     * @return context can be l2 resolver contract address for evm chain but can be any l2 storage identifier for non evm chain
+     * @return context the owner of the name. Always returns address(0) since the owner is determined by the ccipResolver contract.
      */
     function metadata(bytes calldata name) external view override returns (string memory, uint256, string memory, uint8, bytes memory) {
         return (
@@ -69,7 +69,7 @@ contract BedrockCcipVerifier is CcipResponseVerifier {
             convertEVMChainIdToCoinType(420), //CoinType Accoridng to ENSIP-11 for Chain Id 420
             this.graphqlUrl(), //The GraphQl Url
             uint8(0), //Storage Type 0 => EVM
-            abi.encodePacked(target) //Context => L2 Resolver Address
+            abi.encodePacked(address(0)) //Context => Owner Address
         );
     }
 }

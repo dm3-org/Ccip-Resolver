@@ -124,7 +124,7 @@ describe("Bedrock CcipVerifier", () => {
             expect(convertCoinTypeToEVMChainId(BigNumber.from(coinType).toNumber())).to.equal(420);
             expect(graphqlUrl).to.equal("http://localhost:8080/graphql");
             expect(storageType).to.equal(storageType);
-            expect(ethers.utils.getAddress(context)).to.equal(resolver.address);
+            expect(ethers.utils.getAddress(context)).to.equal(ethers.constants.AddressZero);
         });
     });
 });

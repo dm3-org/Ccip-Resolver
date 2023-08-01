@@ -212,7 +212,15 @@ contract CcipResolver is IExtendedResolver, IMetadataResolver, SupportsInterface
          * reverts if no verifier was set in advance
          */
         (CcipVerifier memory _ccipVerifier, ) = getVerifierOfDomain(name);
-        return ICcipResponseVerifier(_ccipVerifier.verifierAddress).metadata(name);
+
+        (string memory resolverName, uint256 cointype, string memory graphqlUrl, uint8 storageType, ) = ICcipResponseVerifier(
+            _ccipVerifier.verifierAddress
+        ).metadata(name);
+
+        bytes32 node = name.namehash(0);
+        bytes memory context = abi.encodePacked(getNodeOwner(node));
+
+        return (resolverName, cointype, graphqlUrl, storageType, context);
     }
 
     /**

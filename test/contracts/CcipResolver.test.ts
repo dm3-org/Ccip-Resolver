@@ -438,7 +438,7 @@ describe("CCIpResolver Test", () => {
             expect(convertCoinTypeToEVMChainId(BigNumber.from(coinType).toNumber())).to.equal(420);
             expect(graphqlUrl).to.equal("http://localhost:8081/graphql");
             expect(storageType).to.equal(storageType);
-            expect(ethers.utils.getAddress(context)).to.equal("0x5FbDB2315678afecb367f032d93F642f64180aa3");
+            expect(ethers.utils.getAddress(context)).to.equal(alice.address);
         });
     });
 });

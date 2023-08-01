@@ -79,22 +79,19 @@ contract SignatureCcipVerifier is CcipResponseVerifier {
     /**
      * @notice Get metadata about the CCIP Resolver
      * @dev This function provides metadata about the CCIP Resolver, including its name, coin type, GraphQL URL, storage type, and encoded information.
-     * @param domainName The domain name in format (dnsEncoded)
      * @return name The name of the resolver ("CCIP RESOLVER")
      * @return coinType Resolvers coin type (60 for Ethereum)
      * @return graphqlUrl The GraphQL URL used by the resolver
      * @return storageType Storage Type (0 for EVM)
-     * @return context can be l2 resolver contract address for evm chain but can be any l2 storage identifier for non evm chain
+     * @return context the owner of the name. Always returns address(0) since the owner is determined by the ccipResolver contract.
      */
-    function metadata(
-        bytes calldata domainName
-    ) external view override returns (string memory, uint256, string memory, uint8, bytes memory) {
+    function metadata(bytes calldata) external view override returns (string memory, uint256, string memory, uint8, bytes memory) {
         return (
             name, //The name of the resolver
             convertEVMChainIdToCoinType(60), //Resolvers coin type => Etheruem
             this.graphqlUrl(), //The GraphQl Url
             uint8(1), //Storage Type 0 => Offchain Databas
-            abi.encodePacked(name)
+            abi.encodePacked(address(0)) //Context => Owner Address
         );
     }
 }

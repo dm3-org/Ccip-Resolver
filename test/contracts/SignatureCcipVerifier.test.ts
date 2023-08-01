@@ -262,12 +262,12 @@ describe("Signature Ccip Verifier", () => {
                 .connect(owner)
                 .deploy(owner.address, "http://localhost:8080/graphql", "Signature Ccip Resolver", resolver.address, [signer1.address]);
 
-            const [name, coinType, graphqlUrl, storageType, encodedData] = await signatureCcipVerifier.metadata(dnsEncode("alice.eth"));
+            const [name, coinType, graphqlUrl, storageType, context] = await signatureCcipVerifier.metadata(dnsEncode("alice.eth"));
             expect(name).to.equal("Signature Ccip Resolver");
             expect(convertCoinTypeToEVMChainId(BigNumber.from(coinType).toNumber())).to.equal(60);
             expect(graphqlUrl).to.equal("http://localhost:8080/graphql");
             expect(storageType).to.equal(storageType);
-            expect(ethers.utils.toUtf8String(encodedData)).to.equal("Signature Ccip Resolver");
+            expect(context).to.equal(ethers.constants.AddressZero);
         });
     });
 });
