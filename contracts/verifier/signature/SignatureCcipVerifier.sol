@@ -83,14 +83,18 @@ contract SignatureCcipVerifier is CcipResponseVerifier {
      * @return coinType Resolvers coin type (60 for Ethereum)
      * @return graphqlUrl The GraphQL URL used by the resolver
      * @return storageType Storage Type (0 for EVM)
+     * @return storageLocation The storage identifier. For EVM chains, this is the address of the resolver contract.
      * @return context the owner of the name. Always returns address(0) since the owner is determined by the ccipResolver contract.
      */
-    function metadata(bytes calldata) external view override returns (string memory, uint256, string memory, uint8, bytes memory) {
+    function metadata(
+        bytes calldata
+    ) external view override returns (string memory, uint256, string memory, uint8, bytes memory, bytes memory) {
         return (
             name, //The name of the resolver
             convertEVMChainIdToCoinType(60), //Resolvers coin type => Etheruem
             this.graphqlUrl(), //The GraphQl Url
-            uint8(1), //Storage Type 0 => Offchain Databas
+            uint8(1), //Storage Type 0 => Offchain Database
+            "Postgres", //Storage Location => Resolver Address
             abi.encodePacked(address(0)) //Context => Owner Address
         );
     }

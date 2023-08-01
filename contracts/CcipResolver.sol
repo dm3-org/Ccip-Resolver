@@ -206,21 +206,27 @@ contract CcipResolver is IExtendedResolver, IMetadataResolver, SupportsInterface
      * @return storageType Storage Type (0 for EVM)
      * @return encodedData Encoded data representing the resolver ("CCIP RESOLVER")
      */
-    function metadata(bytes calldata name) external view returns (string memory, uint256, string memory, uint8, bytes memory) {
+    function metadata(
+        bytes calldata name
+    ) external view returns (string memory, uint256, string memory, uint8, bytes memory, bytes memory) {
         /**
          * Get the verifier for the given name.
          * reverts if no verifier was set in advance
          */
         (CcipVerifier memory _ccipVerifier, ) = getVerifierOfDomain(name);
 
-        (string memory resolverName, uint256 cointype, string memory graphqlUrl, uint8 storageType, ) = ICcipResponseVerifier(
-            _ccipVerifier.verifierAddress
-        ).metadata(name);
+        (
+            string memory resolverName,
+            uint256 cointype,
+            string memory graphqlUrl,
+            uint8 storageType,
+            bytes memory storageLocation,
+
+        ) = ICcipResponseVerifier(_ccipVerifier.verifierAddress).metadata(name);
 
         bytes32 node = name.namehash(0);
         bytes memory context = abi.encodePacked(getNodeOwner(node));
-
-        return (resolverName, cointype, graphqlUrl, storageType, context);
+        return (resolverName, cointype, graphqlUrl, storageType, context, storageLocation);
     }
 
     /**
