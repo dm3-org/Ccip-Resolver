@@ -119,7 +119,9 @@ describe("Bedrock CcipVerifier", () => {
                 .connect(owner)
                 .deploy(owner.address, "http://localhost:8080/graphql", bedrockProofVerifier.address, resolver.address);
 
-            const [name, coinType, graphqlUrl, storageType, storageLocation, context] = await bedrockCcipVerifier.metadata(dnsEncode("alice.eth"));
+            const [name, coinType, graphqlUrl, storageType, storageLocation, context] = await bedrockCcipVerifier.metadata(
+                dnsEncode("alice.eth")
+            );
             expect(name).to.equal("Optimism Goerli");
             expect(convertCoinTypeToEVMChainId(BigNumber.from(coinType).toNumber())).to.equal(420);
             expect(graphqlUrl).to.equal("http://localhost:8080/graphql");
