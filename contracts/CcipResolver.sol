@@ -2,7 +2,7 @@
 pragma solidity 0.8.17;
 
 import {IExtendedResolver, IResolverService} from "./IExtendedResolver.sol";
-import {IContextResolver} from "./IContextResolver.sol";
+import {IMetadataResolver} from "./IMetadataResolver.sol";
 import {SupportsInterface} from "./SupportsInterface.sol";
 import {CcipResponseVerifier, ICcipResponseVerifier} from "./verifier/CcipResponseVerifier.sol";
 import {ENSRegistry} from "@ensdomains/ens-contracts/contracts/registry/ENSRegistry.sol";
@@ -15,7 +15,7 @@ import {BytesLib} from "solidity-bytes-utils/contracts/BytesLib.sol";
  * Implements an ENS resolver that directs all queries to a CCIP read gateway.
  * Callers must implement EIP 3668 and ENSIP 10.
  */
-contract CcipResolver is IExtendedResolver, IContextResolver, SupportsInterface {
+contract CcipResolver is IExtendedResolver, IMetadataResolver, SupportsInterface {
     using BytesUtils for bytes;
 
     struct CcipVerifier {
