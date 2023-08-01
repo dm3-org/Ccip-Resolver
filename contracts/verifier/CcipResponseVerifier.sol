@@ -94,6 +94,4 @@ abstract contract CcipResponseVerifier is ICcipResponseVerifier, SupportsInterfa
     function onResolveWithProof(bytes calldata, bytes calldata) public pure virtual override returns (bytes4) {
         return this.resolveWithProof.selector;
     }
-
-    function metadata(bytes calldata name) external view virtual returns (string memory, uint256, string memory, uint8, bytes memory);
 }

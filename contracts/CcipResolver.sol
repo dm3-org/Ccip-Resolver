@@ -2,7 +2,7 @@
 pragma solidity 0.8.17;
 
 import {IExtendedResolver, IResolverService} from "./IExtendedResolver.sol";
-import {IContextResolver} from "./IContextResolver.sol";
+import {IMetadataResolver} from "./IMetadataResolver.sol";
 import {SupportsInterface} from "./SupportsInterface.sol";
 import {CcipResponseVerifier, ICcipResponseVerifier} from "./verifier/CcipResponseVerifier.sol";
 import {ENSRegistry} from "@ensdomains/ens-contracts/contracts/registry/ENSRegistry.sol";
@@ -15,7 +15,7 @@ import {BytesLib} from "solidity-bytes-utils/contracts/BytesLib.sol";
  * Implements an ENS resolver that directs all queries to a CCIP read gateway.
  * Callers must implement EIP 3668 and ENSIP 10.
  */
-contract CcipResolver is IExtendedResolver, IContextResolver, SupportsInterface {
+contract CcipResolver is IExtendedResolver, IMetadataResolver, SupportsInterface {
     using BytesUtils for bytes;
 
     struct CcipVerifier {
@@ -204,15 +204,37 @@ contract CcipResolver is IExtendedResolver, IContextResolver, SupportsInterface 
      * @return coinType Resolvers coin type (60 for Ethereum)
      * @return graphqlUrl The GraphQL URL used by the resolver
      * @return storageType Storage Type (0 for EVM)
-     * @return encodedData Encoded data representing the resolver ("CCIP RESOLVER")
+     * @return storageLocation The storage identifier. For EVM chains, this is the address of the resolver contract.
+     * @return context can be l2 resolver contract address for evm chain but can be any l2 storage identifier for non evm chain
      */
-    function metadata(bytes calldata name) external view returns (string memory, uint256, string memory, uint8, bytes memory) {
+    function metadata(
+        bytes calldata name
+    ) external view returns (string memory, uint256, string memory, uint8, bytes memory, bytes memory) {
         /**
          * Get the verifier for the given name.
          * reverts if no verifier was set in advance
          */
         (CcipVerifier memory _ccipVerifier, ) = getVerifierOfDomain(name);
-        return ICcipResponseVerifier(_ccipVerifier.verifierAddress).metadata(name);
+
+        /**
+         * Get the metadata from the verifier contract
+         */
+        (
+            string memory resolverName,
+            uint256 cointype,
+            string memory graphqlUrl,
+            uint8 storageType,
+            bytes memory storageLocation,
+
+        ) = ICcipResponseVerifier(_ccipVerifier.verifierAddress).metadata(name);
+
+        /**
+         * To determine the context of the request we need to get the owner of the node.
+         */
+        bytes32 node = name.namehash(0);
+        bytes memory context = abi.encodePacked(getNodeOwner(node));
+
+        return (resolverName, cointype, graphqlUrl, storageType, context, storageLocation);
     }
 
     /**
