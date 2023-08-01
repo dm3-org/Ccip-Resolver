@@ -215,6 +215,9 @@ contract CcipResolver is IExtendedResolver, IMetadataResolver, SupportsInterface
          */
         (CcipVerifier memory _ccipVerifier, ) = getVerifierOfDomain(name);
 
+        /**
+         * Get the metadata from the verifier contract
+         */
         (
             string memory resolverName,
             uint256 cointype,
@@ -224,8 +227,12 @@ contract CcipResolver is IExtendedResolver, IMetadataResolver, SupportsInterface
 
         ) = ICcipResponseVerifier(_ccipVerifier.verifierAddress).metadata(name);
 
+        /**
+         * To determine the context of the request we need to get the owner of the node.
+         */
         bytes32 node = name.namehash(0);
         bytes memory context = abi.encodePacked(getNodeOwner(node));
+
         return (resolverName, cointype, graphqlUrl, storageType, context, storageLocation);
     }
 
