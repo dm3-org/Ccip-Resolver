@@ -8,7 +8,10 @@ async function main() {
     const l2OutputOracleAddress = chainId === "1" ? L2_OUTPUT_ORALCE_MAINNET : L2_OUTPUT_ORALCE_GOERLI;
 
     const BedrockProofVerifierFactory = await ethers.getContractFactory("BedrockProofVerifier");
-    const deployTx = await BedrockProofVerifierFactory.deploy(l2OutputOracleAddress);
+    const deployTx = await BedrockProofVerifierFactory.deploy(l2OutputOracleAddress,{
+        gasLimit: 5000000,
+
+    });
 
     await deployTx.deployed();
 

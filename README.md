@@ -53,7 +53,7 @@ App Specific handlers implement the actual data source and provide a REST interf
     https://docs.ens.domains/ens-improvement-proposals/ensip-10-wildcard-resolution
 -   **ENSIP-11: Wildcard Resolution:**
     Introduces coinType for EVM compatible chains (amending ENSIP9).
-https://docs.ens.domains/ens-improvement-proposals/ensip-11-evmchain-address-resolution
+    https://docs.ens.domains/ens-improvement-proposals/ensip-11-evmchain-address-resolution
 
 ## Installation
 
@@ -101,13 +101,8 @@ The BedrockCCIPVerifier just supports one contract on Optimism. If you want to u
 
 ### Goerli
 
-Ccip Resolver: 0x49e0AeC78ec0dF50852E99116E524a43bE91B789
+Ccip Resolver: 0x5e0F81D5ca51D309B3A046FAeea70C4C70Df8079
 
 #### Optimism Verifier
 
-BedrockProofVerifier : 0xFB0b8DA29664F75c01d24655cfA3D8a46A009447
-BedrockCcipVerifier : 0x60BfFf5a1Fc8420B911c6015361786e4a2f222c2
-
-#### Signature Verifier
-
-SignatureCcipVerifier : 0x97c56E2E0b08fEa62847a3801a3E0Eaf7E61F155
+BedrockProofVerifier : 0x2231dA800580E27cAA4C45C43b2B6c1D1487eC6F
