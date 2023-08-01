@@ -63,7 +63,7 @@ contract BedrockProofVerifier is IBedrockProofVerifier {
          * It might take some time for the state root to be posted on L1 after the transaction is included in a block
          * Until then the account might not be part of the state root
          */
-        require(exists, "Account it not part of the provided state root");
+        require(exists, "Account is not part of the provided state root");
         RLPReader.RLPItem[] memory accountState = RLPReader.readList(encodedResolverAccount);
         return bytes32(RLPReader.readBytes(accountState[2]));
     }
