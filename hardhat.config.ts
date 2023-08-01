@@ -23,10 +23,10 @@ const DEPLOYER_PRIVATE_KEY = process.env.DEPLOYER_PRIVATE_KEY ?? ethers.Wallet.c
 const hardhat = process.env.CI
     ? {}
     : {
-          forking: {
-              url: "http://localhost:8545",
-          },
-      };
+        forking: {
+            url: "http://localhost:8545",
+        },
+    };
 
 module.exports = {
     defaultNetwork: "hardhat",
@@ -54,6 +54,18 @@ module.exports = {
         compilers: [
             {
                 version: "0.8.17",
+                settings: {
+                    viaIR: true,
+                    optimizer: {
+                        enabled: true,
+                        details: {
+                            yulDetails: {
+                                optimizerSteps: "u",
+                            },
+                        },
+                    },
+                },
+
             },
         ],
     },
