@@ -204,7 +204,8 @@ contract CcipResolver is IExtendedResolver, IMetadataResolver, SupportsInterface
      * @return coinType Resolvers coin type (60 for Ethereum)
      * @return graphqlUrl The GraphQL URL used by the resolver
      * @return storageType Storage Type (0 for EVM)
-     * @return encodedData Encoded data representing the resolver ("CCIP RESOLVER")
+     * @return storageLocation The storage identifier. For EVM chains, this is the address of the resolver contract.
+     * @return context can be l2 resolver contract address for evm chain but can be any l2 storage identifier for non evm chain
      */
     function metadata(
         bytes calldata name
