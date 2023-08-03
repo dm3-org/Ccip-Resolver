@@ -16,7 +16,7 @@
         "outDir": "dist",
         "sourceMap": true
     },
-    "include": ["gateway"],
+    "include": ["gateway","abi"],
     "exclude": ["gateway/**/*.test.ts"],
 
 }
