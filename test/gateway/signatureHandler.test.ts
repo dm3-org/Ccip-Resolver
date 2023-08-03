@@ -8,11 +8,17 @@ import { ethers, Wallet } from "ethers";
 import express from "express";
 import { config, ethers as hreEthers } from "hardhat";
 import request from "supertest";
+import winston from "winston";
 
 import { getConfigReader } from "../../gateway/config/ConfigReader";
 import { ccipGateway } from "../../gateway/http/ccipGateway";
 import { CcipResolver, ENS, INameWrapper, SignatureCcipVerifier, SignatureCcipVerifier__factory } from "../../typechain";
 import { getGateWayUrl } from "../helper/getGatewayUrl";
+
+global.logger = winston.createLogger({
+    level: process.env.LOG_LEVEL ?? "info",
+    transports: [new winston.transports.Console()],
+});
 
 describe("Signature Handler", () => {
     let ccipApp: express.Express;
