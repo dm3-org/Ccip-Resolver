@@ -234,7 +234,7 @@ contract CcipResolver is IExtendedResolver, IMetadataResolver, SupportsInterface
         bytes32 node = name.namehash(0);
         bytes memory context = abi.encodePacked(getNodeOwner(node));
 
-        return (resolverName, cointype, graphqlUrl, storageType, context, storageLocation);
+        return (resolverName, cointype, graphqlUrl, storageType, storageLocation, context);
     }
 
     /**
