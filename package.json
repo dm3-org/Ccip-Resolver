@@ -1,5 +1,5 @@
 {
-    "name": "ccip-resolver-dev",
+    "name": "ccip-resolver",
     "version": "0.1.4",
     "description": "",
     "types": "dist/index.d.ts",
