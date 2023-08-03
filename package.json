@@ -1,6 +1,6 @@
 {
-    "name": "ccip-resolver",
-    "version": "0.1.3",
+    "name": "ccip-resolver-dev",
+    "version": "0.1.4",
     "description": "",
     "types": "dist/index.d.ts",
     "scripts": {
@@ -28,6 +28,7 @@
         "README.md",
         "build",
         "contracts/**/*.sol",
+        "abi",
         "artifacts",
         "typechain"
     ],
