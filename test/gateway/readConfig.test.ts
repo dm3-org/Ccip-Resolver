@@ -1,7 +1,12 @@
 import { expect } from "chai";
+import winston from "winston";
 
 import { getConfigReader } from "../../gateway/config/ConfigReader";
 
+global.logger = winston.createLogger({
+    level: process.env.LOG_LEVEL ?? "info",
+    transports: [new winston.transports.Console()],
+});
 // 0x49e0aec78ec0df50852e99116e524a43be91b789
 // 0x49e0AeC78ec0dF50852E99116E524a43bE91B789
 describe("ReadConfig Test", () => {
