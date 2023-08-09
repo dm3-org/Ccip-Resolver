@@ -85,6 +85,15 @@ Visit https://community.optimism.io/docs/developers/build/dev-node/ for setup in
 4. Wait again for a few minutes. The rollup needs to commit the changes made. If you see the error "Account is not part of the provided state root" or "Provided proof is invalid" The commit is still pending
 5. Run the test using `yarn test`
 
+## Implementation
+The CCIP-Resolver has already been used by the following projects
+
+### ENS 
+
+ENS uses the CCIP-Resolver to store records on Optimism
+
+https://github.com/corpus-io/ENS-Bedrock-Resolver
+
 ## Deployments
 
 ### Bedrock ProofVerifier
