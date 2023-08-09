@@ -5,31 +5,31 @@ import {Types} from "@eth-optimism/contracts-bedrock/contracts/libraries/Types.s
 interface IBedrockProofVerifier {
     struct BedrockStateProof {
         uint8 layout;
-        //The address of the contract we are trying to prove
+        // the address of the contract we are trying to prove
         address target;
-        //The length of the result
+        // the length of the result
         uint256 length;
-        //The state root of the account we are trying to prove
+        // the state root of the account we are trying to prove
         bytes32 storageHash;
-        //The accountProof RLP-Encoded
+        // the accountProof RLP-Encoded
         bytes stateTrieWitness;
-        //The output index the prop refers to
+        // the output index the proof refers to
         uint256 l2OutputIndex;
-        //The bedock output RootProof sturct
+        // the bedrock output RootProof struct
         Types.OutputRootProof outputRootProof;
-        //The storage proofs for each slot included in the proof
+        // the storage proofs for each slot included in the proof
         StorageProof[] storageProofs;
     }
     struct StorageProof {
-        //The slot address
+        // the slot address
         bytes32 key;
-        //The storageProof RLP-Encoded
+        // the storageProof RLP-Encoded
         bytes storageTrieWitness;
     }
 
-    /// @notice Returns the value of one or more storage slots given the provided proof is correct
+    /// @notice returns the value of one or more storage slots given the provided proof is correct
     /// @param proof BedrockStateProof
-    /// @return The value of all included slots concatinated
+    /// @return the value of all included slots concatenated
     function getProofValue(BedrockStateProof memory proof) external view returns (bytes memory);
 }
 

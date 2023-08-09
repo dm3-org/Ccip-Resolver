@@ -3,7 +3,7 @@ pragma solidity 0.8.17;
 
 import {CcipResponseVerifier} from "../CcipResponseVerifier.sol";
 import {IBedrockProofVerifier} from "./IBedrockProofVerifier.sol";
-import {convertEVMChainIdToCoinType} from "../../coinType/Ensip11CointType.sol";
+import {convertEVMChainIdToCoinType} from "../../coinType/Ensip11CoinType.sol";
 
 contract BedrockCcipVerifier is CcipResponseVerifier {
     IBedrockProofVerifier public immutable bedrockProofVerifier;
@@ -27,20 +27,23 @@ contract BedrockCcipVerifier is CcipResponseVerifier {
      * @return The resolved response data encoded as bytes
      */
     function resolveWithProof(bytes calldata response, bytes calldata extraData) public view virtual override returns (bytes memory) {
-        /**
+        /*
          * @dev Decode the response and proof from the response bytes
          */
         (bytes memory responseEncoded, IBedrockProofVerifier.BedrockStateProof memory proof) = abi.decode(
             response,
             (bytes, IBedrockProofVerifier.BedrockStateProof)
         );
-        /**
-         * Revert if the proof target does not match the resolver. This is to prevent a malicious resolver from using a proof intended for another address.
+        /*
+         * Revert if the proof target does not match the resolver. This is to prevent a malicious resolver from using a * proof intended for another address.
          */
         require(proof.target == target, "proof target does not match resolver");
-        /**
-         * bedrockProofVerifier.getProofValue(proof) always returns the packed result. However, libraries like ethers.js expect the result to be encoded in bytes. Hence, the gateway needs to encode the result before returning it to the client.
-         * To ensure responseEncoded matches the value returned by bedrockProofVerifier.getProofValue(proof), we need to check the layout of the proof and encode the result accordingly, so we can compare the two values using the keccak256 hash.
+        /*
+         * bedrockProofVerifier.getProofValue(proof) always returns the packed result.
+         * However, libraries like ethers.js expect the result to be encoded in bytes.
+         * Hence, the gateway needs to encode the result before returning it to the client.
+         * To ensure responseEncoded matches the value returned by bedrockProofVerifier.getProofValue(proof),
+         * we need to check the layout of the proof and encode the result accordingly, so we can compare the two values * using the keccak256 hash.
          */
 
         require(
@@ -67,12 +70,12 @@ contract BedrockCcipVerifier is CcipResponseVerifier {
         bytes calldata
     ) external view override returns (string memory, uint256, string memory, uint8, bytes memory, bytes memory) {
         return (
-            string("Optimism Goerli"), //The name of the resolver
-            convertEVMChainIdToCoinType(420), //CoinType Accoridng to ENSIP-11 for Chain Id 420
-            this.graphqlUrl(), //The GraphQl Url
-            uint8(0), //Storage Type 0 => EVM
-            abi.encodePacked(address(target)), //Storage Location => Resolver Address
-            abi.encodePacked(address(0)) //Context => L2 Resolver Address
+            "Optimism Goerli", // the name of the resolver
+            convertEVMChainIdToCoinType(420), // coinType according to ENSIP-11 for chain id 420
+            this.graphqlUrl(), // the GraphQL Url
+            uint8(0), // storage Type 0 => EVM
+            abi.encodePacked(address(target)), // storage location => resolver address
+            abi.encodePacked(address(0)) // context => l2 resolver address
         );
     }
 }

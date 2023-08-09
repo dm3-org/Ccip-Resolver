@@ -79,7 +79,7 @@ Run `yarn run test:contracts`
 The tests are based on the Optimism local development environment. To run them you've to run this environment on your machine.
 Visit https://community.optimism.io/docs/developers/build/dev-node/ for setup instructions.
 
-1. After you've set up the optimism development environment run `make devnet-up` to start it.
+1. After you have set up the optimism development environment run `make devnet-up` to start it.
 2. Wait at least 5 minutes until everything is set up. This is mandatory because the local development environment contains different containers that are started independently from each other.
 3. Run `yarn run e2e:setup` to set up the environment required by the tests. This deploys the contracts and creates the initial data we're later going to prove.
 4. Wait again for a few minutes. The rollup needs to commit the changes made. If you see the error "Account is not part of the provided state root" or "Provided proof is invalid" The commit is still pending

@@ -1,4 +1,4 @@
-import { StorageLayout } from "./ProofService";
+import { StorageLayout } from './ProofService';
 
 /**
  * Response of the eth_getProof RPC method.

@@ -1,15 +1,15 @@
-import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
-import exp from "constants";
-import { BigNumber, ethers } from "ethers";
-import { dnsEncode } from "ethers/lib/utils";
-import { ethers as hreEthers } from "hardhat";
-import winston from "winston";
+import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
+import exp from 'constants';
+import { BigNumber, ethers } from 'ethers';
+import { dnsEncode } from 'ethers/lib/utils';
+import { ethers as hreEthers } from 'hardhat';
+import winston from 'winston';
 
-import { signAndEncodeResponse } from "../../gateway/handler/signing/signAndEncodeResponse";
-import { expect } from "../../test/chai-setup";
-import { SignatureCcipVerifier__factory } from "../../typechain";
+import { signAndEncodeResponse } from '../../gateway/handler/signing/signAndEncodeResponse';
+import { expect } from '../../test/chai-setup';
+import { SignatureCcipVerifier__factory } from '../../typechain';
 
-describe("Signature Ccip Verifier", () => {
+describe('Signature Ccip Verifier', () => {
     let owner: SignerWithAddress;
     let signer1: SignerWithAddress;
     let signer2: SignerWithAddress;
@@ -18,7 +18,7 @@ describe("Signature Ccip Verifier", () => {
     let resolver: SignerWithAddress;
 
     global.logger = winston.createLogger({
-        level: process.env.LOG_LEVEL ?? "info",
+        level: process.env.LOG_LEVEL ?? 'info',
         transports: [new winston.transports.Console()],
     });
 
@@ -26,27 +26,31 @@ describe("Signature Ccip Verifier", () => {
         // Get signers
         [owner, signer1, signer2, rando, alice, resolver] = await hreEthers.getSigners();
     });
-    describe("Constructor", () => {
-        it("Initially set the owner,url and signers using the constructor ", async () => {
+    describe('Constructor', () => {
+        it('Initially set the owner,url and signers using the constructor ', async () => {
             const signatureCcipVerifier = await new SignatureCcipVerifier__factory()
                 .connect(owner)
-                .deploy(owner.address, "http://localhost:8080/graphql", "Signature Ccip Resolver", resolver.address, [signer1.address]);
+                .deploy(owner.address, 'http://localhost:8080/graphql', 'Signature Ccip Resolver', resolver.address, [
+                    signer1.address,
+                ]);
 
             const actualOwner = await signatureCcipVerifier.owner();
             const actualGraphQlUrl = await signatureCcipVerifier.graphqlUrl();
             const actualSigner = await signatureCcipVerifier.signers(signer1.address);
 
             expect(actualOwner).to.equal(owner.address);
-            expect(actualGraphQlUrl).to.equal("http://localhost:8080/graphql");
+            expect(actualGraphQlUrl).to.equal('http://localhost:8080/graphql');
 
             expect(actualSigner).to.equal(true);
         });
     });
-    describe("setOwner", () => {
-        it("Owner can set a new Owner ", async () => {
+    describe('setOwner', () => {
+        it('Owner can set a new Owner ', async () => {
             const signatureCcipVerifier = await new SignatureCcipVerifier__factory()
                 .connect(owner)
-                .deploy(owner.address, "http://localhost:8080/graphql", "Signature Ccip Resolver", resolver.address, [signer1.address]);
+                .deploy(owner.address, 'http://localhost:8080/graphql', 'Signature Ccip Resolver', resolver.address, [
+                    signer1.address,
+                ]);
 
             const actualOwner = await signatureCcipVerifier.owner();
             expect(actualOwner).to.equal(owner.address);
@@ -64,59 +68,67 @@ describe("Signature Ccip Verifier", () => {
         it("Rando can't set a new owner ", async () => {
             const signatureCcipVerifier = await new SignatureCcipVerifier__factory()
                 .connect(owner)
-                .deploy(owner.address, "http://localhost:8080/graphql", "Signature Ccip Resolver", resolver.address, [signer1.address]);
+                .deploy(owner.address, 'http://localhost:8080/graphql', 'Signature Ccip Resolver', resolver.address, [
+                    signer1.address,
+                ]);
 
             const actualOwner = await signatureCcipVerifier.owner();
             expect(actualOwner).to.equal(owner.address);
 
             try {
                 await signatureCcipVerifier.connect(rando).setOwner(signer1.address, { gasLimit: 1000000 });
-                expect.fail("should have reverted");
+                expect.fail('should have reverted');
             } catch (e) {
-                expect(e.toString()).to.include("only owner");
+                expect(e.toString()).to.include('only owner');
             }
         });
     });
-    describe("set GrapgQlUrl", () => {
-        it("Owner can set a new Url ", async () => {
+    describe('set GrapgQlUrl', () => {
+        it('Owner can set a new Url ', async () => {
             const signatureCcipVerifier = await new SignatureCcipVerifier__factory()
                 .connect(owner)
-                .deploy(owner.address, "http://localhost:8080/graphql", "Signature Ccip Resolver", resolver.address, [signer1.address]);
+                .deploy(owner.address, 'http://localhost:8080/graphql', 'Signature Ccip Resolver', resolver.address, [
+                    signer1.address,
+                ]);
 
             const actualUrl = await signatureCcipVerifier.graphqlUrl();
-            expect(actualUrl).to.equal("http://localhost:8080/graphql");
+            expect(actualUrl).to.equal('http://localhost:8080/graphql');
 
-            const tx = await signatureCcipVerifier.setGraphUrl("http://foo.io/graphql");
+            const tx = await signatureCcipVerifier.setGraphUrl('http://foo.io/graphql');
             const receipt = await tx.wait();
 
             const [GraphQlUrlChanged] = receipt.events;
 
             const [newUrl] = GraphQlUrlChanged.args;
 
-            expect(await signatureCcipVerifier.graphqlUrl()).to.equal("http://foo.io/graphql");
-            expect(newUrl).to.equal("http://foo.io/graphql");
+            expect(await signatureCcipVerifier.graphqlUrl()).to.equal('http://foo.io/graphql');
+            expect(newUrl).to.equal('http://foo.io/graphql');
         });
         it("Rando can't set a new owner ", async () => {
             const signatureCcipVerifier = await new SignatureCcipVerifier__factory()
                 .connect(owner)
-                .deploy(owner.address, "http://localhost:8080/graphql", "Signature Ccip Resolver", resolver.address, [signer1.address]);
+                .deploy(owner.address, 'http://localhost:8080/graphql', 'Signature Ccip Resolver', resolver.address, [
+                    signer1.address,
+                ]);
 
             const actualUrl = await signatureCcipVerifier.graphqlUrl();
-            expect(actualUrl).to.equal("http://localhost:8080/graphql");
+            expect(actualUrl).to.equal('http://localhost:8080/graphql');
 
             try {
-                await signatureCcipVerifier.connect(rando).setGraphUrl("http://foo.io/graphql");
-                expect.fail("should have reverted");
+                await signatureCcipVerifier.connect(rando).setGraphUrl('http://foo.io/graphql');
+                expect.fail('should have reverted');
             } catch (e) {
-                expect(e.toString()).to.include("only owner");
+                expect(e.toString()).to.include('only owner');
             }
         });
     });
-    describe("addSigners", () => {
-        it("Owner can add new signers", async () => {
+    describe('addSigners', () => {
+        it('Owner can add new signers', async () => {
             const signatureCcipVerifier = await new SignatureCcipVerifier__factory()
                 .connect(owner)
-                .deploy(owner.address, "http://localhost:8080/graphql", "Signature Ccip Resolver", resolver.address, [signer1.address]);
+                .deploy(owner.address, 'http://localhost:8080/graphql', 'Signature Ccip Resolver', resolver.address, [
+                    signer1.address,
+                ]);
 
             const tx = await signatureCcipVerifier.addSigners([signer1.address, signer2.address]);
             const receipt = await tx.wait();
@@ -139,21 +151,25 @@ describe("Signature Ccip Verifier", () => {
         it("Rando can't add new signers", async () => {
             const signatureCcipVerifier = await new SignatureCcipVerifier__factory()
                 .connect(owner)
-                .deploy(owner.address, "http://localhost:8080/graphql", "Signature Ccip Resolver", resolver.address, [signer1.address]);
+                .deploy(owner.address, 'http://localhost:8080/graphql', 'Signature Ccip Resolver', resolver.address, [
+                    signer1.address,
+                ]);
 
             try {
                 await signatureCcipVerifier.connect(rando).addSigners([signer1.address, signer2.address]);
-                expect.fail("should have reverted");
+                expect.fail('should have reverted');
             } catch (e) {
-                expect(e.toString()).to.include("only owner");
+                expect(e.toString()).to.include('only owner');
             }
         });
     });
-    describe("removeSigners", () => {
-        it("Owner can remove signers", async () => {
+    describe('removeSigners', () => {
+        it('Owner can remove signers', async () => {
             const signatureCcipVerifier = await new SignatureCcipVerifier__factory()
                 .connect(owner)
-                .deploy(owner.address, "http://localhost:8080/graphql", "Signature Ccip Resolver", resolver.address, [signer1.address]);
+                .deploy(owner.address, 'http://localhost:8080/graphql', 'Signature Ccip Resolver', resolver.address, [
+                    signer1.address,
+                ]);
 
             const signerIsEnabled = await signatureCcipVerifier.signers(signer1.address);
             expect(signerIsEnabled).to.equal(true);
@@ -170,10 +186,12 @@ describe("Signature Ccip Verifier", () => {
 
             expect(signerIsStillEnabled).to.equal(false);
         });
-        it("Only remove signers that were already created before", async () => {
+        it('Only remove signers that were already created before', async () => {
             const signatureCcipVerifier = await new SignatureCcipVerifier__factory()
                 .connect(owner)
-                .deploy(owner.address, "http://localhost:8080/graphql", "Signature Ccip Resolver", resolver.address, [signer1.address]);
+                .deploy(owner.address, 'http://localhost:8080/graphql', 'Signature Ccip Resolver', resolver.address, [
+                    signer1.address,
+                ]);
 
             const signerIsEnabled = await signatureCcipVerifier.signers(signer1.address);
             expect(signerIsEnabled).to.equal(true);
@@ -194,16 +212,18 @@ describe("Signature Ccip Verifier", () => {
         it("Rando can't remove signers", async () => {
             const signatureCcipVerifier = await new SignatureCcipVerifier__factory()
                 .connect(owner)
-                .deploy(owner.address, "http://localhost:8080/graphql", "Signature Ccip Resolver", resolver.address, [signer1.address]);
+                .deploy(owner.address, 'http://localhost:8080/graphql', 'Signature Ccip Resolver', resolver.address, [
+                    signer1.address,
+                ]);
 
             const signerIsEnabled = await signatureCcipVerifier.signers(signer1.address);
             expect(signerIsEnabled).to.equal(true);
 
             try {
                 await signatureCcipVerifier.connect(rando).removeSigners([signer1.address]);
-                expect.fail("should have reverted");
+                expect.fail('should have reverted');
             } catch (e) {
-                expect(e.toString()).to.include("only owner");
+                expect(e.toString()).to.include('only owner');
             }
 
             const signerIsStillEnabled = await signatureCcipVerifier.signers(signer1.address);
@@ -211,71 +231,76 @@ describe("Signature Ccip Verifier", () => {
         });
     });
 
-    describe("resolveWithProof", () => {
-        it("returns result if signed correctly ", async () => {
+    describe('resolveWithProof', () => {
+        it('returns result if signed correctly ', async () => {
             const signatureCcipVerifier = await new SignatureCcipVerifier__factory()
                 .connect(owner)
-                .deploy(owner.address, "http://localhost:8080/graphql", "Signature Ccip Resolver", resolver.address, [signer1.address]);
+                .deploy(owner.address, 'http://localhost:8080/graphql', 'Signature Ccip Resolver', resolver.address, [
+                    signer1.address,
+                ]);
 
             const iface = new ethers.utils.Interface([
-                "function addr(bytes32)",
-                "function resolveWithContext(bytes calldata name,bytes calldata data,bytes calldata context) external view returns (bytes memory result)",
+                'function addr(bytes32)',
+                'function resolveWithContext(bytes calldata name,bytes calldata data,bytes calldata context) external view returns (bytes memory result)',
             ]);
 
-            const result = ethers.utils.defaultAbiCoder.encode(["bytes"], [alice.address]);
+            const result = ethers.utils.defaultAbiCoder.encode(['bytes'], [alice.address]);
 
-            const name = ethers.utils.dnsEncode("alice.eth");
-            const data = iface.encodeFunctionData("addr", [ethers.utils.namehash("alice.eth")]);
-            const extraData = iface.encodeFunctionData("resolveWithContext", [name, data, alice.address]);
+            const name = ethers.utils.dnsEncode('alice.eth');
+            const data = iface.encodeFunctionData('addr', [ethers.utils.namehash('alice.eth')]);
+            const extraData = iface.encodeFunctionData('resolveWithContext', [name, data, alice.address]);
             const response = await signAndEncodeResponse(signer1, resolver.address, result, extraData);
 
             const decodedResponse = await signatureCcipVerifier.resolveWithProof(response, extraData);
             expect(ethers.utils.getAddress(decodedResponse)).to.equal(alice.address);
         });
 
-        it("reverts if response was signed from rando ", async () => {
+        it('reverts if response was signed from rando ', async () => {
             const signatureCcipVerifier = await new SignatureCcipVerifier__factory()
                 .connect(owner)
-                .deploy(owner.address, "http://localhost:8080/graphql", "Signature Ccip Resolver", resolver.address, [signer1.address]);
+                .deploy(owner.address, 'http://localhost:8080/graphql', 'Signature Ccip Resolver', resolver.address, [
+                    signer1.address,
+                ]);
 
             const iface = new ethers.utils.Interface([
-                "function addr(bytes32)",
-                "function resolveWithContext(bytes calldata name,bytes calldata data,bytes calldata context) external view returns (bytes memory result)",
+                'function addr(bytes32)',
+                'function resolveWithContext(bytes calldata name,bytes calldata data,bytes calldata context) external view returns (bytes memory result)',
             ]);
 
-            const result = ethers.utils.defaultAbiCoder.encode(["bytes"], [alice.address]);
+            const result = ethers.utils.defaultAbiCoder.encode(['bytes'], [alice.address]);
 
-            const name = ethers.utils.dnsEncode("alice.eth");
-            const data = iface.encodeFunctionData("addr", [ethers.utils.namehash("alice.eth")]);
-            const extraData = iface.encodeFunctionData("resolveWithContext", [name, data, alice.address]);
+            const name = ethers.utils.dnsEncode('alice.eth');
+            const data = iface.encodeFunctionData('addr', [ethers.utils.namehash('alice.eth')]);
+            const extraData = iface.encodeFunctionData('resolveWithContext', [name, data, alice.address]);
             const response = await signAndEncodeResponse(rando, resolver.address, result, extraData);
 
             try {
                 await signatureCcipVerifier.resolveWithProof(response, extraData);
-                expect.fail("should have reverted");
+                expect.fail('should have reverted');
             } catch (e) {
                 console.log(e);
-                expect(e.reason).to.equal("SignatureVerifier: Invalid sigature");
+                expect(e.reason).to.equal('SignatureVerifier: Invalid signature');
             }
         });
     });
-    describe("Metadata", () => {
-        it("returns metadata", async () => {
+    describe('Metadata', () => {
+        it('returns metadata', async () => {
             const convertCoinTypeToEVMChainId = (_coinType: number) => {
                 return (0x7fffffff & _coinType) >> 0;
             };
             const signatureCcipVerifier = await new SignatureCcipVerifier__factory()
                 .connect(owner)
-                .deploy(owner.address, "http://localhost:8080/graphql", "Signature Ccip Resolver", resolver.address, [signer1.address]);
+                .deploy(owner.address, 'http://localhost:8080/graphql', 'Signature Ccip Resolver', resolver.address, [
+                    signer1.address,
+                ]);
 
-            const [name, coinType, graphqlUrl, storageType, storageLocation, context] = await signatureCcipVerifier.metadata(
-                dnsEncode("alice.eth")
-            );
-            expect(name).to.equal("Signature Ccip Resolver");
+            const [name, coinType, graphqlUrl, storageType, storageLocation, context] =
+                await signatureCcipVerifier.metadata(dnsEncode('alice.eth'));
+            expect(name).to.equal('Signature Ccip Resolver');
             expect(convertCoinTypeToEVMChainId(BigNumber.from(coinType).toNumber())).to.equal(60);
-            expect(graphqlUrl).to.equal("http://localhost:8080/graphql");
+            expect(graphqlUrl).to.equal('http://localhost:8080/graphql');
             expect(storageType).to.equal(storageType);
-            expect(ethers.utils.toUtf8String(storageLocation)).to.equal("Postgres");
+            expect(ethers.utils.toUtf8String(storageLocation)).to.equal('Postgres');
             expect(context).to.equal(ethers.constants.AddressZero);
         });
     });
