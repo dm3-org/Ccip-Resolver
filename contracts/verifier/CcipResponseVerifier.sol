@@ -5,7 +5,7 @@ import {ICcipResponseVerifier} from "./ICcipResponseVerifier.sol";
 import {SupportsInterface, ISupportsInterface} from "../SupportsInterface.sol";
 
 abstract contract CcipResponseVerifier is ICcipResponseVerifier, SupportsInterface {
-    /**
+    /*
      *   --------------------------------------------------
      *    EVENTS
      *   --------------------------------------------------
@@ -14,7 +14,7 @@ abstract contract CcipResponseVerifier is ICcipResponseVerifier, SupportsInterfa
     event GraphQlUrlChanged(string newGraphQlUrl);
     event OwnerChanged(address newOwner);
 
-    /**
+    /*
      *   --------------------------------------------------
      *    State Variables
      *   --------------------------------------------------
@@ -28,7 +28,7 @@ abstract contract CcipResponseVerifier is ICcipResponseVerifier, SupportsInterfa
 
     string public graphqlUrl;
 
-    /**
+    /*
      *   --------------------------------------------------
      *    Modifier
      *   --------------------------------------------------
@@ -59,7 +59,7 @@ abstract contract CcipResponseVerifier is ICcipResponseVerifier, SupportsInterfa
         emit OwnerChanged(_owner);
     }
 
-    /**
+    /*
      *   --------------------------------------------------
      *    Constructor
      *   --------------------------------------------------
@@ -70,7 +70,7 @@ abstract contract CcipResponseVerifier is ICcipResponseVerifier, SupportsInterfa
         graphqlUrl = _graphqlUrl;
     }
 
-    /**
+    /*
      *   --------------------------------------------------
      *    External functions
      *   --------------------------------------------------
@@ -83,7 +83,9 @@ abstract contract CcipResponseVerifier is ICcipResponseVerifier, SupportsInterfa
      * @return true if the contract supports the interface, false otherwise
      */
     function supportsInterface(bytes4 interfaceID) public pure override(SupportsInterface, ISupportsInterface) returns (bool) {
-        //Supports both ICcipResponseVerifier and ISupportsInterface
+        /*
+         * Supports both ICcipResponseVerifier and ISupportsInterfacef
+         */
         return interfaceID == type(ICcipResponseVerifier).interfaceId || super.supportsInterface(interfaceID);
     }
 

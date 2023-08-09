@@ -24,7 +24,7 @@ contract BedrockProofVerifier is IBedrockProofVerifier {
      * @return result The value of the slot or slots included in the proof
      */
     function getProofValue(BedrockStateProof memory proof) public view override returns (bytes memory) {
-        /**
+        /*
          * Validate the provided output root is valid
          * See https://github.com/ethereum-optimism/optimism/blob/4611198bf8bfd16563cc6bdf49bb35eed2e46801/packages/contracts-bedrock/contracts/L1/OptimismPortal.sol#L261
          */
@@ -35,7 +35,7 @@ contract BedrockProofVerifier is IBedrockProofVerifier {
 
         bytes memory result = getMultipleStorageProofs(proof);
 
-        /**
+        /*
          * If the storage layout is fixed, the result doesn't need to be trimmed
          */
         if (proof.layout == 0) {
@@ -56,7 +56,7 @@ contract BedrockProofVerifier is IBedrockProofVerifier {
             proof.stateTrieWitness,
             proof.outputRootProof.stateRoot
         );
-        /**
+        /*
          * The account storage root has to be part of the provided state root
          * It might take some time for the state root to be posted on L1 after the transaction is included in a block
          * Until then, the account might not be part of the state root
@@ -86,17 +86,17 @@ contract BedrockProofVerifier is IBedrockProofVerifier {
      */
     function getMultipleStorageProofs(BedrockStateProof memory proof) private pure returns (bytes memory) {
         bytes memory result = new bytes(0);
-        /**
+        /*
          * The storage root of the account
          */
         bytes32 storageRoot = getStorageRoot(proof);
 
-        /**
+        /*
          * For each sub storage proof, we are proving that the slot is included in the account root of the account
          */
         for (uint256 i = 0; i < proof.storageProofs.length; i++) {
             bytes memory slotValue = getSingleStorageProof(storageRoot, proof.storageProofs[i]);
-            /**
+            /*
              * Attach the current slot to the result
              */
             result = BytesLib.concat(result, slotValue);
@@ -116,7 +116,7 @@ contract BedrockProofVerifier is IBedrockProofVerifier {
             storageProof.storageTrieWitness,
             storageRoot
         );
-        /**
+        /*
          * this means the storage slot is empty. So we can directly return 0x without RLP encoding it.
          */
         if (!storageExists) {

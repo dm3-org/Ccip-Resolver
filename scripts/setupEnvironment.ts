@@ -1,6 +1,6 @@
 import { ethers } from "hardhat";
 import { ProofServiceTestContract, ProofServiceTestContract__factory } from "typechain";
-/**
+/*
  * This script is used to setup the environment for the e2e tests.
  * It asumes that you have set up the local development environment for OP bedrock
  * https://community.optimism.io/docs/developers/build/dev-node/

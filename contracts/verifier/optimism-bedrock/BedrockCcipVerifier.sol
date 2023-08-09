@@ -27,20 +27,23 @@ contract BedrockCcipVerifier is CcipResponseVerifier {
      * @return The resolved response data encoded as bytes
      */
     function resolveWithProof(bytes calldata response, bytes calldata extraData) public view virtual override returns (bytes memory) {
-        /**
+        /*
          * @dev Decode the response and proof from the response bytes
          */
         (bytes memory responseEncoded, IBedrockProofVerifier.BedrockStateProof memory proof) = abi.decode(
             response,
             (bytes, IBedrockProofVerifier.BedrockStateProof)
         );
-        /**
-         * Revert if the proof target does not match the resolver. This is to prevent a malicious resolver from using a proof intended for another address.
+        /*
+         * Revert if the proof target does not match the resolver. This is to prevent a malicious resolver from using a * proof intended for another address.
          */
         require(proof.target == target, "proof target does not match resolver");
-        /**
-         * bedrockProofVerifier.getProofValue(proof) always returns the packed result. However, libraries like ethers.js expect the result to be encoded in bytes. Hence, the gateway needs to encode the result before returning it to the client.
-         * To ensure responseEncoded matches the value returned by bedrockProofVerifier.getProofValue(proof), we need to check the layout of the proof and encode the result accordingly, so we can compare the two values using the keccak256 hash.
+        /*
+         * bedrockProofVerifier.getProofValue(proof) always returns the packed result.
+         * However, libraries like ethers.js expect the result to be encoded in bytes.
+         * Hence, the gateway needs to encode the result before returning it to the client.
+         * To ensure responseEncoded matches the value returned by bedrockProofVerifier.getProofValue(proof),
+         * we need to check the layout of the proof and encode the result accordingly, so we can compare the two values * using the keccak256 hash.
          */
 
         require(
