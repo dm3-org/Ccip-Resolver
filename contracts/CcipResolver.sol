@@ -77,12 +77,6 @@ contract CcipResolver is IExtendedResolver, IMetadataResolver, SupportsInterface
      * @param node The domain node for which the CCIP Verifier is set.
      * @param verifierAddress The address of the CcipResponseVerifier contract.
      * @param urls The gateway url that should handle the OffchainLookup.
-     * Requirements:
-     *   - The provided node must not be the zero address (0x0).
-     *   - The provided verifierAddress must not be the zero address (0x0).
-     *   - The caller of this function must be the owner of the given node.
-     *   - The verifierAddress must implement the ICcipResponseVerifier interface.
-     *   - The URL must not be empty.
      */
     function setVerifierForDomain(bytes32 node, address verifierAddress, string[] memory urls) external {
         require(node != bytes32(0), "node is 0x0");
@@ -111,7 +105,6 @@ contract CcipResolver is IExtendedResolver, IMetadataResolver, SupportsInterface
         /*
          * Check that the url is non-null.
          * Although it may not be a sufficient url check, it prevents users from passing undefined or empty strings.
-         * @dev Maybe we should add a more sophisticated url check. Maybe not??
          */
         require(urls.length > 0, "at least one gateway url has to be provided");
 
