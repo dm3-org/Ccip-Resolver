@@ -203,7 +203,7 @@ describe("CCIpResolver Test", () => {
             try {
                 await ccipResolver.resolve(ethers.utils.dnsEncode("foo.eth"), "0x");
             } catch (e) {
-                expect(e.errorName).to.equal("UnknownVerfier");
+                expect(e.errorName).to.equal("UnknownVerifier");
             }
         });
         it("returns Offchain lookup for parent domain", async () => {
