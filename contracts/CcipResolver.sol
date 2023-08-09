@@ -37,7 +37,7 @@ contract CcipResolver is IExtendedResolver, IMetadataResolver, SupportsInterface
      */
 
     error OffchainLookup(address sender, string[] urls, bytes callData, bytes4 callbackFunction, bytes extraData);
-    error UnknownVerfier();
+    error UnknownVerifier();
 
     /**
      *   --------------------------------------------------
@@ -251,31 +251,7 @@ contract CcipResolver is IExtendedResolver, IMetadataResolver, SupportsInterface
      * @return node The node associated with the given domain name
      */
     function getVerifierOfDomain(bytes memory name) public view returns (CcipVerifier memory, bytes32) {
-        /**
-         * We start with the entrire name and iterate over the labels until we find a verifier.
-         */
-        uint offset = 0;
-
-        while (offset < name.length - 1) {
-            /**
-             * Get the node of the current label
-             */
-            bytes32 node = name.namehash(offset);
-
-            CcipVerifier memory _ccipVerifier = ccipVerifier[node];
-            /**
-             * If the verifier is set return it
-             */
-            if (address(_ccipVerifier.verifierAddress) != address(0)) {
-                return (_ccipVerifier, node);
-            }
-            /**
-             * Otherwise continue with the next label
-             */
-            (, offset) = name.readLabel(offset);
-        }
-
-        revert UnknownVerfier();
+        return getVerifierOfSegment(name, 0, name.namehash(0));
     }
 
     /**
@@ -305,5 +281,46 @@ contract CcipResolver is IExtendedResolver, IMetadataResolver, SupportsInterface
         if (nodeOwner == address(nameWrapper)) {
             nodeOwner = nameWrapper.ownerOf(uint256(node));
         }
+    }
+
+    /**
+     * --------------------------------------------------
+     *    Private Functions
+     * --------------------------------------------------
+     *
+     */
+    /**
+     * @dev Recursively searches for a verifier associated with a segment of the given domain name.
+     * If a verifier is found, it returns the verifier and the corresponding node.
+     *
+     * @param name The domain name in bytes
+     * @param offset The current offset in the name being processed
+     * @param node The current node being processed
+     * @return The CcipVerifier associated with the domain segment, and the corresponding node
+     *
+     * @notice This function searches for a verifier starting from the given offset in the domain name.
+     *         It checks if a verifier is set for the current node, and if not, it continues with the next label.
+     *         If the end of the name is reached and no verifier is found, it reverts with an UnknownVerifier error.
+     */
+    function getVerifierOfSegment(bytes memory name, uint offset, bytes32 node) private view returns (CcipVerifier memory, bytes32) {
+        /**
+         * If we reached the root node and there is no verifier set we revert with UnknownVerifier
+         */
+        if (offset >= name.length - 1) {
+            revert UnknownVerifier();
+        }
+
+        CcipVerifier memory _ccipVerifier = ccipVerifier[node];
+        /**
+         * If the verifier is set for the given node we return it and break the recursion
+         */
+        if (address(_ccipVerifier.verifierAddress) != address(0)) {
+            return (_ccipVerifier, node);
+        }
+        /**
+         * Otherwise continue with the next label
+         */
+        (, offset) = name.readLabel(offset);
+        return getVerifierOfSegment(name, offset, name.namehash(offset));
     }
 }

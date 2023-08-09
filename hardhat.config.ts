@@ -23,9 +23,9 @@ const DEPLOYER_PRIVATE_KEY = process.env.DEPLOYER_PRIVATE_KEY ?? ethers.Wallet.c
 const hardhat = process.env.CI
     ? {}
     : {
-          forking: {
+      /*     forking: {
               url: "http://localhost:8545",
-          },
+          }, */
       };
 
 module.exports = {
