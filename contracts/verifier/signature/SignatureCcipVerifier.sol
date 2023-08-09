@@ -3,7 +3,7 @@ pragma solidity 0.8.17;
 
 import {CcipResponseVerifier} from "../CcipResponseVerifier.sol";
 import {SignatureVerifier} from "./SignatureVerifier.sol";
-import {convertEVMChainIdToCoinType} from "../../coinType/Ensip11CointType.sol";
+import {convertEVMChainIdToCoinType} from "../../coinType/Ensip11CoinType.sol";
 
 contract SignatureCcipVerifier is CcipResponseVerifier {
     string public name;
@@ -13,7 +13,7 @@ contract SignatureCcipVerifier is CcipResponseVerifier {
 
     event NewOwner(address newOwner);
     event NewSigners(address[] signers);
-    event SignerRemoved(address removedSinger);
+    event SignerRemoved(address removedSigner);
 
     constructor(
         address _owner,
@@ -50,10 +50,10 @@ contract SignatureCcipVerifier is CcipResponseVerifier {
      */
     function removeSigners(address[] memory _signers) external onlyOwner {
         for (uint256 i = 0; i < _signers.length; i++) {
-            //Without this if check it's possible to add a signer to the SignerRemoved Event that never was a signer in the first place. This may cause failures at indexing services that are trying to delete a non-existing signer...
+            // Without this if check, it's possible to add a signer to the SignerRemoved Event that never was a signer in the first place. This may cause failures at indexing services that are trying to delete a non-existing signer...
             if (signers[_signers[i]]) {
                 signers[_signers[i]] = false;
-                emit SignerRemoved((_signers[i]));
+                emit SignerRemoved(_signers[i]);
             }
         }
     }
@@ -68,9 +68,9 @@ contract SignatureCcipVerifier is CcipResponseVerifier {
      */
     function resolveWithProof(bytes calldata response, bytes calldata extraData) external view override returns (bytes memory) {
         (address signer, bytes memory result) = SignatureVerifier.verify(resolver, extraData, response);
-        require(signers[signer], "SignatureVerifier: Invalid sigature");
+        require(signers[signer], "SignatureVerifier: Invalid signature");
         /**
-         * @dev Because this function is ment to be called via staticcall, we need to decode the response data before returning it.
+         * @dev Because this function is meant to be called via staticcall, we need to decode the response data before returning it.
          */
         bytes memory decodedResponse = abi.decode(result, (bytes));
         return decodedResponse;
@@ -84,18 +84,18 @@ contract SignatureCcipVerifier is CcipResponseVerifier {
      * @return graphqlUrl The GraphQL URL used by the resolver
      * @return storageType Storage Type (0 for EVM)
      * @return storageLocation The storage identifier. For EVM chains, this is the address of the resolver contract.
-     * @return context the owner of the name. Always returns address(0) since the owner is determined by the ccipResolver contract.
+     * @return context The owner of the name. Always returns address(0) since the owner is determined by the ccipResolver contract.
      */
     function metadata(
         bytes calldata
     ) external view override returns (string memory, uint256, string memory, uint8, bytes memory, bytes memory) {
         return (
-            name, //The name of the resolver
-            convertEVMChainIdToCoinType(60), //Resolvers coin type => Etheruem
-            this.graphqlUrl(), //The GraphQl Url
-            uint8(1), //Storage Type 0 => Offchain Database
-            "Postgres", //Storage Location => Resolver Address
-            abi.encodePacked(address(0)) //Context => Owner Address
+            name, // The name of the resolver
+            convertEVMChainIdToCoinType(60), // Resolvers coin type => Ethereum
+            this.graphqlUrl(), // The GraphQL Url
+            uint8(1), // Storage Type 0 => Offchain Database
+            "Postgres", // Storage Location => Resolver Address
+            abi.encodePacked(address(0)) // Context => Owner Address
         );
     }
 }

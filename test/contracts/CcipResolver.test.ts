@@ -1,5 +1,4 @@
 import { FakeContract, smock } from "@defi-wonderland/smock";
-import { asL2Provider } from "@eth-optimism/sdk";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { expect } from "chai";
 import { BigNumber, ethers } from "ethers";
@@ -203,7 +202,7 @@ describe("CCIpResolver Test", () => {
             try {
                 await ccipResolver.resolve(ethers.utils.dnsEncode("foo.eth"), "0x");
             } catch (e) {
-                expect(e.errorName).to.equal("UnknownVerfier");
+                expect(e.errorName).to.equal("UnknownVerifier");
             }
         });
         it("returns Offchain lookup for parent domain", async () => {

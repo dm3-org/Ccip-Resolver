@@ -3,7 +3,7 @@ pragma solidity 0.8.17;
 
 import {CcipResponseVerifier} from "../CcipResponseVerifier.sol";
 import {IBedrockProofVerifier} from "./IBedrockProofVerifier.sol";
-import {convertEVMChainIdToCoinType} from "../../coinType/Ensip11CointType.sol";
+import {convertEVMChainIdToCoinType} from "../../coinType/Ensip11CoinType.sol";
 
 contract BedrockCcipVerifier is CcipResponseVerifier {
     IBedrockProofVerifier public immutable bedrockProofVerifier;
@@ -67,12 +67,12 @@ contract BedrockCcipVerifier is CcipResponseVerifier {
         bytes calldata
     ) external view override returns (string memory, uint256, string memory, uint8, bytes memory, bytes memory) {
         return (
-            string("Optimism Goerli"), //The name of the resolver
-            convertEVMChainIdToCoinType(420), //CoinType Accoridng to ENSIP-11 for Chain Id 420
-            this.graphqlUrl(), //The GraphQl Url
-            uint8(0), //Storage Type 0 => EVM
-            abi.encodePacked(address(target)), //Storage Location => Resolver Address
-            abi.encodePacked(address(0)) //Context => L2 Resolver Address
+            "Optimism Goerli", // the name of the resolver
+            convertEVMChainIdToCoinType(420), // coinType according to ENSIP-11 for chain id 420
+            this.graphqlUrl(), // the GraphQL Url
+            uint8(0), // storage Type 0 => EVM
+            abi.encodePacked(address(target)), // storage location => resolver address
+            abi.encodePacked(address(0)) // context => l2 resolver address
         );
     }
 }

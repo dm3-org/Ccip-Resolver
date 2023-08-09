@@ -37,7 +37,7 @@ contract CcipResolver is IExtendedResolver, IMetadataResolver, SupportsInterface
      */
 
     error OffchainLookup(address sender, string[] urls, bytes callData, bytes4 callbackFunction, bytes extraData);
-    error UnknownVerfier();
+    error UnknownVerifier();
 
     /**
      *   --------------------------------------------------
@@ -57,9 +57,9 @@ contract CcipResolver is IExtendedResolver, IMetadataResolver, SupportsInterface
      */
 
     constructor(
-        //The ENS registry
+        // The ENS registry
         ENSRegistry _ensRegistry,
-        //The name wrapper
+        // The name wrapper
         INameWrapper _nameWrapper
     ) {
         ensRegistry = _ensRegistry;
@@ -89,7 +89,7 @@ contract CcipResolver is IExtendedResolver, IMetadataResolver, SupportsInterface
         require(verifierAddress != address(0), "verifierAddress is 0x0");
 
         /**
-         *Only the node owner can set the verifier for a node. NameWrapper profiles are supported too.
+         * Only the node owner can set the verifier for a node. NameWrapper profiles are supported too.
          */
         require(msg.sender == getNodeOwner(node), "only node owner");
         /**
@@ -101,7 +101,7 @@ contract CcipResolver is IExtendedResolver, IMetadataResolver, SupportsInterface
         );
 
         /**
-         * A successfull static call wil return 0x0000000000000000000000000000000000000000000000000000000000000001
+         * A successful static call will return 0x0000000000000000000000000000000000000000000000000000000000000001
          * Hence we've to check that the last bit is set.
          */
         require(
@@ -109,9 +109,9 @@ contract CcipResolver is IExtendedResolver, IMetadataResolver, SupportsInterface
             "verifierAddress is not a CCIP Verifier"
         );
         /**
-         * Check that the url is non null.
-         * Although it may not be a sufficient url check it prevents users from passing undefined or empty strings.
-         * @dev Maybe we should add a more sofisticated url check. Maybe not ??
+         * Check that the url is non-null.
+         * Although it may not be a sufficient url check, it prevents users from passing undefined or empty strings.
+         * @dev Maybe we should add a more sophisticated url check. Maybe not??
          */
         require(urls.length > 0, "at least one gateway url has to be provided");
 
@@ -137,7 +137,7 @@ contract CcipResolver is IExtendedResolver, IMetadataResolver, SupportsInterface
          */
         (CcipVerifier memory _verifier, bytes32 node) = getVerifierOfDomain(name);
         /**
-         * Retrives the owner of the node. NameWrapper profiles are supported too. This will be the context of the request.
+         * Retrieves the owner of the node. NameWrapper profiles are supported too. This will be the context of the request.
          */
         address nodeOwner = getNodeOwner(node);
         bytes memory context = abi.encodePacked(nodeOwner);
@@ -147,7 +147,7 @@ contract CcipResolver is IExtendedResolver, IMetadataResolver, SupportsInterface
         bytes memory callData = abi.encodeWithSelector(IResolverService.resolveWithContext.selector, name, data, context);
         /**
          * The gateway url that should handle the OffchainLookup.
-         * @dev At the moement we just support a single URL. Maybe we should support multiple URLs in the future. Before entering the audit
+         * @dev At the moment we just support a single URL. Maybe we should support multiple URLs in the future. Before entering the audit
          */
 
         revert OffchainLookup(address(this), _verifier.gatewayUrls, callData, CcipResolver.resolveWithProof.selector, callData);
@@ -161,7 +161,7 @@ contract CcipResolver is IExtendedResolver, IMetadataResolver, SupportsInterface
      */
     function resolveWithProof(bytes calldata response, bytes calldata extraData) external view returns (bytes memory) {
         /**
-         * decode the calldata that was encdoed in the the resolve function for IResolverService.resolveWithContext()
+         * decode the calldata that was encoded in the resolve function for IResolverService.resolveWithContext()
          * bytes memory callData = abi.encodeWithSelector(IResolverService.resolveWithContext.selector, name, data context);
          */
         (bytes memory name, bytes memory data) = abi.decode(extraData[4:], (bytes, bytes));
@@ -176,15 +176,15 @@ contract CcipResolver is IExtendedResolver, IMetadataResolver, SupportsInterface
          */
         bytes4 callBackSelector = ICcipResponseVerifier(_ccipVerifier.verifierAddress).onResolveWithProof(name, data);
         /**
-         * Reverts when no callback selector was found. This should normally never happen because setVerifier() checks * that the verifierAddress implements the ICcipResponseVerifier interface. However it might by possbible by
-         * overtiding the onResolveWithProof function and return 0x. In that case the contract reverts here.
+         * reverts when no callback selector was found. This should normally never happen because setVerifier() checks * that the verifierAddress implements the ICcipResponseVerifier interface. However, it might be possible by
+         * overriding the onResolveWithProof function and return 0x. In that case, the contract reverts here.
          */
         require(callBackSelector != bytes4(0), "No callback selector found");
 
         /**
          * staticcall to the callback function on the verifier contract.
          * This function always returns bytes even the called function returns a Fixed type due to the return type of staticcall in solidity.
-         * So you might want to decode the result using abi.decode(resolveWithProofResponse,(bytes))
+         * So you might want to decode the result using abi.decode(resolveWithProofResponse, (bytes))
          */
         (bool success, bytes memory resolveWithProofResponse) = address(_ccipVerifier.verifierAddress).staticcall(
             abi.encodeWithSelector(callBackSelector, response, extraData)
@@ -205,7 +205,7 @@ contract CcipResolver is IExtendedResolver, IMetadataResolver, SupportsInterface
      * @return graphqlUrl The GraphQL URL used by the resolver
      * @return storageType Storage Type (0 for EVM)
      * @return storageLocation The storage identifier. For EVM chains, this is the address of the resolver contract.
-     * @return context can be l2 resolver contract address for evm chain but can be any l2 storage identifier for non evm chain
+     * @return context can be l2 resolver contract address for evm chain but can be any l2 storage identifier for non-evm chain
      */
     function metadata(
         bytes calldata name
@@ -221,7 +221,7 @@ contract CcipResolver is IExtendedResolver, IMetadataResolver, SupportsInterface
          */
         (
             string memory resolverName,
-            uint256 cointype,
+            uint256 coinType,
             string memory graphqlUrl,
             uint8 storageType,
             bytes memory storageLocation,
@@ -229,12 +229,12 @@ contract CcipResolver is IExtendedResolver, IMetadataResolver, SupportsInterface
         ) = ICcipResponseVerifier(_ccipVerifier.verifierAddress).metadata(name);
 
         /**
-         * To determine the context of the request we need to get the owner of the node.
+         * To determine the context of the request, we need to get the owner of the node.
          */
         bytes32 node = name.namehash(0);
         bytes memory context = abi.encodePacked(getNodeOwner(node));
 
-        return (resolverName, cointype, graphqlUrl, storageType, storageLocation, context);
+        return (resolverName, coinType, graphqlUrl, storageType, storageLocation, context);
     }
 
     /**
@@ -245,37 +245,13 @@ contract CcipResolver is IExtendedResolver, IMetadataResolver, SupportsInterface
 
     /**
      * @notice Get the CCIP Verifier and node for a given domain name
-     * @dev This function allows retrieving the CCIP Verifier and its associated node for a given domain name. For subdomians it will return the CCIP Verifier of the closest parent.
+     * @dev This function allows retrieving the CCIP Verifier and its associated node for a given domain name. For subdomains, it will return the CCIP Verifier of the closest parent.
      * @param name The domain name in bytes (dnsEncoded)
      * @return _ccipVerifier The CCIP Verifier associated with the given domain name
      * @return node The node associated with the given domain name
      */
     function getVerifierOfDomain(bytes memory name) public view returns (CcipVerifier memory, bytes32) {
-        /**
-         * We start with the entrire name and iterate over the labels until we find a verifier.
-         */
-        uint offset = 0;
-
-        while (offset < name.length - 1) {
-            /**
-             * Get the node of the current label
-             */
-            bytes32 node = name.namehash(offset);
-
-            CcipVerifier memory _ccipVerifier = ccipVerifier[node];
-            /**
-             * If the verifier is set return it
-             */
-            if (address(_ccipVerifier.verifierAddress) != address(0)) {
-                return (_ccipVerifier, node);
-            }
-            /**
-             * Otherwise continue with the next label
-             */
-            (, offset) = name.readLabel(offset);
-        }
-
-        revert UnknownVerfier();
+        return getVerifierOfSegment(name, 0, name.namehash(0));
     }
 
     /**
@@ -305,5 +281,46 @@ contract CcipResolver is IExtendedResolver, IMetadataResolver, SupportsInterface
         if (nodeOwner == address(nameWrapper)) {
             nodeOwner = nameWrapper.ownerOf(uint256(node));
         }
+    }
+
+    /**
+     * --------------------------------------------------
+     *    Private Functions
+     * --------------------------------------------------
+     *
+     */
+    /**
+     * @dev Recursively searches for a verifier associated with a segment of the given domain name.
+     * If a verifier is found, it returns the verifier and the corresponding node.
+     *
+     * @param name The domain name in bytes
+     * @param offset The current offset in the name being processed
+     * @param node The current node being processed
+     * @return The CcipVerifier associated with the domain segment, and the corresponding node
+     *
+     * @notice This function searches for a verifier starting from the given offset in the domain name.
+     *         It checks if a verifier is set for the current node, and if not, it continues with the next label.
+     *         If the end of the name is reached and no verifier is found, it reverts with an UnknownVerifier error.
+     */
+    function getVerifierOfSegment(bytes memory name, uint256 offset, bytes32 node) private view returns (CcipVerifier memory, bytes32) {
+        /**
+         * If we reached the root node and there is no verifier set, we revert with UnknownVerifier
+         */
+        if (offset >= name.length - 1) {
+            revert UnknownVerifier();
+        }
+
+        CcipVerifier memory _ccipVerifier = ccipVerifier[node];
+        /**
+         * If the verifier is set for the given node, we return it and break the recursion
+         */
+        if (address(_ccipVerifier.verifierAddress) != address(0)) {
+            return (_ccipVerifier, node);
+        }
+        /**
+         * Otherwise, continue with the next label
+         */
+        (, offset) = name.readLabel(offset);
+        return getVerifierOfSegment(name, offset, name.namehash(offset));
     }
 }
