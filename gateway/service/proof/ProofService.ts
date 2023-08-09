@@ -1,9 +1,9 @@
-import { toRpcHexString } from "@eth-optimism/core-utils";
-import { asL2Provider, CrossChainMessenger, L2Provider } from "@eth-optimism/sdk";
-import { BigNumber, ethers } from "ethers";
-import { keccak256 } from "ethers/lib/utils";
+import { toRpcHexString } from '@eth-optimism/core-utils';
+import { asL2Provider, CrossChainMessenger, L2Provider } from '@eth-optimism/sdk';
+import { BigNumber, ethers } from 'ethers';
+import { keccak256 } from 'ethers/lib/utils';
 
-import { CreateProofResult, EthGetProofResponse, StorageProof } from "./types";
+import { CreateProofResult, EthGetProofResponse, StorageProof } from './types';
 
 export enum StorageLayout {
     /**
@@ -44,13 +44,22 @@ export class ProofService {
      * @param slot The storage slot the proof should be created for
      */
 
-    public async createProof(target: string, slot: string, layout: StorageLayout = StorageLayout.DYNAMIC): Promise<CreateProofResult> {
+    public async createProof(
+        target: string,
+        slot: string,
+        layout: StorageLayout = StorageLayout.DYNAMIC,
+    ): Promise<CreateProofResult> {
         /**
          * use the most recent block,posted to L1, to build the proof
          */
         const { l2OutputIndex, number, stateRoot, hash } = await this.getLatestProposedBlock();
 
-        const { storageProof, storageHash, accountProof, length } = await this.getProofForSlot(slot, number, target, layout);
+        const { storageProof, storageHash, accountProof, length } = await this.getProofForSlot(
+            slot,
+            number,
+            target,
+            layout,
+        );
 
         /**
          * The messengePasserStorageRoot is important for the verification on chain
@@ -81,7 +90,9 @@ export class ProofService {
         };
 
         // The result is not part of the proof but its convenient to have it i:E in tests
-        const result = storageProof.reduce((agg, cur) => agg + cur.value.substring(2), "0x").substring(0, length * 2 + 2);
+        const result = storageProof
+            .reduce((agg, cur) => agg + cur.value.substring(2), '0x')
+            .substring(0, length * 2 + 2);
         return { result, proof };
     }
     /**
@@ -118,7 +129,12 @@ export class ProofService {
             throw new Error(`StateRoot for block ${outputProposal.l2BlockNumber.toNumber()} not found`);
         }
 
-        return { stateRoot, hash, number: outputProposal.l2BlockNumber.toNumber(), l2OutputIndex: l2OutputIndex.toNumber() };
+        return {
+            stateRoot,
+            hash,
+            number: outputProposal.l2BlockNumber.toNumber(),
+            l2OutputIndex: l2OutputIndex.toNumber(),
+        };
     }
 
     /**
@@ -134,8 +150,13 @@ export class ProofService {
         initalSlot: string,
         blockNr: number,
         resolverAddr: string,
-        layout: StorageLayout
-    ): Promise<{ storageProof: (StorageProof & { value: string })[]; accountProof: string; storageHash: string; length: number }> {
+        layout: StorageLayout,
+    ): Promise<{
+        storageProof: (StorageProof & { value: string })[];
+        accountProof: string;
+        storageHash: string;
+        length: number;
+    }> {
         if (layout === StorageLayout.FIXED) {
             /**
              * A fixed slot always is a single slot
@@ -177,7 +198,7 @@ export class ProofService {
             /**
              * For short types the length can be encoded by calculating length / 2
              */
-            return BigNumber.from("0x" + lastByte)
+            return BigNumber.from('0x' + lastByte)
                 .div(2)
                 .toNumber();
         }
@@ -198,7 +219,11 @@ export class ProofService {
         /**
          * Proving the short type is simple all we have to do is to call eth_getProof
          */
-        const { storageProof, accountProof, storageHash } = await this.makeGetProofRpcCall(resolverAddr, [slot], blockNr);
+        const { storageProof, accountProof, storageHash } = await this.makeGetProofRpcCall(
+            resolverAddr,
+            [slot],
+            blockNr,
+        );
 
         return {
             accountProof,
@@ -230,12 +255,16 @@ export class ProofService {
         /**
          * Computing the addresses of every other slot
          */
-        const slots = [...Array(totalSlots).keys()].map((i) => BigNumber.from(firstSlot).add(i).toHexString());
+        const slots = [...Array(totalSlots).keys()].map(i => BigNumber.from(firstSlot).add(i).toHexString());
 
         /*
          * After we know every slot that has to be proven we can call eth_getProof.
          */
-        const { accountProof, storageProof, storageHash } = await this.makeGetProofRpcCall(resolverAddr, slots, blocknr);
+        const { accountProof, storageProof, storageHash } = await this.makeGetProofRpcCall(
+            resolverAddr,
+            slots,
+            blocknr,
+        );
 
         return {
             accountProof,
@@ -255,7 +284,7 @@ export class ProofService {
         const { storageHash } = await this.makeGetProofRpcCall(
             this.crossChainMessenger.contracts.l2.BedrockMessagePasser.address,
             [],
-            blockNr
+            blockNr,
         );
 
         return storageHash;
@@ -267,15 +296,21 @@ export class ProofService {
      * @param blocknr The block number for which to fetch the proof.
      * @returns A promise that resolves to the proof response.
      */
-    private async makeGetProofRpcCall(resolverAddr: string, slots: string[], blocknr: number): Promise<EthGetProofResponse> {
-        return this.l2Provider.send("eth_getProof", [resolverAddr, slots, toRpcHexString(blocknr)]);
+    private async makeGetProofRpcCall(
+        resolverAddr: string,
+        slots: string[],
+        blocknr: number,
+    ): Promise<EthGetProofResponse> {
+        return this.l2Provider.send('eth_getProof', [resolverAddr, slots, toRpcHexString(blocknr)]);
     }
     /**
      * RLP encodes the storage proof
      * @param storageProofs The storage proofs to be mapped.
      * @returns An array of mapped storage proofs.
      */
-    private rlpEncodeStroageProof(storageProofs: EthGetProofResponse["storageProof"]): (StorageProof & { value: string })[] {
+    private rlpEncodeStroageProof(
+        storageProofs: EthGetProofResponse['storageProof'],
+    ): (StorageProof & { value: string })[] {
         return storageProofs.map(({ key, proof, value }) => ({
             key,
             value,

@@ -137,9 +137,20 @@ contract CcipResolver is IExtendedResolver, IMetadataResolver, SupportsInterface
         /*
          * The calldata the gateway has to resolve
          */
-        bytes memory callData = abi.encodeWithSelector(IResolverService.resolveWithContext.selector, name, data, context);
+        bytes memory callData = abi.encodeWithSelector(
+            IResolverService.resolveWithContext.selector,
+            name,
+            data,
+            context
+        );
 
-        revert OffchainLookup(address(this), _verifier.gatewayUrls, callData, CcipResolver.resolveWithProof.selector, callData);
+        revert OffchainLookup(
+            address(this),
+            _verifier.gatewayUrls,
+            callData,
+            CcipResolver.resolveWithProof.selector,
+            callData
+        );
     }
 
     /**
@@ -291,7 +302,11 @@ contract CcipResolver is IExtendedResolver, IMetadataResolver, SupportsInterface
      *         It checks if a verifier is set for the current node, and if not, it continues with the next label.
      *         If the end of the name is reached and no verifier is found, it reverts with an UnknownVerifier error.
      */
-    function getVerifierOfSegment(bytes memory name, uint256 offset, bytes32 node) private view returns (CcipVerifier memory, bytes32) {
+    function getVerifierOfSegment(
+        bytes memory name,
+        uint256 offset,
+        bytes32 node
+    ) private view returns (CcipVerifier memory, bytes32) {
         /*
          * If we reached the root node and there is no verifier set, we revert with UnknownVerifier
          */

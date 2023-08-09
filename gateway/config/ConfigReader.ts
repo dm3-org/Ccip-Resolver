@@ -1,10 +1,10 @@
-import { ethers } from "ethers";
+import { ethers } from 'ethers';
 
-import { Config, ConfigEntry } from "./Config";
+import { Config, ConfigEntry } from './Config';
 
 export function getConfigReader(_config?: string) {
     if (!_config) {
-        throw new Error("CONFIG IS MISSING");
+        throw new Error('CONFIG IS MISSING');
     }
 
     let config: Config;
@@ -12,7 +12,7 @@ export function getConfigReader(_config?: string) {
     try {
         config = JSON.parse(_config);
     } catch (e) {
-        throw new Error("Invalid JSON");
+        throw new Error('Invalid JSON');
     }
 
     Object.keys(config).forEach((address: string) => {

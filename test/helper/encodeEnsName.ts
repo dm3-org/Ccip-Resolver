@@ -6,14 +6,14 @@
  */
 export function encodeEnsName(ensName: string) {
     // strip leading and trailing .
-    const n = ensName.replace(/^\.|\.$/gm, "");
+    const n = ensName.replace(/^\.|\.$/gm, '');
 
-    const bufLen = n === "" ? 1 : n.length + 2;
+    const bufLen = n === '' ? 1 : n.length + 2;
     const buf = Buffer.allocUnsafe(bufLen);
 
     let offset = 0;
     if (n.length) {
-        const list = n.split(".");
+        const list = n.split('.');
         for (const e of list) {
             const len = buf.write(e, offset + 1);
             buf[offset] = len;
@@ -21,5 +21,5 @@ export function encodeEnsName(ensName: string) {
         }
     }
     buf[offset++] = 0;
-    return "0x" + buf.reduce((output, elem) => output + ("0" + elem.toString(16)).slice(-2), "");
+    return '0x' + buf.reduce((output, elem) => output + ('0' + elem.toString(16)).slice(-2), '');
 }

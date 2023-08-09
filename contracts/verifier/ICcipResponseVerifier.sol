@@ -7,5 +7,7 @@ interface ICcipResponseVerifier is ISupportsInterface {
 
     function onResolveWithProof(bytes calldata name, bytes calldata data) external pure returns (bytes4);
 
-    function metadata(bytes calldata name) external view returns (string memory, uint256, string memory, uint8, bytes memory, bytes memory);
+    function metadata(
+        bytes calldata name
+    ) external view returns (string memory, uint256, string memory, uint8, bytes memory, bytes memory);
 }

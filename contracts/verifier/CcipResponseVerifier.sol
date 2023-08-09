@@ -82,7 +82,9 @@ abstract contract CcipResponseVerifier is ICcipResponseVerifier, SupportsInterfa
      * @param interfaceID The interface ID to check for support
      * @return true if the contract supports the interface, false otherwise
      */
-    function supportsInterface(bytes4 interfaceID) public pure override(SupportsInterface, ISupportsInterface) returns (bool) {
+    function supportsInterface(
+        bytes4 interfaceID
+    ) public pure override(SupportsInterface, ISupportsInterface) returns (bool) {
         /*
          * Supports both ICcipResponseVerifier and ISupportsInterfacef
          */

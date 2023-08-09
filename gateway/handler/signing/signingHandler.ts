@@ -1,10 +1,10 @@
-import axios from "axios";
-import { ethers } from "ethers";
-import { Logger } from "winston";
+import axios from 'axios';
+import { ethers } from 'ethers';
+import { Logger } from 'winston';
 
-import { SigningConfigEntry } from "../../config/Config";
+import { SigningConfigEntry } from '../../config/Config';
 
-import { signAndEncodeResponse } from "./signAndEncodeResponse";
+import { signAndEncodeResponse } from './signAndEncodeResponse';
 
 /**
  * Signs the provided calldata using the resolver address and returns the signed and encoded response.
@@ -22,7 +22,7 @@ export async function signingHandler(calldata: string, resolverAddr: string, con
     try {
         result = (await axios.get(`${configEntry.handlerUrl}/${resolverAddr}/${calldata}`)).data;
     } catch (e) {
-        throw new Error("signingHandler : Invalid data source response");
+        throw new Error('signingHandler : Invalid data source response');
     }
     /**
      * Read the private key from the environment variable.
@@ -30,13 +30,13 @@ export async function signingHandler(calldata: string, resolverAddr: string, con
     const singerPk = process.env.SIGNER_PRIVATE_KEY;
 
     if (!singerPk) {
-        throw new Error("signingHandler : no private key provided");
+        throw new Error('signingHandler : no private key provided');
     }
 
     /**
      * Sign and encode the response the signingHandler has returned using the private key from the environment variable.
      */
     const signer = new ethers.Wallet(singerPk);
-    global.logger.info({ message: "signingHandler", signer: signer.address });
+    global.logger.info({ message: 'signingHandler', signer: signer.address });
     return signAndEncodeResponse(signer, resolverAddr, result, calldata);
 }

@@ -1,9 +1,9 @@
-import express from "express";
-import { Logger } from "winston";
+import express from 'express';
+import { Logger } from 'winston';
 
-import { ConfigReader } from "../config/ConfigReader";
-import { optimismBedrockHandler } from "../handler/optimism-bedrock/optimismBedrockHandler";
-import { signingHandler } from "../handler/signing/signingHandler";
+import { ConfigReader } from '../config/ConfigReader';
+import { optimismBedrockHandler } from '../handler/optimism-bedrock/optimismBedrockHandler';
+import { signingHandler } from '../handler/signing/signingHandler';
 
 /**
  * Creates an Express router to handle requests for the CCIP gateway.
@@ -13,9 +13,9 @@ import { signingHandler } from "../handler/signing/signingHandler";
 export function ccipGateway(configReader: ConfigReader) {
     const router = express.Router();
 
-    router.get("/:resolverAddr/:calldata", async (req: express.Request, res: express.Response) => {
+    router.get('/:resolverAddr/:calldata', async (req: express.Request, res: express.Response) => {
         const { resolverAddr } = req.params;
-        const calldata = req.params.calldata.replace(".json", "");
+        const calldata = req.params.calldata.replace('.json', '');
 
         try {
             // eslint-disable max-line-length
@@ -36,7 +36,7 @@ export function ccipGateway(configReader: ConfigReader) {
                 global.logger.warn(`Unknown resolver selector pair for resolverAddr: ${resolverAddr}`);
 
                 res.status(404).send({
-                    message: "Unknown resolver selector pair",
+                    message: 'Unknown resolver selector pair',
                 });
                 return;
             }
@@ -45,16 +45,16 @@ export function ccipGateway(configReader: ConfigReader) {
              * That handler has to return the data in the format that the resolver expects.
              */
             switch (configEntry.type) {
-                case "signing": {
-                    global.logger.info({ type: "signing" });
-                    global.logger.debug({ type: "signing", calldata, resolverAddr, configEntry });
+                case 'signing': {
+                    global.logger.info({ type: 'signing' });
+                    global.logger.debug({ type: 'signing', calldata, resolverAddr, configEntry });
                     const response = await signingHandler(calldata, resolverAddr, configEntry);
                     res.status(200).send({ data: response });
                     break;
                 }
-                case "optimism-bedrock": {
-                    global.logger.info({ type: "optimism-bedrock" });
-                    global.logger.debug({ type: "optimism-bedrock", calldata, resolverAddr, configEntry });
+                case 'optimism-bedrock': {
+                    global.logger.info({ type: 'optimism-bedrock' });
+                    global.logger.debug({ type: 'optimism-bedrock', calldata, resolverAddr, configEntry });
                     const response = await optimismBedrockHandler(calldata, resolverAddr, configEntry);
 
                     res.status(200).send({ data: response });
@@ -63,12 +63,12 @@ export function ccipGateway(configReader: ConfigReader) {
 
                 default:
                     res.status(404).send({
-                        message: "Unsupported entry type",
+                        message: 'Unsupported entry type',
                     });
             }
         } catch (e) {
             global.logger.warn((e as Error).message);
-            res.status(400).send({ message: "ccip gateway error ," + e });
+            res.status(400).send({ message: 'ccip gateway error ,' + e });
         }
     });
     return router;
