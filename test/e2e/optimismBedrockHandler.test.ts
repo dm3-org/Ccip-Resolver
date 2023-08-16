@@ -22,6 +22,7 @@ import {
     INameWrapper,
 } from '../../typechain';
 import { getGateWayUrl } from '../helper/getGatewayUrl';
+import winston from 'winston';
 
 describe('Optimism Bedrock Handler', () => {
     let ccipApp: express.Express;
@@ -78,7 +79,12 @@ describe('Optimism Bedrock Handler', () => {
             '0x5FbDB2315678afecb367f032d93F642f64180aa3',
         );
         const CcipResolverFactory = await hreEthers.getContractFactory('CcipResolver');
-        ccipResolver = (await CcipResolverFactory.deploy(ensRegistry.address, nameWrapper.address)) as CcipResolver;
+        ccipResolver = (await CcipResolverFactory.deploy(
+            ensRegistry.address,
+            nameWrapper.address,
+            ethers.constants.AddressZero,
+            [])
+        ) as CcipResolver;
 
         await owner.sendTransaction({
             to: alice.address,
@@ -88,12 +94,10 @@ describe('Optimism Bedrock Handler', () => {
         ccipApp = express();
         ccipApp.use(bodyParser.json());
 
-        ccipApp.locals.logger = {
-            // eslint-disable-next-line no-console
-            info: (msg: string) => console.log(msg),
-            // eslint-disable-next-line no-console
-            warn: (msg: string) => console.log(msg),
-        };
+        global.logger = winston.createLogger({
+            level: process.env.LOG_LEVEL ?? 'info',
+            transports: [new winston.transports.Console()],
+        });
     });
 
     it('Returns valid string data from resolver', async () => {

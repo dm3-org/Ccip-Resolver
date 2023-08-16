@@ -84,13 +84,6 @@ describe('Signature Handler', () => {
 
         ccipApp = express();
         ccipApp.use(bodyParser.json());
-
-        ccipApp.locals.logger = {
-            // eslint-disable-next-line no-console
-            info: (msg: string) => console.log(msg),
-            // eslint-disable-next-line no-console
-            warn: (msg: string) => console.log(msg),
-        };
     });
 
     it('Returns valid data from resolver', async () => {
