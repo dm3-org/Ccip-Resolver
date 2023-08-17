@@ -15,6 +15,7 @@ import {BytesLib} from "solidity-bytes-utils/contracts/BytesLib.sol";
  * Implements an ENS resolver that directs all queries to a CCIP read gateway.
  * Callers must implement EIP 3668 and ENSIP 10.
  */
+
 contract CcipResolver is IExtendedResolver, IMetadataResolver, SupportsInterface {
     using BytesUtils for bytes;
 
@@ -22,6 +23,10 @@ contract CcipResolver is IExtendedResolver, IMetadataResolver, SupportsInterface
         string[] gatewayUrls;
         ICcipResponseVerifier verifierAddress;
     }
+    /**
+     *
+     */
+    bytes32 private constant DEFAULT_VERIFIER = bytes32(0);
 
     /*
      *   --------------------------------------------------
@@ -37,7 +42,6 @@ contract CcipResolver is IExtendedResolver, IMetadataResolver, SupportsInterface
      */
 
     error OffchainLookup(address sender, string[] urls, bytes callData, bytes4 callbackFunction, bytes extraData);
-    error UnknownVerifier();
 
     /*
      *   --------------------------------------------------
@@ -73,12 +77,7 @@ contract CcipResolver is IExtendedResolver, IMetadataResolver, SupportsInterface
          *
          */
         if (_defaultVerifier != address(0)) {
-            _setVerifierForDomain(
-                //namehash(eth)
-                0x93cdeb708b7545dc668eb9280176169d1c33cfd8ed6f04690a0bcc88a93fc4ae,
-                _defaultVerifier,
-                _gatewayUrls
-            );
+            _setVerifierForDomain(DEFAULT_VERIFIER, _defaultVerifier, _gatewayUrls);
         }
     }
 
@@ -98,6 +97,7 @@ contract CcipResolver is IExtendedResolver, IMetadataResolver, SupportsInterface
         /*
          * Only the node owner can set the verifier for a node. NameWrapper profiles are supported too.
          */
+        require(node != bytes32(0), "node is 0x0");
         require(msg.sender == getNodeOwner(node), "only node owner");
         _setVerifierForDomain(node, verifierAddress, urls);
     }
@@ -282,7 +282,6 @@ contract CcipResolver is IExtendedResolver, IMetadataResolver, SupportsInterface
      * @param urls The gateway url that should handle the OffchainLookup.
      */
     function _setVerifierForDomain(bytes32 node, address verifierAddress, string[] memory urls) private {
-        require(node != bytes32(0), "node is 0x0");
         require(verifierAddress != address(0), "verifierAddress is 0x0");
         /*
          * We're doing a staticcall here to check if the verifierAddress implements the ICcipResponseVerifier interface.
@@ -337,7 +336,11 @@ contract CcipResolver is IExtendedResolver, IMetadataResolver, SupportsInterface
          * If we reached the root node and there is no verifier set, we revert with UnknownVerifier
          */
         if (offset >= name.length - 1) {
-            revert UnknownVerifier();
+            /*
+             *If no specific verifier is set for the given node, we return the default verifier
+             */
+            CcipVerifier memory defaultCcipVerifier = ccipVerifier[DEFAULT_VERIFIER];
+            return (defaultCcipVerifier, name.namehash(0));
         }
 
         CcipVerifier memory _ccipVerifier = ccipVerifier[node];
