@@ -24,7 +24,7 @@ contract CcipResolver is IExtendedResolver, IMetadataResolver, SupportsInterface
         ICcipResponseVerifier verifierAddress;
     }
     /**
-     *
+     * The idnetifier to store the default verifier
      */
     bytes32 private constant DEFAULT_VERIFIER = bytes32(0);
 
