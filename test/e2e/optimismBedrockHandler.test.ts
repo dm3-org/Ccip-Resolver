@@ -8,6 +8,7 @@ import { ethers, Wallet } from 'ethers';
 import express from 'express';
 import { config, ethers as hreEthers } from 'hardhat';
 import request from 'supertest';
+import winston from 'winston';
 
 import { getConfigReader } from '../../gateway/config/ConfigReader';
 import { ccipGateway } from '../../gateway/http/ccipGateway';
@@ -22,7 +23,6 @@ import {
     INameWrapper,
 } from '../../typechain';
 import { getGateWayUrl } from '../helper/getGatewayUrl';
-import winston from 'winston';
 
 describe('Optimism Bedrock Handler', () => {
     let ccipApp: express.Express;
@@ -83,8 +83,8 @@ describe('Optimism Bedrock Handler', () => {
             ensRegistry.address,
             nameWrapper.address,
             ethers.constants.AddressZero,
-            [])
-        ) as CcipResolver;
+            [],
+        )) as CcipResolver;
 
         await owner.sendTransaction({
             to: alice.address,
