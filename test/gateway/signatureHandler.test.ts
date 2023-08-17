@@ -59,7 +59,6 @@ describe('Signature Handler', () => {
         ensRegistry.owner.whenCalledWith(ethers.utils.namehash('namewrapper.alice.eth')).returns(nameWrapper.address);
         // nameWrapper.ownerOf.whenCalledWith(ethers.utils.namehash("namewrapper.alice.eth")).returns(alice.address);
 
-
         const SignerCcipVerifierFactory = (await hreEthers.getContractFactory(
             'SignatureCcipVerifier',
         )) as SignatureCcipVerifier__factory;
@@ -69,7 +68,7 @@ describe('Signature Handler', () => {
             ensRegistry.address,
             nameWrapper.address,
             ethers.constants.AddressZero,
-            [""]
+            [''],
         )) as CcipResolver;
 
         signatureCcipVerifier = await SignerCcipVerifierFactory.deploy(
