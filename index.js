@@ -10,7 +10,7 @@ const SignatureCcipVerifier = require("./build/contracts/verifier/signature/Sign
 const CcipResponseVerifier = require("./build/contracts/verifier/CcipResponseVerifier");
 const ICcipResponseVerifier = require("./build/contracts/verifier/ICcipResponseVerifier");
 
-const CcipResolver = require("./build/contracts/CcipResolver");
+const ERC3668Resolver = require("./build/contracts/ERC3668Resolver");
 const IContextResolver = require("./build/contracts/IContextResolver");
 const IExtendedResolver = require("./build/contracts/IExtendedResolver");
 const Supportsinterface = require("./build/contracts/Supportsinterface");
@@ -28,7 +28,7 @@ module.exports = {
     CcipResponseVerifier,
     ICcipResponseVerifier,
 
-    CcipResolver,
+    ERC3668Resolver,
     IContextResolver,
     IExtendedResolver,
     Supportsinterface,

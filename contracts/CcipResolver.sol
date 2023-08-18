@@ -16,7 +16,7 @@ import {BytesLib} from "solidity-bytes-utils/contracts/BytesLib.sol";
  * Callers must implement EIP 3668 and ENSIP 10.
  */
 
-contract CcipResolver is IExtendedResolver, IMetadataResolver, SupportsInterface {
+contract ERC3668Resolver is IExtendedResolver, IMetadataResolver, SupportsInterface {
     using BytesUtils for bytes;
 
     struct CcipVerifier {
@@ -133,7 +133,7 @@ contract CcipResolver is IExtendedResolver, IMetadataResolver, SupportsInterface
             address(this),
             _verifier.gatewayUrls,
             callData,
-            CcipResolver.resolveWithProof.selector,
+            ERC3668Resolver.resolveWithProof.selector,
             callData
         );
     }
@@ -156,7 +156,7 @@ contract CcipResolver is IExtendedResolver, IMetadataResolver, SupportsInterface
          */
         (CcipVerifier memory _ccipVerifier, ) = getVerifierOfDomain(name);
         /*
-         * to enable the CcipResolver to return data other than bytes it might be possible to override the
+         * to enable the ERC3668Resolver to return data other than bytes it might be possible to override the
          * resolvewithProofCallback function.
          */
         bytes4 callBackSelector = ICcipResponseVerifier(_ccipVerifier.verifierAddress).onResolveWithProof(name, data);
