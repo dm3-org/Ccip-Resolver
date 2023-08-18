@@ -7,7 +7,7 @@ const ENS_REGISTRY = '0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e';
 async function main() {
     const chainId = await hre.getChainId();
     const namewrapper = chainId === '1' ? NAMEWRAPPER_MAINNET : NAMEWRAPPER_GOERLI;
-    const OptimismResolverFactory = await ethers.getContractFactory('CcipResolver');
+    const OptimismResolverFactory = await ethers.getContractFactory('ERC3668Resolver');
 
     const deployTx = await OptimismResolverFactory.deploy(ENS_REGISTRY, namewrapper);
 

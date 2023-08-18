@@ -13,7 +13,7 @@ import winston from 'winston';
 import { getConfigReader } from '../../gateway/config/ConfigReader';
 import { ccipGateway } from '../../gateway/http/ccipGateway';
 import {
-    CcipResolver,
+    ERC3668Resolver,
     ENS,
     INameWrapper,
     SignatureCcipVerifier,
@@ -28,7 +28,7 @@ global.logger = winston.createLogger({
 
 describe('Signature Handler', () => {
     let ccipApp: express.Express;
-    let ccipResolver: CcipResolver;
+    let erc3668Resolver: ERC3668Resolver;
     let owner: SignerWithAddress;
     let vitalik: SignerWithAddress;
 
@@ -63,19 +63,19 @@ describe('Signature Handler', () => {
             'SignatureCcipVerifier',
         )) as SignatureCcipVerifier__factory;
 
-        const CcipResolverFactory = await hreEthers.getContractFactory('CcipResolver');
-        ccipResolver = (await CcipResolverFactory.deploy(
+        const ERC3668ResolverFactory = await hreEthers.getContractFactory('ERC3668Resolver');
+        erc3668Resolver = (await ERC3668ResolverFactory.deploy(
             ensRegistry.address,
             nameWrapper.address,
             ethers.constants.AddressZero,
             [''],
-        )) as CcipResolver;
+        )) as ERC3668Resolver;
 
         signatureCcipVerifier = await SignerCcipVerifierFactory.deploy(
             owner.address,
             'http://localhost:8081/graphql',
             'Signature Ccip Resolver',
-            ccipResolver.address,
+            erc3668Resolver.address,
             [signer.address],
         );
         // Get signers
@@ -90,35 +90,35 @@ describe('Signature Handler', () => {
 
         const mock = new MockAdapter(axios);
 
-        await ccipResolver
+        await erc3668Resolver
             .connect(vitalik)
             .setVerifierForDomain(ethers.utils.namehash('vitalik.eth'), signatureCcipVerifier.address, [
                 'http://test/{sender}/{data}',
             ]);
 
-        const { callData } = await getGateWayUrl('vitalik.eth', 'my-record', ccipResolver);
+        const { callData } = await getGateWayUrl('vitalik.eth', 'my-record', erc3668Resolver);
 
         const result = ethers.utils.defaultAbiCoder.encode(['string'], ['Hello World']);
-        mock.onGet(`http://test/${ccipResolver.address}/${callData}`).reply(200, result);
+        mock.onGet(`http://test/${erc3668Resolver.address}/${callData}`).reply(200, result);
 
         const ccipConfig = {};
-        ccipConfig[ccipResolver.address] = {
+        ccipConfig[erc3668Resolver.address] = {
             type: 'signing',
             handlerUrl: 'http://test',
         };
 
         const configReader = getConfigReader(JSON.stringify(ccipConfig));
 
-        config[ccipResolver.address] = ccipApp.use(ccipGateway(configReader));
+        config[erc3668Resolver.address] = ccipApp.use(ccipGateway(configReader));
 
-        const sender = ccipResolver.address;
+        const sender = erc3668Resolver.address;
 
         // You the url returned by he contract to fetch the profile from the ccip gateway
         const response = await request(ccipApp).get(`/${sender}/${callData}`).send();
 
         expect(response.status).to.equal(200);
         console.log('check');
-        const resultString = await ccipResolver.resolveWithProof(response.body.data, callData);
+        const resultString = await erc3668Resolver.resolveWithProof(response.body.data, callData);
 
         expect(resultString).to.equal(result);
     });
