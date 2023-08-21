@@ -1,4 +1,4 @@
-# A Generic CCIP resolver
+# A Generic ERC3668 Resolver
 
 Storing data on Ethereum Mainnet is expensive hence it is appealing to use other storage solutions that offer more compelling rates. To facilitate this https://eips.ethereum.org/EIPS/eip-3668 introduces CCIP a standard that can be used to securely retrieve external data.
 
@@ -9,7 +9,7 @@ Visit the App-specific Handler section to learn how to write a handler for your 
 
 ## Smart Contracts
 
-### Ccip Resolver
+### ERC3668Resolver
 
 The core contract implementing the Ccip Interface. It delegates the actual implementation to an instance of the CcipVerifier contract. Every Ens name owner can specify its verifier. This allows the Ens-name owner to declare different Data sources associated with their domain.
 
@@ -100,7 +100,7 @@ https://github.com/corpus-io/ENS-Bedrock-Resolver
 
 Deploy the BedrockProofVerifier Contract using `yarn run deploy:bedrock-proof-verifier-goerli`
 
-### Ccip Resolver
+### ERC3668 Resolver
 
 Deploy the BedrockProofVerifier Contract using `yarn run deploy:ccip-resolver-goerli`
 
@@ -110,7 +110,7 @@ The BedrockCCIPVerifier just supports one contract on Optimism. If you want to u
 
 ### Goerli
 
-Ccip Resolver: 0xaeB973dA621Ed58F0D8bfD6299031E8a2Ac39FD4
+ERC3668 Resolver: 0xaeB973dA621Ed58F0D8bfD6299031E8a2Ac39FD4
 
 #### Optimism Verifier
 
