@@ -9,9 +9,9 @@ import {
     BedrockCcipVerifier__factory,
     BedrockProofVerifier,
     BedrockProofVerifier__factory,
-    CcipResolver,
     CcipResponseVerifier,
     ENS,
+    ERC3668Resolver,
     INameWrapper,
     SignatureCcipVerifier,
     SignatureCcipVerifier__factory,
@@ -19,7 +19,7 @@ import {
 
 import { signAndEncodeResponse } from '../../gateway/handler/signing/signAndEncodeResponse';
 
-describe('CCIpResolver Test', () => {
+describe('ERC3668Resolver Test', () => {
     let owner: SignerWithAddress;
     // Example user alice
     let alice: SignerWithAddress;
@@ -32,7 +32,7 @@ describe('CCIpResolver Test', () => {
     let nameWrapper: FakeContract<INameWrapper>;
     // Resolver
 
-    let ccipResolver: CcipResolver;
+    let erc3668Resolver: ERC3668Resolver;
     // Bedrock Proof Verifier
     let bedrockProofVerifier: BedrockProofVerifier;
     // Bedrock CCIP resolver
@@ -83,8 +83,16 @@ describe('CCIpResolver Test', () => {
         // Supports CCIPVerifierInterface
         verifierWithoutCallbackSelector.supportsInterface.whenCalledWith('0x79f6f27a').returns(true);
 
-        const OptimismResolverFactory = await hreEthers.getContractFactory('CcipResolver');
-        ccipResolver = (await OptimismResolverFactory.deploy(ensRegistry.address, nameWrapper.address)) as CcipResolver;
+        const OptimismResolverFactory = await hreEthers.getContractFactory('ERC3668Resolver');
+        erc3668Resolver = (await OptimismResolverFactory.deploy(
+            ensRegistry.address,
+            nameWrapper.address,
+            bedrockCcipVerifier.address,
+            ['http://localhost:8080/{sender}/{data}'],
+            {
+                gasLimit: 10000000,
+            },
+        )) as ERC3668Resolver;
 
         const SignatureCcipVerifierFactory = (await hreEthers.getContractFactory(
             'SignatureCcipVerifier',
@@ -94,26 +102,14 @@ describe('CCIpResolver Test', () => {
             owner.address,
             'http://localhost:8081/graphql',
             'Signature Ccip Resolver',
-            ccipResolver.address,
+            erc3668Resolver.address,
             [signer.address],
         );
     });
 
     describe('setVerifierForDomain', () => {
-        it('reverts if node is 0x0', async () => {
-            await ccipResolver
-                .setVerifierForDomain(ethers.constants.HashZero, bedrockCcipVerifier.address, [
-                    'http://localhost:8080/{sender}/{data}',
-                ])
-                .then(res => {
-                    expect.fail('Should have thrown an error');
-                })
-                .catch(e => {
-                    expect(e.message).to.contains('node is 0x0');
-                });
-        });
         it('reverts if resolverAddress is 0x0', async () => {
-            await ccipResolver
+            await erc3668Resolver
                 .connect(alice)
                 .setVerifierForDomain(ethers.utils.namehash('alice.eth'), ethers.constants.AddressZero, [
                     'http://localhost:8080/{sender}/{data}',
@@ -126,7 +122,7 @@ describe('CCIpResolver Test', () => {
                 });
         });
         it('reverts if msg.sender is not the profile owner', async () => {
-            await ccipResolver
+            await erc3668Resolver
                 .setVerifierForDomain(ethers.utils.namehash('vitalik.eth'), bedrockCcipVerifier.address, [
                     'http://localhost:8080/{sender}/{data}',
                 ])
@@ -139,7 +135,7 @@ describe('CCIpResolver Test', () => {
         });
 
         it('reverts if resolverAddress does not support resolveWithProofInterface', async () => {
-            await ccipResolver
+            await erc3668Resolver
                 .connect(alice)
                 .setVerifierForDomain(
                     ethers.utils.namehash('alice.eth'),
@@ -155,7 +151,7 @@ describe('CCIpResolver Test', () => {
                 });
         });
         it('reverts if url string is empty', async () => {
-            await ccipResolver
+            await erc3668Resolver
                 .connect(alice)
                 .setVerifierForDomain(
                     ethers.utils.namehash('alice.eth'),
@@ -171,7 +167,7 @@ describe('CCIpResolver Test', () => {
                 });
         });
         it('adds verifier + event contains node, url, and resolverAddress', async () => {
-            const tx = await ccipResolver.connect(alice).setVerifierForDomain(
+            const tx = await erc3668Resolver.connect(alice).setVerifierForDomain(
                 ethers.utils.namehash('alice.eth'),
                 // Alice is an EOA, so this is not a valid resolver
                 bedrockCcipVerifier.address,
@@ -189,7 +185,7 @@ describe('CCIpResolver Test', () => {
             expect(resolverAddress).to.equal(bedrockCcipVerifier.address);
         });
         it('adds verifier + event contains node, url, and resolverAddress for NameWrapperProfile', async () => {
-            const tx = await ccipResolver.connect(alice).setVerifierForDomain(
+            const tx = await erc3668Resolver.connect(alice).setVerifierForDomain(
                 ethers.utils.namehash('namewrapper.alice.eth'),
                 // Alice is an EOA, so this is not a valid resolver
                 bedrockCcipVerifier.address,
@@ -208,15 +204,41 @@ describe('CCIpResolver Test', () => {
         });
     });
     describe('resolve', () => {
-        it('reverts if requested node has no verifier', async () => {
+        it('returns offchain lookup via default verifier for unknown TLD ', async () => {
+            const iface = new ethers.utils.Interface([
+                'function onResolveWithProof(bytes calldata name, bytes calldata data) public pure  returns (bytes4)',
+                'function addr(bytes32 node) external view returns (address)',
+                'error OffchainLookup(address sender, string[] urls, bytes callData, bytes4 callbackFunction, bytes extraData)',
+                'function resolveWithContext(bytes calldata name,bytes calldata data,bytes calldata context) external view returns (bytes memory result)',
+
+                'function resolveWithProof(bytes calldata response, bytes calldata extraData) external view returns (bytes memory)',
+            ]);
+
+            const name = ethers.utils.dnsEncode('foo.bar');
+            const data = iface.encodeFunctionData('addr', [ethers.utils.namehash('foo.bar')]);
+
+            let errorString;
             try {
-                await ccipResolver.resolve(ethers.utils.dnsEncode('foo.eth'), '0x');
+                await erc3668Resolver.resolve(name, data);
             } catch (e) {
-                expect(e.errorName).to.equal('UnknownVerifier');
+                errorString = e.data;
             }
+
+            const decodedError = iface.decodeErrorResult('OffchainLookup', errorString);
+            const [sender, urls, callData, callbackFunction, extraData] = decodedError;
+
+            expect(sender).to.equal(erc3668Resolver.address);
+            expect(urls).to.eql(['http://localhost:8080/{sender}/{data}']);
+            expect(callData).to.equal(
+                iface.encodeFunctionData('resolveWithContext', [name, data, ethers.constants.AddressZero]),
+            );
+            expect(callbackFunction).to.equal(iface.getSighash('resolveWithProof'));
+            expect(extraData).to.equal(
+                iface.encodeFunctionData('resolveWithContext', [name, data, ethers.constants.AddressZero]),
+            );
         });
         it('returns Offchain lookup for parent domain', async () => {
-            await ccipResolver.connect(alice).setVerifierForDomain(
+            await erc3668Resolver.connect(alice).setVerifierForDomain(
                 ethers.utils.namehash('alice.eth'),
                 // Alice is an EOA, so this is not a valid resolver
                 bedrockCcipVerifier.address,
@@ -237,7 +259,7 @@ describe('CCIpResolver Test', () => {
 
             let errorString;
             try {
-                await ccipResolver.resolve(name, data);
+                await erc3668Resolver.resolve(name, data);
             } catch (e) {
                 errorString = e.data;
             }
@@ -245,14 +267,43 @@ describe('CCIpResolver Test', () => {
             const decodedError = iface.decodeErrorResult('OffchainLookup', errorString);
             const [sender, urls, callData, callbackFunction, extraData] = decodedError;
 
-            expect(sender).to.equal(ccipResolver.address);
+            expect(sender).to.equal(erc3668Resolver.address);
+            expect(urls).to.eql(['http://localhost:8080/{sender}/{data}']);
+            expect(callData).to.equal(iface.encodeFunctionData('resolveWithContext', [name, data, alice.address]));
+            expect(callbackFunction).to.equal(iface.getSighash('resolveWithProof'));
+            expect(extraData).to.equal(iface.encodeFunctionData('resolveWithContext', [name, data, alice.address]));
+        });
+        it('returns Offchain via defautl verifier for domain without custom verifier', async () => {
+            const iface = new ethers.utils.Interface([
+                'function onResolveWithProof(bytes calldata name, bytes calldata data) public pure  returns (bytes4)',
+                'function addr(bytes32 node) external view returns (address)',
+                'error OffchainLookup(address sender, string[] urls, bytes callData, bytes4 callbackFunction, bytes extraData)',
+                'function resolveWithContext(bytes calldata name,bytes calldata data,bytes calldata context) external view returns (bytes memory result)',
+
+                'function resolveWithProof(bytes calldata response, bytes calldata extraData) external view returns (bytes memory)',
+            ]);
+
+            const name = ethers.utils.dnsEncode('alice.eth');
+            const data = iface.encodeFunctionData('addr', [ethers.utils.namehash('alice.eth')]);
+
+            let errorString;
+            try {
+                await erc3668Resolver.resolve(name, data);
+            } catch (e) {
+                errorString = e.data;
+            }
+
+            const decodedError = iface.decodeErrorResult('OffchainLookup', errorString);
+            const [sender, urls, callData, callbackFunction, extraData] = decodedError;
+
+            expect(sender).to.equal(erc3668Resolver.address);
             expect(urls).to.eql(['http://localhost:8080/{sender}/{data}']);
             expect(callData).to.equal(iface.encodeFunctionData('resolveWithContext', [name, data, alice.address]));
             expect(callbackFunction).to.equal(iface.getSighash('resolveWithProof'));
             expect(extraData).to.equal(iface.encodeFunctionData('resolveWithContext', [name, data, alice.address]));
         });
         it('returns Offchain lookup for sub domain', async () => {
-            await ccipResolver.connect(alice).setVerifierForDomain(
+            await erc3668Resolver.connect(alice).setVerifierForDomain(
                 ethers.utils.namehash('alice.eth'),
                 // Alice is an EOA, so this is not a valid resolver
                 bedrockCcipVerifier.address,
@@ -273,7 +324,7 @@ describe('CCIpResolver Test', () => {
 
             let errorString;
             try {
-                await ccipResolver.resolve(name, data);
+                await erc3668Resolver.resolve(name, data);
             } catch (e) {
                 errorString = e.data;
             }
@@ -281,14 +332,18 @@ describe('CCIpResolver Test', () => {
             const decodedError = iface.decodeErrorResult('OffchainLookup', errorString);
             const [sender, urls, callData, callbackFunction, extraData] = decodedError;
 
-            expect(sender).to.equal(ccipResolver.address);
+            expect(sender).to.equal(erc3668Resolver.address);
             expect(urls).to.eql(['http://localhost:8080/{sender}/{data}']);
-            expect(callData).to.equal(iface.encodeFunctionData('resolveWithContext', [name, data, alice.address]));
+            expect(callData).to.equal(
+                iface.encodeFunctionData('resolveWithContext', [name, data, ethers.constants.AddressZero]),
+            );
             expect(callbackFunction).to.equal(iface.getSighash('resolveWithProof'));
-            expect(extraData).to.equal(iface.encodeFunctionData('resolveWithContext', [name, data, alice.address]));
+            expect(extraData).to.equal(
+                iface.encodeFunctionData('resolveWithContext', [name, data, ethers.constants.AddressZero]),
+            );
         });
         it('returns Offchain lookup for namewrapper', async () => {
-            await ccipResolver.connect(alice).setVerifierForDomain(
+            await erc3668Resolver.connect(alice).setVerifierForDomain(
                 ethers.utils.namehash('namewrapper.alice.eth'),
                 // Alice is an EOA, so this is not a valid resolver
                 bedrockCcipVerifier.address,
@@ -309,7 +364,7 @@ describe('CCIpResolver Test', () => {
 
             let errorString;
             try {
-                await ccipResolver.resolve(name, data);
+                await erc3668Resolver.resolve(name, data);
             } catch (e) {
                 errorString = e.data;
             }
@@ -317,7 +372,7 @@ describe('CCIpResolver Test', () => {
             const decodedError = iface.decodeErrorResult('OffchainLookup', errorString);
             const [sender, urls, callData, callbackFunction, extraData] = decodedError;
 
-            expect(sender).to.equal(ccipResolver.address);
+            expect(sender).to.equal(erc3668Resolver.address);
             expect(urls).to.eql(['http://localhost:8080/{sender}/{data}']);
             expect(callData).to.equal(iface.encodeFunctionData('resolveWithContext', [name, data, alice.address]));
             expect(callbackFunction).to.equal(iface.getSighash('resolveWithProof'));
@@ -326,7 +381,7 @@ describe('CCIpResolver Test', () => {
     });
     describe('resolveWithProof', () => {
         it('Revert if ccip verifier returns no callback selector', async () => {
-            await ccipResolver
+            await erc3668Resolver
                 .connect(alice)
                 .setVerifierForDomain(ethers.utils.namehash('alice.eth'), verifierWithoutCallbackSelector.address, [
                     'http://localhost:8080/{sender}/{data}',
@@ -345,7 +400,7 @@ describe('CCIpResolver Test', () => {
             let errorString;
 
             try {
-                await ccipResolver.resolveWithProof(response, extraData);
+                await erc3668Resolver.resolveWithProof(response, extraData);
             } catch (e) {
                 errorString = e.errorArgs[0];
             }
@@ -353,7 +408,7 @@ describe('CCIpResolver Test', () => {
             expect(errorString).to.equal('No callback selector found');
         });
         it('Revert if resolveWithProofCall fails', async () => {
-            await ccipResolver.connect(alice).setVerifierForDomain(
+            await erc3668Resolver.connect(alice).setVerifierForDomain(
                 ethers.utils.namehash('alice.eth'),
                 // Alice is an EOA, so this is not a valid resolver
                 bedrockCcipVerifier.address,
@@ -373,7 +428,7 @@ describe('CCIpResolver Test', () => {
             let errorString;
 
             try {
-                await ccipResolver.resolveWithProof(response, extraData);
+                await erc3668Resolver.resolveWithProof(response, extraData);
             } catch (e) {
                 errorString = e.errorArgs[0];
             }
@@ -381,7 +436,7 @@ describe('CCIpResolver Test', () => {
             expect(errorString).to.equal('staticcall to verifier failed');
         });
         it('ResolveWithProf for parentDomain using verifier ', async () => {
-            await ccipResolver.connect(alice).setVerifierForDomain(
+            await erc3668Resolver.connect(alice).setVerifierForDomain(
                 ethers.utils.namehash('alice.eth'),
                 // Alice is an EOA, so this is not a valid resolver
                 signatureVerifier.address,
@@ -398,15 +453,15 @@ describe('CCIpResolver Test', () => {
             const name = ethers.utils.dnsEncode('alice.eth');
             const data = iface.encodeFunctionData('addr', [ethers.utils.namehash('alice.eth')]);
             const extraData = iface.encodeFunctionData('resolveWithContext', [name, data, alice.address]);
-            const response = await signAndEncodeResponse(signer, ccipResolver.address, result, extraData);
+            const response = await signAndEncodeResponse(signer, erc3668Resolver.address, result, extraData);
 
-            const encodedResponse = await ccipResolver.resolveWithProof(response, extraData);
+            const encodedResponse = await erc3668Resolver.resolveWithProof(response, extraData);
             const [decodedResponse] = ethers.utils.defaultAbiCoder.decode(['bytes'], encodedResponse);
 
             expect(ethers.utils.getAddress(decodedResponse)).to.equal(alice.address);
         });
         it('ResolveWithProf for sub domain using verifier ', async () => {
-            await ccipResolver.connect(alice).setVerifierForDomain(
+            await erc3668Resolver.connect(alice).setVerifierForDomain(
                 ethers.utils.namehash('alice.eth'),
                 // Alice is an EOA, so this is not a valid resolver
                 signatureVerifier.address,
@@ -423,9 +478,9 @@ describe('CCIpResolver Test', () => {
             const name = ethers.utils.dnsEncode('foo.alice.eth');
             const data = iface.encodeFunctionData('addr', [ethers.utils.namehash('foo.alice.eth')]);
             const extraData = iface.encodeFunctionData('resolveWithContext', [name, data, alice.address]);
-            const response = await signAndEncodeResponse(signer, ccipResolver.address, result, extraData);
+            const response = await signAndEncodeResponse(signer, erc3668Resolver.address, result, extraData);
 
-            const encodedResponse = await ccipResolver.resolveWithProof(response, extraData);
+            const encodedResponse = await erc3668Resolver.resolveWithProof(response, extraData);
             const [decodedResponse] = ethers.utils.defaultAbiCoder.decode(['bytes'], encodedResponse);
 
             expect(ethers.utils.getAddress(decodedResponse)).to.equal(alice.address);
@@ -437,12 +492,12 @@ describe('CCIpResolver Test', () => {
                 return (0x7fffffff & _coinType) >> 0;
             };
 
-            await ccipResolver
+            await erc3668Resolver
                 .connect(alice)
                 .setVerifierForDomain(ethers.utils.namehash('alice.eth'), bedrockCcipVerifier.address, [
                     'http://localhost:8080/{sender}/{data}',
                 ]);
-            const [name, coinType, graphqlUrl, storageType, storageLocation, context] = await ccipResolver.metadata(
+            const [name, coinType, graphqlUrl, storageType, storageLocation, context] = await erc3668Resolver.metadata(
                 dnsEncode('alice.eth'),
             );
             expect(name).to.equal('Optimism Goerli');

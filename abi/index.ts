@@ -5,7 +5,7 @@ import {
     IBedrockProofVerifier__factory,
     SignatureCcipVerifier__factory, CcipResponseVerifier__factory,
     ICcipResponseVerifier__factory,
-    CcipResolver__factory,
+    ERC3668Resolver__factory,
     IExtendedResolver__factory,
     IMetadataResolver__factory,
     SupportsInterface__factory
@@ -19,7 +19,7 @@ export default {
     SignatureCcipVerifier: SignatureCcipVerifier__factory.abi,
     CcipResponseVerifier: CcipResponseVerifier__factory.abi,
     ICcipResponseVerifier: ICcipResponseVerifier__factory.abi,
-    CcipResolver: CcipResolver__factory.abi,
+    ERC3668Resolver: ERC3668Resolver__factory.abi,
     IExtendedResolver: IExtendedResolver__factory.abi,
     IMetadataResolver: IMetadataResolver__factory.abi,
     SupportsInterface: SupportsInterface__factory.abi

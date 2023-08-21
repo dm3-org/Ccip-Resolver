@@ -88,7 +88,7 @@ contract SignatureCcipVerifier is CcipResponseVerifier {
      * @return graphqlUrl The GraphQL URL used by the resolver
      * @return storageType Storage Type (0 for EVM)
      * @return storageLocation The storage identifier. For EVM chains, this is the address of the resolver contract.
-     * @return context The owner of the name. Always returns address(0) since the owner is determined by the ccipResolver contract.
+     * @return context The owner of the name. Always returns address(0) since the owner is determined by the erc3668Resolver contract.
      */
     function metadata(
         bytes calldata

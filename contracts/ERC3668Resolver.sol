@@ -15,13 +15,18 @@ import {BytesLib} from "solidity-bytes-utils/contracts/BytesLib.sol";
  * Implements an ENS resolver that directs all queries to a CCIP read gateway.
  * Callers must implement EIP 3668 and ENSIP 10.
  */
-contract CcipResolver is IExtendedResolver, IMetadataResolver, SupportsInterface {
+
+contract ERC3668Resolver is IExtendedResolver, IMetadataResolver, SupportsInterface {
     using BytesUtils for bytes;
 
     struct CcipVerifier {
         string[] gatewayUrls;
         ICcipResponseVerifier verifierAddress;
     }
+    /**
+     * The idnetifier to store the default verifier
+     */
+    bytes32 private constant DEFAULT_VERIFIER = bytes32(0);
 
     /*
      *   --------------------------------------------------
@@ -37,7 +42,6 @@ contract CcipResolver is IExtendedResolver, IMetadataResolver, SupportsInterface
      */
 
     error OffchainLookup(address sender, string[] urls, bytes callData, bytes4 callbackFunction, bytes extraData);
-    error UnknownVerifier();
 
     /*
      *   --------------------------------------------------
@@ -60,10 +64,21 @@ contract CcipResolver is IExtendedResolver, IMetadataResolver, SupportsInterface
         // The ENS registry
         ENSRegistry _ensRegistry,
         // The name wrapper
-        INameWrapper _nameWrapper
+        INameWrapper _nameWrapper,
+        //Address of the default CCIP Verifier
+        address _defaultVerifier,
+        string[] memory _gatewayUrls
     ) {
         ensRegistry = _ensRegistry;
         nameWrapper = _nameWrapper;
+
+        /**
+         * If a default verifier is set, that verifier will be used by every child address that doesn't have a specific verifier set.
+         *
+         */
+        if (_defaultVerifier != address(0)) {
+            _setVerifierForDomain(DEFAULT_VERIFIER, _defaultVerifier, _gatewayUrls);
+        }
     }
 
     /*
@@ -79,42 +94,12 @@ contract CcipResolver is IExtendedResolver, IMetadataResolver, SupportsInterface
      * @param urls The gateway url that should handle the OffchainLookup.
      */
     function setVerifierForDomain(bytes32 node, address verifierAddress, string[] memory urls) external {
-        require(node != bytes32(0), "node is 0x0");
-        require(verifierAddress != address(0), "verifierAddress is 0x0");
-
         /*
          * Only the node owner can set the verifier for a node. NameWrapper profiles are supported too.
          */
+        require(node != bytes32(0), "node is 0x0");
         require(msg.sender == getNodeOwner(node), "only node owner");
-        /*
-         * We're doing a staticcall here to check if the verifierAddress implements the ICcipResponseVerifier interface.
-         * This is done to prevent the user from setting an arbitrary address as the verifierAddress.
-         */
-        (bool success, bytes memory response) = verifierAddress.staticcall(
-            abi.encodeWithSignature("supportsInterface(bytes4)", type(ICcipResponseVerifier).interfaceId)
-        );
-
-        /*
-         * A successful static call will return 0x0000000000000000000000000000000000000000000000000000000000000001
-         * Hence we've to check that the last bit is set.
-         */
-        require(
-            success && response.length == 32 && (response[response.length - 1] & 0x01) == 0x01,
-            "verifierAddress is not a CCIP Verifier"
-        );
-        /*
-         * Check that the url is non-null.
-         * Although it may not be a sufficient url check, it prevents users from passing undefined or empty strings.
-         */
-        require(urls.length > 0, "at least one gateway url has to be provided");
-
-        /*
-         * Set the new verifier for the given node.
-         */
-        CcipVerifier memory _ccipVerifier = CcipVerifier(urls, ICcipResponseVerifier(verifierAddress));
-        ccipVerifier[node] = _ccipVerifier;
-
-        emit VerifierAdded(node, verifierAddress, urls);
+        _setVerifierForDomain(node, verifierAddress, urls);
     }
 
     /**
@@ -148,7 +133,7 @@ contract CcipResolver is IExtendedResolver, IMetadataResolver, SupportsInterface
             address(this),
             _verifier.gatewayUrls,
             callData,
-            CcipResolver.resolveWithProof.selector,
+            ERC3668Resolver.resolveWithProof.selector,
             callData
         );
     }
@@ -171,7 +156,7 @@ contract CcipResolver is IExtendedResolver, IMetadataResolver, SupportsInterface
          */
         (CcipVerifier memory _ccipVerifier, ) = getVerifierOfDomain(name);
         /*
-         * to enable the CcipResolver to return data other than bytes it might be possible to override the
+         * to enable the ERC3668Resolver to return data other than bytes it might be possible to override the
          * resolvewithProofCallback function.
          */
         bytes4 callBackSelector = ICcipResponseVerifier(_ccipVerifier.verifierAddress).onResolveWithProof(name, data);
@@ -289,6 +274,46 @@ contract CcipResolver is IExtendedResolver, IMetadataResolver, SupportsInterface
      * --------------------------------------------------
      *
      */
+
+    /**
+     * @notice Sets a Cross-chain Information Protocol (CCIP) Verifier for a specific domain node.
+     * @param node The domain node for which the CCIP Verifier is set.
+     * @param verifierAddress The address of the CcipResponseVerifier contract.
+     * @param urls The gateway url that should handle the OffchainLookup.
+     */
+    function _setVerifierForDomain(bytes32 node, address verifierAddress, string[] memory urls) private {
+        require(verifierAddress != address(0), "verifierAddress is 0x0");
+        /*
+         * We're doing a staticcall here to check if the verifierAddress implements the ICcipResponseVerifier interface.
+         * This is done to prevent the user from setting an arbitrary address as the verifierAddress.
+         */
+        (bool success, bytes memory response) = verifierAddress.staticcall(
+            abi.encodeWithSignature("supportsInterface(bytes4)", type(ICcipResponseVerifier).interfaceId)
+        );
+
+        /*
+         * A successful static call will return 0x0000000000000000000000000000000000000000000000000000000000000001
+         * Hence we've to check that the last bit is set.
+         */
+        require(
+            success && response.length == 32 && (response[response.length - 1] & 0x01) == 0x01,
+            "verifierAddress is not a CCIP Verifier"
+        );
+        /*
+         * Check that the url is non-null.
+         * Although it may not be a sufficient url check, it prevents users from passing undefined or empty strings.
+         */
+        require(urls.length > 0, "at least one gateway url has to be provided");
+
+        /*
+         * Set the new verifier for the given node.
+         */
+        CcipVerifier memory _ccipVerifier = CcipVerifier(urls, ICcipResponseVerifier(verifierAddress));
+        ccipVerifier[node] = _ccipVerifier;
+
+        emit VerifierAdded(node, verifierAddress, urls);
+    }
+
     /**
      * @dev Recursively searches for a verifier associated with a segment of the given domain name.
      * If a verifier is found, it returns the verifier and the corresponding node.
@@ -311,7 +336,11 @@ contract CcipResolver is IExtendedResolver, IMetadataResolver, SupportsInterface
          * If we reached the root node and there is no verifier set, we revert with UnknownVerifier
          */
         if (offset >= name.length - 1) {
-            revert UnknownVerifier();
+            /*
+             *If no specific verifier is set for the given node, we return the default verifier
+             */
+            CcipVerifier memory defaultCcipVerifier = ccipVerifier[DEFAULT_VERIFIER];
+            return (defaultCcipVerifier, name.namehash(0));
         }
 
         CcipVerifier memory _ccipVerifier = ccipVerifier[node];
@@ -319,7 +348,7 @@ contract CcipResolver is IExtendedResolver, IMetadataResolver, SupportsInterface
          * If the verifier is set for the given node, we return it and break the recursion
          */
         if (address(_ccipVerifier.verifierAddress) != address(0)) {
-            return (_ccipVerifier, node);
+            return (_ccipVerifier, name.namehash(0));
         }
         /*
          * Otherwise, continue with the next label

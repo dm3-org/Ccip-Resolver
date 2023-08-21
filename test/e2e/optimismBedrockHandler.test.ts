@@ -8,6 +8,7 @@ import { ethers, Wallet } from 'ethers';
 import express from 'express';
 import { config, ethers as hreEthers } from 'hardhat';
 import request from 'supertest';
+import winston from 'winston';
 
 import { getConfigReader } from '../../gateway/config/ConfigReader';
 import { ccipGateway } from '../../gateway/http/ccipGateway';
@@ -17,15 +18,15 @@ import {
     BedrockCcipVerifier__factory,
     BedrockProofVerifier,
     BedrockProofVerifier__factory,
-    CcipResolver,
     ENS,
+    ERC3668Resolver,
     INameWrapper,
 } from '../../typechain';
 import { getGateWayUrl } from '../helper/getGatewayUrl';
 
 describe('Optimism Bedrock Handler', () => {
     let ccipApp: express.Express;
-    let ccipResolver: CcipResolver;
+    let erc3668Resolver: ERC3668Resolver;
     let owner: SignerWithAddress;
 
     // 0x8111DfD23B99233a7ae871b7c09cCF0722847d89
@@ -77,8 +78,13 @@ describe('Optimism Bedrock Handler', () => {
             bedrockProofVerifier.address,
             '0x5FbDB2315678afecb367f032d93F642f64180aa3',
         );
-        const CcipResolverFactory = await hreEthers.getContractFactory('CcipResolver');
-        ccipResolver = (await CcipResolverFactory.deploy(ensRegistry.address, nameWrapper.address)) as CcipResolver;
+        const ERC3668ResolverFactory = await hreEthers.getContractFactory('ERC3668Resolver');
+        erc3668Resolver = (await ERC3668ResolverFactory.deploy(
+            ensRegistry.address,
+            nameWrapper.address,
+            ethers.constants.AddressZero,
+            [],
+        )) as ERC3668Resolver;
 
         await owner.sendTransaction({
             to: alice.address,
@@ -88,12 +94,10 @@ describe('Optimism Bedrock Handler', () => {
         ccipApp = express();
         ccipApp.use(bodyParser.json());
 
-        ccipApp.locals.logger = {
-            // eslint-disable-next-line no-console
-            info: (msg: string) => console.log(msg),
-            // eslint-disable-next-line no-console
-            warn: (msg: string) => console.log(msg),
-        };
+        global.logger = winston.createLogger({
+            level: process.env.LOG_LEVEL ?? 'info',
+            transports: [new winston.transports.Console()],
+        });
     });
 
     it('Returns valid string data from resolver', async () => {
@@ -101,13 +105,13 @@ describe('Optimism Bedrock Handler', () => {
 
         const mock = new MockAdapter(axios);
 
-        await ccipResolver
+        await erc3668Resolver
             .connect(alice)
             .setVerifierForDomain(ethers.utils.namehash('alice.eth'), bedrockCcipVerifier.address, [
                 'http://test/{sender}/{data}',
             ]);
 
-        const { callData } = await getGateWayUrl('alice.eth', 'foo', ccipResolver);
+        const { callData } = await getGateWayUrl('alice.eth', 'foo', erc3668Resolver);
 
         const result = {
             result: ethers.utils.defaultAbiCoder.encode(['string'], ['Hello from Alice']),
@@ -137,7 +141,7 @@ describe('Optimism Bedrock Handler', () => {
 
         expect(response.status).to.equal(200);
 
-        const responseEncoded = await ccipResolver.resolveWithProof(response.body.data, callData);
+        const responseEncoded = await erc3668Resolver.resolveWithProof(response.body.data, callData);
 
         const [decodedBytes] = ethers.utils.defaultAbiCoder.decode(['bytes'], responseEncoded);
         const [responseDecoded] = ethers.utils.defaultAbiCoder.decode(['string'], decodedBytes);
@@ -149,13 +153,13 @@ describe('Optimism Bedrock Handler', () => {
 
         const mock = new MockAdapter(axios);
 
-        await ccipResolver
+        await erc3668Resolver
             .connect(alice)
             .setVerifierForDomain(ethers.utils.namehash('alice.eth'), bedrockCcipVerifier.address, [
                 'http://test/{sender}/{data}',
             ]);
 
-        const { callData } = await getGateWayUrl('alice.eth', 'foo', ccipResolver);
+        const { callData } = await getGateWayUrl('alice.eth', 'foo', erc3668Resolver);
 
         const result = {
             result: ethers.utils.namehash('alice.eth'),
@@ -185,7 +189,7 @@ describe('Optimism Bedrock Handler', () => {
 
         expect(response.status).to.equal(200);
 
-        const responseEncoded = await ccipResolver.resolveWithProof(response.body.data, callData);
+        const responseEncoded = await erc3668Resolver.resolveWithProof(response.body.data, callData);
 
         const [decodedResponse] = ethers.utils.defaultAbiCoder.decode(['bytes'], responseEncoded);
         expect(decodedResponse).to.equal(ethers.utils.namehash('alice.eth'));
