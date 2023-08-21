@@ -18,8 +18,8 @@ import {
     BedrockCcipVerifier__factory,
     BedrockProofVerifier,
     BedrockProofVerifier__factory,
-    ERC3668Resolver,
     ENS,
+    ERC3668Resolver,
     INameWrapper,
 } from '../../typechain';
 import { getGateWayUrl } from '../helper/getGatewayUrl';

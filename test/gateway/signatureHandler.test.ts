@@ -13,8 +13,8 @@ import winston from 'winston';
 import { getConfigReader } from '../../gateway/config/ConfigReader';
 import { ccipGateway } from '../../gateway/http/ccipGateway';
 import {
-    ERC3668Resolver,
     ENS,
+    ERC3668Resolver,
     INameWrapper,
     SignatureCcipVerifier,
     SignatureCcipVerifier__factory,
