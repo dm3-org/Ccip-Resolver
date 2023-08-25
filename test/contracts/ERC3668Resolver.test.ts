@@ -19,7 +19,7 @@ import {
 
 import { signAndEncodeResponse } from '../../gateway/handler/signing/signAndEncodeResponse';
 
-describe.only('ERC3668Resolver Test', () => {
+describe('ERC3668Resolver Test', () => {
     let owner: SignerWithAddress;
     // Example user alice
     let alice: SignerWithAddress;

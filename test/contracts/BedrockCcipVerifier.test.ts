@@ -27,7 +27,7 @@ describe('Bedrock CcipVerifier', () => {
         it('Initially set the owner,url and signers using the constructor ', async () => {
             const bedrockCcipVerifier = await new BedrockCcipVerifier__factory()
                 .connect(owner)
-                .deploy(owner.address, 'http://localhost:8080/graphql', bedrockProofVerifier.address, resolver.address);
+                .deploy(owner.address, 'http://localhost:8080/graphql', "Optimism Resolver", 420, bedrockProofVerifier.address, resolver.address);
 
             const actualOwner = await bedrockCcipVerifier.owner();
             const actualGraphQlUrl = await bedrockCcipVerifier.graphqlUrl();
@@ -44,7 +44,7 @@ describe('Bedrock CcipVerifier', () => {
         it('Owner can set a new Owner ', async () => {
             const bedrockCcipVerifier = await new BedrockCcipVerifier__factory()
                 .connect(owner)
-                .deploy(owner.address, 'http://localhost:8080/graphql', bedrockProofVerifier.address, resolver.address);
+                .deploy(owner.address, 'http://localhost:8080/graphql', "Optimism Resolver", 420, bedrockProofVerifier.address, resolver.address);
 
             const actualOwner = await bedrockCcipVerifier.owner();
             expect(actualOwner).to.equal(owner.address);
@@ -62,7 +62,7 @@ describe('Bedrock CcipVerifier', () => {
         it("Rando can't set a new owner ", async () => {
             const bedrockCcipVerifier = await new BedrockCcipVerifier__factory()
                 .connect(owner)
-                .deploy(owner.address, 'http://localhost:8080/graphql', bedrockProofVerifier.address, resolver.address);
+                .deploy(owner.address, 'http://localhost:8080/graphql', "Optimism Resolver", 420, bedrockProofVerifier.address, resolver.address);
 
             const actualOwner = await bedrockCcipVerifier.owner();
             expect(actualOwner).to.equal(owner.address);
@@ -79,7 +79,7 @@ describe('Bedrock CcipVerifier', () => {
         it('Owner can set a new Url ', async () => {
             const bedrockCcipVerifier = await new BedrockCcipVerifier__factory()
                 .connect(owner)
-                .deploy(owner.address, 'http://localhost:8080/graphql', bedrockProofVerifier.address, resolver.address);
+                .deploy(owner.address, 'http://localhost:8080/graphql', "Optimism Resolver", 420, bedrockProofVerifier.address, resolver.address);
 
             const actualUrl = await bedrockCcipVerifier.graphqlUrl();
             expect(actualUrl).to.equal('http://localhost:8080/graphql');
@@ -97,7 +97,7 @@ describe('Bedrock CcipVerifier', () => {
         it("Rando can't set a new owner ", async () => {
             const bedrockCcipVerifier = await new BedrockCcipVerifier__factory()
                 .connect(owner)
-                .deploy(owner.address, 'http://localhost:8080/graphql', bedrockProofVerifier.address, resolver.address);
+                .deploy(owner.address, 'http://localhost:8080/graphql', "Optimism Resolver", 420, bedrockProofVerifier.address, resolver.address);
 
             const actualUrl = await bedrockCcipVerifier.graphqlUrl();
             expect(actualUrl).to.equal('http://localhost:8080/graphql');
@@ -117,11 +117,11 @@ describe('Bedrock CcipVerifier', () => {
             };
             const bedrockCcipVerifier = await new BedrockCcipVerifier__factory()
                 .connect(owner)
-                .deploy(owner.address, 'http://localhost:8080/graphql', bedrockProofVerifier.address, resolver.address);
+                .deploy(owner.address, 'http://localhost:8080/graphql', "Optimism Resolver", 420, bedrockProofVerifier.address, resolver.address);
 
             const [name, coinType, graphqlUrl, storageType, storageLocation, context] =
                 await bedrockCcipVerifier.metadata(dnsEncode('alice.eth'));
-            expect(name).to.equal('Optimism Goerli');
+            expect(name).to.equal('Optimism Resolver');
             expect(convertCoinTypeToEVMChainId(BigNumber.from(coinType).toNumber())).to.equal(420);
             expect(graphqlUrl).to.equal('http://localhost:8080/graphql');
             expect(storageType).to.equal(storageType);
