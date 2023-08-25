@@ -6,7 +6,6 @@ import {SignatureVerifier} from "./SignatureVerifier.sol";
 import {convertEVMChainIdToCoinType} from "../../coinType/Ensip11CoinType.sol";
 
 contract SignatureCcipVerifier is CcipResponseVerifier {
-    string public name;
     address public immutable resolver;
 
     mapping(address => bool) public signers;
@@ -18,11 +17,11 @@ contract SignatureCcipVerifier is CcipResponseVerifier {
     constructor(
         address _owner,
         string memory _graphQlUrl,
-        string memory _name,
+        string memory _resolverName,
+        uint256 _l2ResolverChainID,
         address _resolver,
         address[] memory _signers
-    ) CcipResponseVerifier(_owner, _graphQlUrl) {
-        name = _name;
+    ) CcipResponseVerifier(_owner, _graphQlUrl, _resolverName, _l2ResolverChainID) {
         resolver = _resolver;
 
         for (uint256 i = 0; i < _signers.length; i++) {
@@ -70,7 +69,10 @@ contract SignatureCcipVerifier is CcipResponseVerifier {
      * @return The decoded response data
      * Note: It's essential to handle access control mechanisms properly to ensure that only authorized signers can resolve responses with proofs.
      */
-    function resolveWithProof(bytes calldata response, bytes calldata extraData) external view override returns (bytes memory) {
+    function resolveWithProof(
+        bytes calldata response,
+        bytes calldata extraData
+    ) external view override returns (bytes memory) {
         (address signer, bytes memory result) = SignatureVerifier.verify(resolver, extraData, response);
         require(signers[signer], "SignatureVerifier: Invalid signature");
         /**
@@ -94,7 +96,7 @@ contract SignatureCcipVerifier is CcipResponseVerifier {
         bytes calldata
     ) external view override returns (string memory, uint256, string memory, uint8, bytes memory, bytes memory) {
         return (
-            name, // The name of the resolver
+            resolverName, // The name of the resolver
             convertEVMChainIdToCoinType(60), // Resolvers coin type => Ethereum
             this.graphqlUrl(), // The GraphQL Url
             uint8(1), // Storage Type 0 => Offchain Database

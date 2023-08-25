@@ -75,6 +75,7 @@ describe('Signature Handler', () => {
             owner.address,
             'http://localhost:8081/graphql',
             'Signature Ccip Resolver',
+            420,
             erc3668Resolver.address,
             [signer.address],
         );
