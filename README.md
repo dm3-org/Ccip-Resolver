@@ -102,7 +102,7 @@ Deploy the BedrockProofVerifier Contract using `yarn run deploy:bedrock-proof-ve
 
 ### ERC3668 Resolver
 
-Deploy the BedrockProofVerifier Contract using `yarn run deploy:ccip-resolver-goerli`
+Deploy the ERC3668 Contract using `yarn run deploy:ccip-resolver-goerli`
 
 ### Bedrock CCIP Verifier
 
