@@ -73,7 +73,7 @@ describe.only('ERC3668Resolver Test', () => {
         bedrockCcipVerifier = await BedrockCcipVerifierFactory.deploy(
             owner.address,
             'http://localhost:8081/graphql',
-            "Optimism Goerli",
+            'Optimism Goerli',
             420,
             bedrockProofVerifier.address,
             '0x5FbDB2315678afecb367f032d93F642f64180aa3',
