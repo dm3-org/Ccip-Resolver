@@ -6,7 +6,7 @@ const ENS_REGISTRY = '0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e';
 
 
 const DEFAULT_VERIFIER_ADDRESS = "0x183C1F81D0159794973c157694627a689DEB9F72"
-const DEFAULT_VERIFIER_URL = "http://localhost:8081/graphql"
+const DEFAULT_VERIFIER_URL = "http://localhost:8081/{sender}/{data}"
 
 async function main() {
     const chainId = await hre.getChainId();
