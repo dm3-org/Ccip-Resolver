@@ -10,11 +10,13 @@ contract BedrockCcipVerifier is CcipResponseVerifier {
     address public immutable target;
 
     constructor(
-        address owner,
-        string memory graphQlUrl,
+        address _owner,
+        string memory _graphQlUrl,
+        string memory _resolverName,
+        uint256 _l2ResolverChainID,
         IBedrockProofVerifier _bedrockProofVerifier,
         address _target
-    ) CcipResponseVerifier(owner, graphQlUrl) {
+    ) CcipResponseVerifier(_owner, _graphQlUrl, _resolverName, _l2ResolverChainID) {
         bedrockProofVerifier = _bedrockProofVerifier;
         target = _target;
     }
@@ -26,7 +28,10 @@ contract BedrockCcipVerifier is CcipResponseVerifier {
      * @param extraData The original data passed to the request
      * @return The resolved response data encoded as bytes
      */
-    function resolveWithProof(bytes calldata response, bytes calldata extraData) public view virtual override returns (bytes memory) {
+    function resolveWithProof(
+        bytes calldata response,
+        bytes calldata extraData
+    ) public view virtual override returns (bytes memory) {
         /*
          * @dev Decode the response and proof from the response bytes
          */
@@ -70,8 +75,8 @@ contract BedrockCcipVerifier is CcipResponseVerifier {
         bytes calldata
     ) external view override returns (string memory, uint256, string memory, uint8, bytes memory, bytes memory) {
         return (
-            "Optimism Goerli", // the name of the resolver
-            convertEVMChainIdToCoinType(420), // coinType according to ENSIP-11 for chain id 420
+            resolverName, // the name of the resolver
+            convertEVMChainIdToCoinType(l2ResolverChainID), // coinType according to ENSIP-11 for chain id 420
             this.graphqlUrl(), // the GraphQL Url
             uint8(0), // storage Type 0 => EVM
             abi.encodePacked(address(target)), // storage location => resolver address

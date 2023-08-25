@@ -26,7 +26,34 @@ abstract contract CcipResponseVerifier is ICcipResponseVerifier, SupportsInterfa
      */
     address public owner;
 
+    /**
+     * @notice The graphql endpoint url
+     * The graphQlUrl is used to provide metadata of the resolver
+     */
     string public graphqlUrl;
+
+    /**
+     * @notice The resolver name
+     * The name of the resolver
+     */
+    string public resolverName;
+    /**
+     * @notice the chainId at which the resolver resolves data from
+     */
+    uint256 public l2ResolverChainID;
+
+    /*
+     *   --------------------------------------------------
+     *    Constructor
+     *   --------------------------------------------------
+     */
+
+    constructor(address _owner, string memory _graphqlUrl, string memory _resolverName, uint256 _l2ResolverChainID) {
+        owner = _owner;
+        graphqlUrl = _graphqlUrl;
+        resolverName = _resolverName;
+        l2ResolverChainID = _l2ResolverChainID;
+    }
 
     /*
      *   --------------------------------------------------
@@ -57,17 +84,6 @@ abstract contract CcipResponseVerifier is ICcipResponseVerifier, SupportsInterfa
     function setOwner(address _owner) external onlyOwner {
         owner = _owner;
         emit OwnerChanged(_owner);
-    }
-
-    /*
-     *   --------------------------------------------------
-     *    Constructor
-     *   --------------------------------------------------
-     */
-
-    constructor(address _owner, string memory _graphqlUrl) {
-        owner = _owner;
-        graphqlUrl = _graphqlUrl;
     }
 
     /*

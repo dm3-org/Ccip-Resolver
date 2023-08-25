@@ -19,7 +19,7 @@ import {
 
 import { signAndEncodeResponse } from '../../gateway/handler/signing/signAndEncodeResponse';
 
-describe('ERC3668Resolver Test', () => {
+describe.only('ERC3668Resolver Test', () => {
     let owner: SignerWithAddress;
     // Example user alice
     let alice: SignerWithAddress;
@@ -73,6 +73,8 @@ describe('ERC3668Resolver Test', () => {
         bedrockCcipVerifier = await BedrockCcipVerifierFactory.deploy(
             owner.address,
             'http://localhost:8081/graphql',
+            "Optimism Goerli",
+            420,
             bedrockProofVerifier.address,
             '0x5FbDB2315678afecb367f032d93F642f64180aa3',
         );
@@ -102,6 +104,7 @@ describe('ERC3668Resolver Test', () => {
             owner.address,
             'http://localhost:8081/graphql',
             'Signature Ccip Resolver',
+            420,
             erc3668Resolver.address,
             [signer.address],
         );
