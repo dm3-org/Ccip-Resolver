@@ -30,7 +30,7 @@ describe('Signature Ccip Verifier', () => {
         it('Initially set the owner,url and signers using the constructor ', async () => {
             const signatureCcipVerifier = await new SignatureCcipVerifier__factory()
                 .connect(owner)
-                .deploy(owner.address, 'http://localhost:8080/graphql', 'Signature Ccip Resolver', resolver.address, [
+                .deploy(owner.address, 'http://localhost:8080/graphql', 'Signature Ccip Resolver', 60, resolver.address, [
                     signer1.address,
                 ]);
 
@@ -48,7 +48,7 @@ describe('Signature Ccip Verifier', () => {
         it('Owner can set a new Owner ', async () => {
             const signatureCcipVerifier = await new SignatureCcipVerifier__factory()
                 .connect(owner)
-                .deploy(owner.address, 'http://localhost:8080/graphql', 'Signature Ccip Resolver', resolver.address, [
+                .deploy(owner.address, 'http://localhost:8080/graphql', 'Signature Ccip Resolver', 60, resolver.address, [
                     signer1.address,
                 ]);
 
@@ -68,7 +68,7 @@ describe('Signature Ccip Verifier', () => {
         it("Rando can't set a new owner ", async () => {
             const signatureCcipVerifier = await new SignatureCcipVerifier__factory()
                 .connect(owner)
-                .deploy(owner.address, 'http://localhost:8080/graphql', 'Signature Ccip Resolver', resolver.address, [
+                .deploy(owner.address, 'http://localhost:8080/graphql', 'Signature Ccip Resolver', 60, resolver.address, [
                     signer1.address,
                 ]);
 
@@ -87,7 +87,7 @@ describe('Signature Ccip Verifier', () => {
         it('Owner can set a new Url ', async () => {
             const signatureCcipVerifier = await new SignatureCcipVerifier__factory()
                 .connect(owner)
-                .deploy(owner.address, 'http://localhost:8080/graphql', 'Signature Ccip Resolver', resolver.address, [
+                .deploy(owner.address, 'http://localhost:8080/graphql', 'Signature Ccip Resolver', 60, resolver.address, [
                     signer1.address,
                 ]);
 
@@ -107,7 +107,7 @@ describe('Signature Ccip Verifier', () => {
         it("Rando can't set a new owner ", async () => {
             const signatureCcipVerifier = await new SignatureCcipVerifier__factory()
                 .connect(owner)
-                .deploy(owner.address, 'http://localhost:8080/graphql', 'Signature Ccip Resolver', resolver.address, [
+                .deploy(owner.address, 'http://localhost:8080/graphql', 'Signature Ccip Resolver', 60, resolver.address, [
                     signer1.address,
                 ]);
 
@@ -126,7 +126,7 @@ describe('Signature Ccip Verifier', () => {
         it('Owner can add new signers', async () => {
             const signatureCcipVerifier = await new SignatureCcipVerifier__factory()
                 .connect(owner)
-                .deploy(owner.address, 'http://localhost:8080/graphql', 'Signature Ccip Resolver', resolver.address, [
+                .deploy(owner.address, 'http://localhost:8080/graphql', 'Signature Ccip Resolver', 60, resolver.address, [
                     signer1.address,
                 ]);
 
@@ -151,7 +151,7 @@ describe('Signature Ccip Verifier', () => {
         it("Rando can't add new signers", async () => {
             const signatureCcipVerifier = await new SignatureCcipVerifier__factory()
                 .connect(owner)
-                .deploy(owner.address, 'http://localhost:8080/graphql', 'Signature Ccip Resolver', resolver.address, [
+                .deploy(owner.address, 'http://localhost:8080/graphql', 'Signature Ccip Resolver', 60, resolver.address, [
                     signer1.address,
                 ]);
 
@@ -167,7 +167,7 @@ describe('Signature Ccip Verifier', () => {
         it('Owner can remove signers', async () => {
             const signatureCcipVerifier = await new SignatureCcipVerifier__factory()
                 .connect(owner)
-                .deploy(owner.address, 'http://localhost:8080/graphql', 'Signature Ccip Resolver', resolver.address, [
+                .deploy(owner.address, 'http://localhost:8080/graphql', 'Signature Ccip Resolver', 60, resolver.address, [
                     signer1.address,
                 ]);
 
@@ -189,7 +189,7 @@ describe('Signature Ccip Verifier', () => {
         it('Only remove signers that were already created before', async () => {
             const signatureCcipVerifier = await new SignatureCcipVerifier__factory()
                 .connect(owner)
-                .deploy(owner.address, 'http://localhost:8080/graphql', 'Signature Ccip Resolver', resolver.address, [
+                .deploy(owner.address, 'http://localhost:8080/graphql', 'Signature Ccip Resolver', 60, resolver.address, [
                     signer1.address,
                 ]);
 
@@ -212,7 +212,7 @@ describe('Signature Ccip Verifier', () => {
         it("Rando can't remove signers", async () => {
             const signatureCcipVerifier = await new SignatureCcipVerifier__factory()
                 .connect(owner)
-                .deploy(owner.address, 'http://localhost:8080/graphql', 'Signature Ccip Resolver', resolver.address, [
+                .deploy(owner.address, 'http://localhost:8080/graphql', 'Signature Ccip Resolver', 60, resolver.address, [
                     signer1.address,
                 ]);
 
@@ -235,7 +235,7 @@ describe('Signature Ccip Verifier', () => {
         it('returns result if signed correctly ', async () => {
             const signatureCcipVerifier = await new SignatureCcipVerifier__factory()
                 .connect(owner)
-                .deploy(owner.address, 'http://localhost:8080/graphql', 'Signature Ccip Resolver', resolver.address, [
+                .deploy(owner.address, 'http://localhost:8080/graphql', 'Signature Ccip Resolver', 60, resolver.address, [
                     signer1.address,
                 ]);
 
@@ -258,7 +258,7 @@ describe('Signature Ccip Verifier', () => {
         it('reverts if response was signed from rando ', async () => {
             const signatureCcipVerifier = await new SignatureCcipVerifier__factory()
                 .connect(owner)
-                .deploy(owner.address, 'http://localhost:8080/graphql', 'Signature Ccip Resolver', resolver.address, [
+                .deploy(owner.address, 'http://localhost:8080/graphql', 'Signature Ccip Resolver', 60, resolver.address, [
                     signer1.address,
                 ]);
 
@@ -290,7 +290,7 @@ describe('Signature Ccip Verifier', () => {
             };
             const signatureCcipVerifier = await new SignatureCcipVerifier__factory()
                 .connect(owner)
-                .deploy(owner.address, 'http://localhost:8080/graphql', 'Signature Ccip Resolver', resolver.address, [
+                .deploy(owner.address, 'http://localhost:8080/graphql', 'Signature Ccip Resolver', 60, resolver.address, [
                     signer1.address,
                 ]);
 
