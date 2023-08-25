@@ -4,7 +4,7 @@ async function main() {
     const [owner] = await ethers.getSigners();
 
     const graphQlUrl = 'http://localhost:8081/graphql';
-    const resolverName = "Optimism Goerli"
+    const resolverName = 'Optimism Goerli';
     const resolverChainID = 420;
     const bedrockProofVerifierAddress = '0x49FA2e3dc397d6AcA8e2DAe402eB2fD6164EebAC';
     const l2ResolverAddress = '0x39Dc8A3A607970FA9F417D284E958D4cA69296C8';

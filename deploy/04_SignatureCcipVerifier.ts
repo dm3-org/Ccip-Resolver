@@ -8,9 +8,14 @@ async function main() {
     const [signer] = await ethers.getSigners();
 
     const SignatureVerifier = await ethers.getContractFactory('SignatureCcipVerifier');
-    const deployTx = await SignatureVerifier.deploy(signer.address, GraphQlUrl, RESOLVER_CHAINID, RESOLVER_NAME, CCIP_RESOLVER_ADDRESS, [
+    const deployTx = await SignatureVerifier.deploy(
         signer.address,
-    ]);
+        GraphQlUrl,
+        RESOLVER_CHAINID,
+        RESOLVER_NAME,
+        CCIP_RESOLVER_ADDRESS,
+        [signer.address],
+    );
     await deployTx.deployed();
 
     console.log(`SignatureCcipVerifier deployed at  ${deployTx.address}`);
