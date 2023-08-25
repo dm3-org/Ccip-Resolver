@@ -39,6 +39,7 @@ abstract contract CcipResponseVerifier is ICcipResponseVerifier, SupportsInterfa
     string public resolverName;
     /**
      * @notice the chainId at which the resolver resolves data from
+     * @dev should be 0 if storageLocation is offChain
      */
     uint256 public l2ResolverChainID;
 
