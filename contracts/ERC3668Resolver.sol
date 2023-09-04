@@ -348,7 +348,7 @@ contract ERC3668Resolver is IExtendedResolver, IMetadataResolver, SupportsInterf
          * If the verifier is set for the given node, we return it and break the recursion
          */
         if (address(_ccipVerifier.verifierAddress) != address(0)) {
-            return (_ccipVerifier, name.namehash(0));
+            return (_ccipVerifier, name.namehash(offset));
         }
         /*
          * Otherwise, continue with the next label

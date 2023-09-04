@@ -18,7 +18,6 @@ import {
 } from 'typechain';
 
 import { signAndEncodeResponse } from '../../gateway/handler/signing/signAndEncodeResponse';
-
 describe('ERC3668Resolver Test', () => {
     let owner: SignerWithAddress;
     // Example user alice
@@ -338,11 +337,11 @@ describe('ERC3668Resolver Test', () => {
             expect(sender).to.equal(erc3668Resolver.address);
             expect(urls).to.eql(['http://localhost:8080/{sender}/{data}']);
             expect(callData).to.equal(
-                iface.encodeFunctionData('resolveWithContext', [name, data, ethers.constants.AddressZero]),
+                iface.encodeFunctionData('resolveWithContext', [name, data, alice.address]),
             );
             expect(callbackFunction).to.equal(iface.getSighash('resolveWithProof'));
             expect(extraData).to.equal(
-                iface.encodeFunctionData('resolveWithContext', [name, data, ethers.constants.AddressZero]),
+                iface.encodeFunctionData('resolveWithContext', [name, data, alice.address]),
             );
         });
         it('returns Offchain lookup for namewrapper', async () => {
