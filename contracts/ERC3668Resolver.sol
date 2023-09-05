@@ -8,7 +8,6 @@ import {CcipResponseVerifier, ICcipResponseVerifier} from "./verifier/CcipRespon
 import {ENSRegistry} from "@ensdomains/ens-contracts/contracts/registry/ENSRegistry.sol";
 import {INameWrapper} from "@ensdomains/ens-contracts/contracts/wrapper/INameWrapper.sol";
 import {BytesUtils} from "@ensdomains/ens-contracts/contracts/wrapper/BytesUtils.sol";
-import "hardhat/console.sol";
 
 import {BytesLib} from "solidity-bytes-utils/contracts/BytesLib.sol";
 
@@ -218,8 +217,6 @@ contract ERC3668Resolver is IExtendedResolver, IMetadataResolver, SupportsInterf
          * To determine the context of the request, we need to get the owner of the node.
          */
         address nodeOwner = getNameOwner(name, 0);
-        console.log('metadata');
-        console.log(nodeOwner);
         bytes memory context = abi.encodePacked(nodeOwner);
 
         return (resolverName, coinType, graphqlUrl, storageType, storageLocation, context);
