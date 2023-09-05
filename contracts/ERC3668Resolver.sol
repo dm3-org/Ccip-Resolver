@@ -284,12 +284,11 @@ contract ERC3668Resolver is IExtendedResolver, IMetadataResolver, SupportsInterf
         (node , offset) = name.readLabel(offset);
         nodeOwner = ensRegistry.owner(node);
         if (nodeOwner == address(0)){
-            nodeOwner = getNameOwner(name, offset);
+            return getNameOwner(name, offset);
+        }else if(nodeOwner == address(nameWrapper)){
+            return nameWrapper.ownerOf(uint256(node));
         }
-        if (nodeOwner == address(nameWrapper)) {
-            nodeOwner = nameWrapper.ownerOf(uint256(node));
-        }
-        revert("should not reach here");
+        return nodeOwner;
     }
 
     /*
