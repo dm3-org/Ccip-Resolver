@@ -118,11 +118,9 @@ contract ERC3668Resolver is IExtendedResolver, IMetadataResolver, SupportsInterf
         /*
          * Retrieves the owner of the node. NameWrapper profiles are supported too. This will be the context of the request.
          */
-        // address nodeOwner = getNodeOwner(node);
-        address nodeOwner = getNameOwner(name, 0);
-        console.log(1);
+        address nodeOwner = getNameOwner(name, 0);        
         bytes memory context = abi.encodePacked(nodeOwner);
-        console.log(2);
+
         /*
          * The calldata the gateway has to resolve
          */
@@ -132,7 +130,6 @@ contract ERC3668Resolver is IExtendedResolver, IMetadataResolver, SupportsInterf
             data,
             context
         );
-        console.log(3);
         revert OffchainLookup(
             address(this),
             _verifier.gatewayUrls,
@@ -220,8 +217,10 @@ contract ERC3668Resolver is IExtendedResolver, IMetadataResolver, SupportsInterf
         /*
          * To determine the context of the request, we need to get the owner of the node.
          */
-        bytes32 node = name.namehash(0);
-        bytes memory context = abi.encodePacked(getNodeOwner(node));
+        address nodeOwner = getNameOwner(name, 0);
+        console.log('metadata');
+        console.log(nodeOwner);
+        bytes memory context = abi.encodePacked(nodeOwner);
 
         return (resolverName, coinType, graphqlUrl, storageType, storageLocation, context);
     }
@@ -280,10 +279,12 @@ contract ERC3668Resolver is IExtendedResolver, IMetadataResolver, SupportsInterf
      * @return nodeOwner The address of the owner of the ENS node
      */
     function getNameOwner(bytes memory name, uint256 offset) internal view returns (address nodeOwner) {
-        bytes32 node;
-        (node , offset) = name.readLabel(offset);
+        bytes32 node = name.namehash(offset);
+        (, offset) = name.readLabel(offset);
         nodeOwner = ensRegistry.owner(node);
-        if (nodeOwner == address(0)){
+        if(offset >= name.length) {
+            return address(0);
+        }else if (nodeOwner == address(0)){
             return getNameOwner(name, offset);
         }else if(nodeOwner == address(nameWrapper)){
             return nameWrapper.ownerOf(uint256(node));
@@ -371,7 +372,7 @@ contract ERC3668Resolver is IExtendedResolver, IMetadataResolver, SupportsInterf
          * If the verifier is set for the given node, we return it and break the recursion
          */
         if (address(_ccipVerifier.verifierAddress) != address(0)) {
-            return (_ccipVerifier, name.namehash(offset));
+            return (_ccipVerifier, name.namehash(0));
         }
         /*
          * Otherwise, continue with the next label

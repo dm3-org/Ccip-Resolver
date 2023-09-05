@@ -206,7 +206,7 @@ describe('ERC3668Resolver Test', () => {
         });
     });
     describe('resolve', () => {
-        it.only('returns offchain lookup via default verifier for unknown TLD ', async () => {
+        it('returns offchain lookup via default verifier for unknown TLD ', async () => {
             const iface = new ethers.utils.Interface([
                 'function onResolveWithProof(bytes calldata name, bytes calldata data) public pure  returns (bytes4)',
                 'function addr(bytes32 node) external view returns (address)',
@@ -312,6 +312,39 @@ describe('ERC3668Resolver Test', () => {
                 ['http://localhost:8080/{sender}/{data}'],
             );
 
+            const iface = new ethers.utils.Interface([
+                'function onResolveWithProof(bytes calldata name, bytes calldata data) public pure  returns (bytes4)',
+                'function addr(bytes32 node) external view returns (address)',
+                'error OffchainLookup(address sender, string[] urls, bytes callData, bytes4 callbackFunction, bytes extraData)',
+                'function resolveWithContext(bytes calldata name,bytes calldata data,bytes calldata context) external view returns (bytes memory result)',
+
+                'function resolveWithProof(bytes calldata response, bytes calldata extraData) external view returns (bytes memory)',
+            ]);
+
+            const name = ethers.utils.dnsEncode('sub.alice.eth');
+            const data = iface.encodeFunctionData('addr', [ethers.utils.namehash('alice.eth')]);
+
+            let errorString;
+            try {
+                await erc3668Resolver.resolve(name, data);
+            } catch (e) {
+                errorString = e.data;
+            }
+
+            const decodedError = iface.decodeErrorResult('OffchainLookup', errorString);
+            const [sender, urls, callData, callbackFunction, extraData] = decodedError;
+
+            expect(sender).to.equal(erc3668Resolver.address);
+            expect(urls).to.eql(['http://localhost:8080/{sender}/{data}']);
+            expect(callData).to.equal(
+                iface.encodeFunctionData('resolveWithContext', [name, data, alice.address]),
+            );
+            expect(callbackFunction).to.equal(iface.getSighash('resolveWithProof'));
+            expect(extraData).to.equal(
+                iface.encodeFunctionData('resolveWithContext', [name, data, alice.address]),
+            );
+        });
+        it('returns Offchain lookup for sub domain for default verifier', async () => {
             const iface = new ethers.utils.Interface([
                 'function onResolveWithProof(bytes calldata name, bytes calldata data) public pure  returns (bytes4)',
                 'function addr(bytes32 node) external view returns (address)',
@@ -489,11 +522,11 @@ describe('ERC3668Resolver Test', () => {
         });
     });
     describe('Metadata', () => {
-        it('returns metadata', async () => {
-            const convertCoinTypeToEVMChainId = (_coinType: number) => {
-                return (0x7fffffff & _coinType) >> 0;
-            };
+        const convertCoinTypeToEVMChainId = (_coinType: number) => {
+            return (0x7fffffff & _coinType) >> 0;
+        };
 
+        it('returns metadata', async () => {
             await erc3668Resolver
                 .connect(alice)
                 .setVerifierForDomain(ethers.utils.namehash('alice.eth'), bedrockCcipVerifier.address, [
@@ -501,6 +534,22 @@ describe('ERC3668Resolver Test', () => {
                 ]);
             const [name, coinType, graphqlUrl, storageType, storageLocation, context] = await erc3668Resolver.metadata(
                 dnsEncode('alice.eth'),
+            );
+            expect(name).to.equal('Optimism Goerli');
+            expect(convertCoinTypeToEVMChainId(BigNumber.from(coinType).toNumber())).to.equal(420);
+            expect(graphqlUrl).to.equal('http://localhost:8081/graphql');
+            expect(storageType).to.equal(0);
+            expect(ethers.utils.getAddress(storageLocation)).to.equal('0x5FbDB2315678afecb367f032d93F642f64180aa3');
+            expect(ethers.utils.getAddress(context)).to.equal(alice.address);
+        });
+        it('returns metadata context of the parent if subname does not exit', async () => {
+            await erc3668Resolver
+                .connect(alice)
+                .setVerifierForDomain(ethers.utils.namehash('alice.eth'), bedrockCcipVerifier.address, [
+                    'http://localhost:8080/{sender}/{data}',
+                ]);
+            const [name, coinType, graphqlUrl, storageType, storageLocation, context] = await erc3668Resolver.metadata(
+                dnsEncode('sub.alice.eth'),
             );
             expect(name).to.equal('Optimism Goerli');
             expect(convertCoinTypeToEVMChainId(BigNumber.from(coinType).toNumber())).to.equal(420);
