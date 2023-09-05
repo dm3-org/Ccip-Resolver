@@ -8,6 +8,7 @@ import {CcipResponseVerifier, ICcipResponseVerifier} from "./verifier/CcipRespon
 import {ENSRegistry} from "@ensdomains/ens-contracts/contracts/registry/ENSRegistry.sol";
 import {INameWrapper} from "@ensdomains/ens-contracts/contracts/wrapper/INameWrapper.sol";
 import {BytesUtils} from "@ensdomains/ens-contracts/contracts/wrapper/BytesUtils.sol";
+import "hardhat/console.sol";
 
 import {BytesLib} from "solidity-bytes-utils/contracts/BytesLib.sol";
 
@@ -117,8 +118,11 @@ contract ERC3668Resolver is IExtendedResolver, IMetadataResolver, SupportsInterf
         /*
          * Retrieves the owner of the node. NameWrapper profiles are supported too. This will be the context of the request.
          */
-        address nodeOwner = getNodeOwner(node);
+        // address nodeOwner = getNodeOwner(node);
+        address nodeOwner = getNameOwner(name, 0);
+        console.log(1);
         bytes memory context = abi.encodePacked(nodeOwner);
+        console.log(2);
         /*
          * The calldata the gateway has to resolve
          */
@@ -128,7 +132,7 @@ contract ERC3668Resolver is IExtendedResolver, IMetadataResolver, SupportsInterf
             data,
             context
         );
-
+        console.log(3);
         revert OffchainLookup(
             address(this),
             _verifier.gatewayUrls,
@@ -266,6 +270,26 @@ contract ERC3668Resolver is IExtendedResolver, IMetadataResolver, SupportsInterf
         if (nodeOwner == address(nameWrapper)) {
             nodeOwner = nameWrapper.ownerOf(uint256(node));
         }
+    }
+
+    /**
+     * @notice Get the owner of the ENS name either from the ENS registry or the NameWrapper contract
+     * @dev This function adds support for ENS nodes owned by the NameWrapper contract.
+     * @param name  The domain name in bytes (dnsEncoded)
+     * @param offset The current offset in the name being processed
+     * @return nodeOwner The address of the owner of the ENS node
+     */
+    function getNameOwner(bytes memory name, uint256 offset) internal view returns (address nodeOwner) {
+        bytes32 node;
+        (node , offset) = name.readLabel(offset);
+        nodeOwner = ensRegistry.owner(node);
+        if (nodeOwner == address(0)){
+            nodeOwner = getNameOwner(name, offset);
+        }
+        if (nodeOwner == address(nameWrapper)) {
+            nodeOwner = nameWrapper.ownerOf(uint256(node));
+        }
+        revert("should not reach here");
     }
 
     /*

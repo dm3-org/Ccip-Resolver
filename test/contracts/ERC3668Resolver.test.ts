@@ -206,7 +206,7 @@ describe('ERC3668Resolver Test', () => {
         });
     });
     describe('resolve', () => {
-        it('returns offchain lookup via default verifier for unknown TLD ', async () => {
+        it.only('returns offchain lookup via default verifier for unknown TLD ', async () => {
             const iface = new ethers.utils.Interface([
                 'function onResolveWithProof(bytes calldata name, bytes calldata data) public pure  returns (bytes4)',
                 'function addr(bytes32 node) external view returns (address)',
