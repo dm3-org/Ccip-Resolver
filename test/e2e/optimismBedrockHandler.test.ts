@@ -115,12 +115,12 @@ describe('Optimism Bedrock Handler', () => {
 
         const { callData } = await getGateWayUrl('alice.eth', 'foo', erc3668Resolver);
 
-        const result = {
+        const result = [{
             result: ethers.utils.defaultAbiCoder.encode(['string'], ['Hello from Alice']),
             target: '0x5FbDB2315678afecb367f032d93F642f64180aa3',
             slot: '0x0000000000000000000000000000000000000000000000000000000000000005',
             layout: StorageLayout.DYNAMIC,
-        };
+        }];
         mock.onGet(`http://test/${bedrockCcipVerifier.address}/${callData}`).reply(200, result);
 
         const ccipConfig = {};
@@ -163,12 +163,12 @@ describe('Optimism Bedrock Handler', () => {
 
         const { callData } = await getGateWayUrl('alice.eth', 'foo', erc3668Resolver);
 
-        const result = {
+        const result = [{
             result: ethers.utils.namehash('alice.eth'),
             target: '0x5FbDB2315678afecb367f032d93F642f64180aa3',
             slot: '0x0000000000000000000000000000000000000000000000000000000000000001',
             layout: StorageLayout.FIXED,
-        };
+        }];
         mock.onGet(`http://test/${bedrockCcipVerifier.address}/${callData}`).reply(200, result);
 
         const ccipConfig = {};

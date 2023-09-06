@@ -5,6 +5,8 @@ import {CcipResponseVerifier} from "../CcipResponseVerifier.sol";
 import {IBedrockProofVerifier} from "./IBedrockProofVerifier.sol";
 import {convertEVMChainIdToCoinType} from "../../coinType/Ensip11CoinType.sol";
 
+import "hardhat/console.sol";
+
 contract BedrockCcipVerifier is CcipResponseVerifier {
     IBedrockProofVerifier public immutable bedrockProofVerifier;
     address public immutable target;
@@ -33,10 +35,16 @@ contract BedrockCcipVerifier is CcipResponseVerifier {
         bytes calldata extraData
     ) public view virtual override returns (bytes memory) {
         /*
+         * The response is expected to be an array of bytes containing more than one proof to extend the functionality * of the resolver.
+         * By default, we are currently using only the first proof.
+         * However, contracts inheriting from this contract * can utilize more than just one proof as needed.
+         */
+        bytes[] memory responses = abi.decode(response, (bytes[]));
+        /*
          * @dev Decode the response and proof from the response bytes
          */
         (bytes memory responseEncoded, IBedrockProofVerifier.BedrockStateProof memory proof) = abi.decode(
-            response,
+            responses[0],
             (bytes, IBedrockProofVerifier.BedrockStateProof)
         );
         /*
