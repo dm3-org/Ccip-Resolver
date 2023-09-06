@@ -5,8 +5,6 @@ import {CcipResponseVerifier} from "../CcipResponseVerifier.sol";
 import {IBedrockProofVerifier} from "./IBedrockProofVerifier.sol";
 import {convertEVMChainIdToCoinType} from "../../coinType/Ensip11CoinType.sol";
 
-import "hardhat/console.sol";
-
 contract BedrockCcipVerifier is CcipResponseVerifier {
     IBedrockProofVerifier public immutable bedrockProofVerifier;
     address public immutable target;
