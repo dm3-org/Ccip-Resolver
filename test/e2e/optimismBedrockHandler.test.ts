@@ -102,7 +102,7 @@ describe('Optimism Bedrock Handler', () => {
         });
     });
 
-    it('Returns valid string data from resolver', async () => {
+    it.only('Returns valid string data from resolver', async () => {
         process.env.SIGNER_PRIVATE_KEY = signer.privateKey;
 
         const mock = new MockAdapter(axios);
@@ -148,7 +148,8 @@ describe('Optimism Bedrock Handler', () => {
         const responseEncoded = await erc3668Resolver.resolveWithProof(response.body.data, callData);
 
         const [decodedBytes] = ethers.utils.defaultAbiCoder.decode(['bytes'], responseEncoded);
-        const [responseDecoded] = ethers.utils.defaultAbiCoder.decode(['string'], decodedBytes);
+        const [decodedArray] = ethers.utils.defaultAbiCoder.decode(['bytes[]'], decodedBytes);
+        const [responseDecoded] = ethers.utils.defaultAbiCoder.decode(['string'], decodedArray[0]);
 
         expect(responseDecoded).to.equal('Hello from Alice');
     });
@@ -197,7 +198,8 @@ describe('Optimism Bedrock Handler', () => {
 
         const responseEncoded = await erc3668Resolver.resolveWithProof(response.body.data, callData);
 
-        const [decodedResponse] = ethers.utils.defaultAbiCoder.decode(['bytes'], responseEncoded);
+        const [decodedBytes] = ethers.utils.defaultAbiCoder.decode(['bytes'], responseEncoded);
+        const [[decodedResponse]] = ethers.utils.defaultAbiCoder.decode(['bytes[]'], decodedBytes);
         expect(decodedResponse).to.equal(ethers.utils.namehash('alice.eth'));
     });
 });

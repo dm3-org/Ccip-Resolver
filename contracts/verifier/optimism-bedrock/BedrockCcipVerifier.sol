@@ -34,37 +34,41 @@ contract BedrockCcipVerifier is CcipResponseVerifier {
     ) public view virtual override returns (bytes memory) {
         /*
          * The response is expected to be an array of bytes containing more than one proof to extend the functionality * of the resolver.
-         * By default, we are currently using only the first proof.
-         * However, contracts inheriting from this contract * can utilize more than just one proof as needed.
          */
         bytes[] memory responses = abi.decode(response, (bytes[]));
-        /*
-         * @dev Decode the response and proof from the response bytes
-         */
-        (bytes memory responseEncoded, IBedrockProofVerifier.BedrockStateProof memory proof) = abi.decode(
-            responses[0],
-            (bytes, IBedrockProofVerifier.BedrockStateProof)
-        );
-        /*
-         * Revert if the proof target does not match the resolver. This is to prevent a malicious resolver from using a * proof intended for another address.
-         */
-        require(proof.target == target, "proof target does not match resolver");
-        /*
-         * bedrockProofVerifier.getProofValue(proof) always returns the packed result.
-         * However, libraries like ethers.js expect the result to be encoded in bytes.
-         * Hence, the gateway needs to encode the result before returning it to the client.
-         * To ensure responseEncoded matches the value returned by bedrockProofVerifier.getProofValue(proof),
-         * we need to check the layout of the proof and encode the result accordingly, so we can compare the two values * using the keccak256 hash.
-         */
+        bytes[] memory proofs = new bytes[](responses.length);
 
-        require(
-            proof.layout == 0
-                ? keccak256(bedrockProofVerifier.getProofValue(proof)) == keccak256(responseEncoded)
-                : keccak256(abi.encode(bedrockProofVerifier.getProofValue(proof))) == keccak256(responseEncoded),
-            "proof does not match response"
-        );
+        for (uint256 i = 0; i < responses.length; i++) {
+            /*
+             * @dev Decode the response and proof from the response bytes
+             */
+            (bytes memory responseEncoded, IBedrockProofVerifier.BedrockStateProof memory proof) = abi.decode(
+                responses[i],
+                (bytes, IBedrockProofVerifier.BedrockStateProof)
+            );
+            /*
+             * Revert if the proof target does not match the resolver. This is to prevent a malicious resolver from using a * proof intended for another address.
+             */
+            require(proof.target == target, "proof target does not match resolver");
+            /*
+             * bedrockProofVerifier.getProofValue(proof) always returns the packed result.
+             * However, libraries like ethers.js expect the result to be encoded in bytes.
+             * Hence, the gateway needs to encode the result before returning it to the client.
+             * To ensure responseEncoded matches the value returned by bedrockProofVerifier.getProofValue(proof),
+             * we need to check the layout of the proof and encode the result accordingly, so we can compare the two values * using the keccak256 hash.
+             */
 
-        return responseEncoded;
+            require(
+                proof.layout == 0
+                    ? keccak256(bedrockProofVerifier.getProofValue(proof)) == keccak256(responseEncoded)
+                    : keccak256(abi.encode(bedrockProofVerifier.getProofValue(proof))) == keccak256(responseEncoded),
+                "proof does not match response"
+            );
+
+            proofs[i] = responseEncoded;
+        }
+
+        return abi.encode(proofs);
     }
 
     /**
