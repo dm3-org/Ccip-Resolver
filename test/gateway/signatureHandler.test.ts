@@ -19,7 +19,7 @@ import {
     SignatureCcipVerifier,
     SignatureCcipVerifier__factory,
 } from '../../typechain';
-import { getGateWayUrl } from '../helper/getGatewayUrl';
+import { getGateWayUrl, getGateWayUrlForAddress } from '../helper/getGatewayUrl';
 
 global.logger = winston.createLogger({
     level: process.env.LOG_LEVEL ?? 'info',
@@ -122,5 +122,49 @@ describe('Signature Handler', () => {
         const resultString = await erc3668Resolver.resolveWithProof(response.body.data, callData);
 
         expect(resultString).to.equal(result);
+    });
+    it.only('Returns valid address from resolver', async () => {
+        process.env.SIGNER_PRIVATE_KEY = signer.privateKey;
+
+        const mock = new MockAdapter(axios);
+
+        await erc3668Resolver
+            .connect(vitalik)
+            .setVerifierForDomain(ethers.utils.namehash('vitalik.eth'), signatureCcipVerifier.address, [
+                'http://test/{sender}/{data}',
+            ]);
+
+        const { callData } = await getGateWayUrlForAddress('vitalik.eth', erc3668Resolver);
+
+        //Pass the addr to the contract
+        const expected = ethers.utils.hexlify(vitalik.address)
+        console.log(expected)
+
+
+
+        mock.onGet(`http://test/${erc3668Resolver.address}/${callData}`).reply(200, expected);
+
+        const ccipConfig = {};
+        ccipConfig[erc3668Resolver.address] = {
+            type: 'signing',
+            handlerUrl: 'http://test',
+        };
+
+        const configReader = getConfigReader(JSON.stringify(ccipConfig));
+
+        config[erc3668Resolver.address] = ccipApp.use(ccipGateway(configReader));
+
+        const sender = erc3668Resolver.address;
+
+        // You the url returned by he contract to fetch the profile from the ccip gateway
+        const response = await request(ccipApp).get(`/${sender}/${callData}`).send();
+
+        expect(response.status).to.equal(200);
+        console.log('check');
+        const resultString = await erc3668Resolver.resolveWithProof(response.body.data, callData);
+
+        const ethersFormated = new ethers.providers.Formatter().callAddress(resultString)
+
+        expect(ethersFormated).to.equal(ethers.utils.getAddress(vitalik.address));
     });
 });

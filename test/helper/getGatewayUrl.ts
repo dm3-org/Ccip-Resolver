@@ -21,3 +21,22 @@ export const getGateWayUrl = async (ensName: string, recordName: string, offchai
         return { gatewayUrl, sender, callData };
     }
 };
+export const getGateWayUrlForAddress = async (ensName: string, offchainResolver: Contract) => {
+    try {
+        const addrData = new ethers.utils.Interface([
+            'function addr(bytes32 node) external view returns (address)',
+        ]).encodeFunctionData('addr', [ethers.utils.namehash(ensName)]);
+
+        // This always revers and throws the OffchainLookup Exceptions hence we need to catch it
+        await offchainResolver.resolve(encodeEnsName(ensName), addrData);
+        return { gatewayUrl: '', callbackFunction: '', extraData: '' };
+    } catch (err: any) {
+        const { sender, urls, callData } = err.errorArgs;
+        // Decode call
+
+        // Replace template vars
+        const gatewayUrl = urls[0].replace('{sender}', sender).replace('{data}', callData);
+
+        return { gatewayUrl, sender, callData };
+    }
+};

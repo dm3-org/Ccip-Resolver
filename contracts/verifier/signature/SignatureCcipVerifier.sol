@@ -83,6 +83,46 @@ contract SignatureCcipVerifier is CcipResponseVerifier {
     }
 
     /**
+     * @param response The response bytes received from the AddrResolver.
+     * @return The Ethereum address resolved from the response bytes.
+     * @dev The AddrResolver stores addresses as bytes instead of Ethereum addresses.
+     * This is done to support other blockchain addresses, not just EVM addresses.
+     * However, the return type of `addr(bytes32)` is `address`,
+     * which means the client library expects an Ethereum address to be returned.
+     * To meet this expectation, we convert the bytes into an Ethereum address and return it.
+     */
+    function resolveWithAddress(bytes calldata response, bytes calldata extraData) public view returns (address) {
+        (address signer, bytes memory result) = SignatureVerifier.verify(resolver, extraData, response);
+        require(signers[signer], "SignatureVerifier: Invalid signature");
+
+        /**
+         * The AddrResolver stores addresses as bytes instead of Ethereum addresses.
+         * This is to support other blockchain addresses and not just EVM addresses.
+         * However, the return type of `addr(bytes32)` is `address`,
+         * so the client library expects an Ethereum address to be returned.
+         * For that reason, we have to convert the bytes into an address.
+         */
+        return address(bytes20(result));
+    }
+
+    /**
+     * @dev Can be called to determine what function to use to handle resolveWithProof. Returns the selector that then can be called via staticcall
+     * @return The four-byte function selector of the corresponding resolution function..
+     */
+    function onResolveWithProof(bytes calldata, bytes calldata data) public pure override returns (bytes4) {
+        /**
+         * if the function addr(bytes32) is called, return the selector of resolveWithAddress.
+         */
+        if (bytes4(data) == 0x3b3b57de) {
+            return this.resolveWithAddress.selector;
+        }
+        /**
+         * any other selector will be handled by the default resolveWithProof function.
+         */
+        return this.resolveWithProof.selector;
+    }
+
+    /**
      * @notice Get metadata about the CCIP Resolver
      * @dev This function provides metadata about the CCIP Resolver, including its name, coin type, GraphQL URL, storage type, and encoded information.
      * @return name The name of the resolver ("CCIP RESOLVER")

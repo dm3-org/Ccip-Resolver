@@ -51,6 +51,8 @@ export async function optimismBedrockHandler(
                 );
 
                 console.log('Proof result: ', proofResult);
+                console.log('Handler result: ', result);
+                console.log(proof);
 
                 const proofParamType = await getProofParamType();
                 return ethers.utils.defaultAbiCoder.encode(['bytes', proofParamType], [result, proof]);
