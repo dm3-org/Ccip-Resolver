@@ -28,27 +28,34 @@ export async function optimismBedrockHandler(
 
     // for each proof request, create a proof
     const proofs = await Promise.all(
-        proofRequests.map(async ({ target, slot, layout, result }: {
-            target: string;
-            slot: string;
-            layout: StorageLayout;
-            result: string;
-        }) => {
-            if (!target || !slot || layout === undefined) {
-                throw new Error('optimismBedrockHandler : Invalid data source response');
-            }
-
-            const { proof, result: proofResult } = await new ProofService(l1Provider, l2Provider).createProof(
+        proofRequests.map(
+            async ({
                 target,
                 slot,
                 layout,
-            );
+                result,
+            }: {
+                target: string;
+                slot: string;
+                layout: StorageLayout;
+                result: string;
+            }) => {
+                if (!target || !slot || layout === undefined) {
+                    throw new Error('optimismBedrockHandler : Invalid data source response');
+                }
 
-            console.log('Proof result: ', proofResult);
+                const { proof, result: proofResult } = await new ProofService(l1Provider, l2Provider).createProof(
+                    target,
+                    slot,
+                    layout,
+                );
 
-            const proofParamType = await getProofParamType();
-            return ethers.utils.defaultAbiCoder.encode(['bytes', proofParamType], [result, proof]);
-        }),
+                console.log('Proof result: ', proofResult);
+
+                const proofParamType = await getProofParamType();
+                return ethers.utils.defaultAbiCoder.encode(['bytes', proofParamType], [result, proof]);
+            },
+        ),
     );
     // return the proofs as bytes array
     return ethers.utils.defaultAbiCoder.encode(['bytes[]'], [proofs]);
