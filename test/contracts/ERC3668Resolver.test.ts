@@ -475,7 +475,7 @@ describe('ERC3668Resolver Test', () => {
                 'function resolveWithContext(bytes calldata name,bytes calldata data,bytes calldata context) external view returns (bytes memory result)',
             ]);
 
-            const result = ethers.utils.hexlify(alice.address)
+            const result = ethers.utils.hexlify(alice.address);
 
             const name = ethers.utils.dnsEncode('alice.eth');
             const data = iface.encodeFunctionData('addr', [ethers.utils.namehash('alice.eth')]);
@@ -483,9 +483,9 @@ describe('ERC3668Resolver Test', () => {
             const response = await signAndEncodeResponse(signer, erc3668Resolver.address, result, extraData);
 
             const resolvedResponse = await erc3668Resolver.resolveWithProof(response, extraData);
-            console.log(resolvedResponse)
+            console.log(resolvedResponse);
 
-            const ethersFormated = new ethers.providers.Formatter().callAddress(resolvedResponse)
+            const ethersFormated = new ethers.providers.Formatter().callAddress(resolvedResponse);
 
             expect(ethers.utils.getAddress(ethersFormated)).to.equal(alice.address);
         });
@@ -502,7 +502,7 @@ describe('ERC3668Resolver Test', () => {
                 'function resolveWithContext(bytes calldata name,bytes calldata data,bytes calldata context) external view returns (bytes memory result)',
             ]);
 
-            const result = ethers.utils.hexlify(alice.address)
+            const result = ethers.utils.hexlify(alice.address);
 
             const name = ethers.utils.dnsEncode('foo.alice.eth');
             const data = iface.encodeFunctionData('addr', [ethers.utils.namehash('foo.alice.eth')]);
@@ -511,7 +511,7 @@ describe('ERC3668Resolver Test', () => {
 
             const resolvedResponse = await erc3668Resolver.resolveWithProof(response, extraData);
 
-            const ethersFormated = new ethers.providers.Formatter().callAddress(resolvedResponse)
+            const ethersFormated = new ethers.providers.Formatter().callAddress(resolvedResponse);
 
             expect(ethers.utils.getAddress(ethersFormated)).to.equal(alice.address);
         });

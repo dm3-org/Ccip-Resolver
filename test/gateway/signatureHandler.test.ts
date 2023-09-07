@@ -136,11 +136,9 @@ describe('Signature Handler', () => {
 
         const { callData } = await getGateWayUrlForAddress('vitalik.eth', erc3668Resolver);
 
-        //Pass the addr to the contract
-        const expected = ethers.utils.hexlify(vitalik.address)
-        console.log(expected)
-
-
+        // Pass the addr to the contract
+        const expected = ethers.utils.hexlify(vitalik.address);
+        console.log(expected);
 
         mock.onGet(`http://test/${erc3668Resolver.address}/${callData}`).reply(200, expected);
 
@@ -163,7 +161,7 @@ describe('Signature Handler', () => {
         console.log('check');
         const resultString = await erc3668Resolver.resolveWithProof(response.body.data, callData);
 
-        const ethersFormated = new ethers.providers.Formatter().callAddress(resultString)
+        const ethersFormated = new ethers.providers.Formatter().callAddress(resultString);
 
         expect(ethersFormated).to.equal(ethers.utils.getAddress(vitalik.address));
     });
