@@ -16,12 +16,7 @@ export async function optimismBedrockHandler(
      * 2. The slot of the state we want to resolve.
      * 3. The layout of the state we want to resolve. This can be either fixed(address,bytes32,uint256) or dynamic(string,bytes,array).
      */
-    const { target, slot, layout, result } = (await axios.get(`${configEntry.handlerUrl}/${resolverAddr}/${calldata}`))
-        .data;
-
-    if (!target || !slot || layout === undefined) {
-        throw new Error('optimismBedrockHandler : Invalid data source response');
-    }
+    const proofRequests = (await axios.get(`${configEntry.handlerUrl}/${resolverAddr}/${calldata}`)).data;
 
     const l1Provider = new ethers.providers.StaticJsonRpcProvider(configEntry.l1ProviderUrl);
     const l2Provider = new ethers.providers.StaticJsonRpcProvider(configEntry.l2ProviderUrl);
@@ -31,15 +26,25 @@ export async function optimismBedrockHandler(
      */
     await Promise.all([l1Provider.detectNetwork(), l2Provider.detectNetwork()]);
 
-    // Input arg for resolveWithProof
-    const { proof, result: proofResult } = await new ProofService(l1Provider, l2Provider).createProof(
-        target,
-        slot,
-        layout,
+    // for each proof request, create a proof
+    const proofs = await Promise.all(
+        proofRequests.map(async ({ target, slot, layout, result }) => {
+            if (!target || !slot || layout === undefined) {
+                throw new Error('optimismBedrockHandler : Invalid data source response');
+            }
+
+            const { proof, result: proofResult } = await new ProofService(l1Provider, l2Provider).createProof(
+                target,
+                slot,
+                layout,
+            );
+
+            console.log('Proof result: ', proofResult);
+
+            const proofParamType = await getProofParamType();
+            return ethers.utils.defaultAbiCoder.encode(['bytes', proofParamType], [result, proof]);
+        }),
     );
-
-    console.log('Proof result: ', proofResult);
-
-    const proofParamType = await getProofParamType();
-    return ethers.utils.defaultAbiCoder.encode(['bytes', proofParamType], [result, proof]);
+    // return the proofs as bytes array
+    return ethers.utils.defaultAbiCoder.encode(['bytes[]'], [proofs]);
 }
