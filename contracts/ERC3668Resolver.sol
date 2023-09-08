@@ -114,20 +114,14 @@ contract ERC3668Resolver is IExtendedResolver, IMetadataResolver, SupportsInterf
          * reverts if no verifier was set in advance
          */
         (CcipVerifier memory _verifier, bytes32 node) = getVerifierOfDomain(name);
-        /*
-         * Retrieves the owner of the node. NameWrapper profiles are supported too. This will be the context of the request.
-         */
-        address nodeOwner = getNameOwner(name, 0);        
-        bytes memory context = abi.encodePacked(nodeOwner);
 
         /*
          * The calldata the gateway has to resolve
          */
         bytes memory callData = abi.encodeWithSelector(
-            IResolverService.resolveWithContext.selector,
+            IResolverService.resolve.selector,
             name,
-            data,
-            context
+            data
         );
         revert OffchainLookup(
             address(this),
@@ -146,8 +140,8 @@ contract ERC3668Resolver is IExtendedResolver, IMetadataResolver, SupportsInterf
      */
     function resolveWithProof(bytes calldata response, bytes calldata extraData) external view returns (bytes memory) {
         /*
-         * decode the calldata that was encoded in the resolve function for IResolverService.resolveWithContext()
-         * bytes memory callData = abi.encodeWithSelector(IResolverService.resolveWithContext.selector, name, data context);
+         * decode the calldata that was encoded in the resolve function for IResolverService.resolve()
+         * bytes memory callData = abi.encodeWithSelector(IResolverService.resolveWithContext.selector, name);
          */
         (bytes memory name, bytes memory data) = abi.decode(extraData[4:], (bytes, bytes));
         /*
@@ -213,13 +207,7 @@ contract ERC3668Resolver is IExtendedResolver, IMetadataResolver, SupportsInterf
 
         ) = ICcipResponseVerifier(_ccipVerifier.verifierAddress).metadata(name);
 
-        /*
-         * To determine the context of the request, we need to get the owner of the node.
-         */
-        address nodeOwner = getNameOwner(name, 0);
-        bytes memory context = abi.encodePacked(nodeOwner);
-
-        return (resolverName, coinType, graphqlUrl, storageType, storageLocation, context);
+        return (resolverName, coinType, graphqlUrl, storageType, storageLocation, "");
     }
 
     /*

@@ -6,9 +6,8 @@ interface IExtendedResolver {
 }
 
 interface IResolverService {
-    function resolveWithContext(
+    function resolve(
         bytes calldata name,
-        bytes calldata data,
-        bytes calldata context
+        bytes calldata data
     ) external view returns (bytes memory result);
 }
