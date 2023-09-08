@@ -102,7 +102,7 @@ describe('Optimism Bedrock Handler', () => {
         });
     });
 
-    it.only('Returns valid string data from resolver', async () => {
+    it('Returns valid string data from resolver', async () => {
         process.env.SIGNER_PRIVATE_KEY = signer.privateKey;
 
         const mock = new MockAdapter(axios);

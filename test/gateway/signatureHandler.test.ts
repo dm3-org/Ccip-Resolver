@@ -123,7 +123,7 @@ describe('Signature Handler', () => {
 
         expect(resultString).to.equal(result);
     });
-    it.only('Returns valid address from resolver', async () => {
+    it('Returns valid address from resolver', async () => {
         process.env.SIGNER_PRIVATE_KEY = signer.privateKey;
 
         const mock = new MockAdapter(axios);
