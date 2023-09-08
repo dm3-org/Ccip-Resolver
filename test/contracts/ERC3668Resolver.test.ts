@@ -475,17 +475,19 @@ describe('ERC3668Resolver Test', () => {
                 'function resolveWithContext(bytes calldata name,bytes calldata data,bytes calldata context) external view returns (bytes memory result)',
             ]);
 
-            const result = ethers.utils.defaultAbiCoder.encode(['bytes'], [alice.address]);
+            const result = ethers.utils.hexlify(alice.address);
 
             const name = ethers.utils.dnsEncode('alice.eth');
             const data = iface.encodeFunctionData('addr', [ethers.utils.namehash('alice.eth')]);
             const extraData = iface.encodeFunctionData('resolveWithContext', [name, data, alice.address]);
             const response = await signAndEncodeResponse(signer, erc3668Resolver.address, result, extraData);
 
-            const encodedResponse = await erc3668Resolver.resolveWithProof(response, extraData);
-            const [decodedResponse] = ethers.utils.defaultAbiCoder.decode(['bytes'], encodedResponse);
+            const resolvedResponse = await erc3668Resolver.resolveWithProof(response, extraData);
+            console.log(resolvedResponse);
 
-            expect(ethers.utils.getAddress(decodedResponse)).to.equal(alice.address);
+            const ethersFormated = new ethers.providers.Formatter().callAddress(resolvedResponse);
+
+            expect(ethers.utils.getAddress(ethersFormated)).to.equal(alice.address);
         });
         it('ResolveWithProf for sub domain using verifier ', async () => {
             await erc3668Resolver.connect(alice).setVerifierForDomain(
@@ -500,17 +502,18 @@ describe('ERC3668Resolver Test', () => {
                 'function resolveWithContext(bytes calldata name,bytes calldata data,bytes calldata context) external view returns (bytes memory result)',
             ]);
 
-            const result = ethers.utils.defaultAbiCoder.encode(['bytes'], [alice.address]);
+            const result = ethers.utils.hexlify(alice.address);
 
             const name = ethers.utils.dnsEncode('foo.alice.eth');
             const data = iface.encodeFunctionData('addr', [ethers.utils.namehash('foo.alice.eth')]);
             const extraData = iface.encodeFunctionData('resolveWithContext', [name, data, alice.address]);
             const response = await signAndEncodeResponse(signer, erc3668Resolver.address, result, extraData);
 
-            const encodedResponse = await erc3668Resolver.resolveWithProof(response, extraData);
-            const [decodedResponse] = ethers.utils.defaultAbiCoder.decode(['bytes'], encodedResponse);
+            const resolvedResponse = await erc3668Resolver.resolveWithProof(response, extraData);
 
-            expect(ethers.utils.getAddress(decodedResponse)).to.equal(alice.address);
+            const ethersFormated = new ethers.providers.Formatter().callAddress(resolvedResponse);
+
+            expect(ethers.utils.getAddress(ethersFormated)).to.equal(alice.address);
         });
     });
     describe('Metadata', () => {
