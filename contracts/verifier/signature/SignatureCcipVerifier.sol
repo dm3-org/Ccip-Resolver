@@ -71,7 +71,8 @@ contract SignatureCcipVerifier is CcipResponseVerifier {
      */
     function resolveWithProof(
         bytes calldata response,
-        bytes calldata extraData
+        bytes calldata extraData,
+        bytes calldata verifierData
     ) external view override returns (bytes memory) {
         (address signer, bytes memory result) = SignatureVerifier.verify(resolver, extraData, response);
         require(signers[signer], "SignatureVerifier: Invalid signature");

@@ -22,6 +22,7 @@ contract ERC3668Resolver is IExtendedResolver, IMetadataResolver, SupportsInterf
     struct CcipVerifier {
         string[] gatewayUrls;
         ICcipResponseVerifier verifierAddress;
+        bytes verifierData;
     }
     /**
      * The idnetifier to store the default verifier
@@ -34,7 +35,7 @@ contract ERC3668Resolver is IExtendedResolver, IMetadataResolver, SupportsInterf
      *   --------------------------------------------------
      */
 
-    event VerifierAdded(bytes32 indexed node, address verifierAddress, string[] gatewayUrls);
+    event VerifierAdded(bytes32 indexed node, address verifierAddress, string[] gatewayUrls, bytes verifierData);
     /*
      *   --------------------------------------------------
      *    Errors
@@ -65,20 +66,11 @@ contract ERC3668Resolver is IExtendedResolver, IMetadataResolver, SupportsInterf
         ENSRegistry _ensRegistry,
         // The name wrapper
         INameWrapper _nameWrapper,
-        //Address of the default CCIP Verifier
-        address _defaultVerifier,
-        string[] memory _gatewayUrls
+        string[] memory _gatewayUrls,
+        bytes memory verifierData
     ) {
         ensRegistry = _ensRegistry;
         nameWrapper = _nameWrapper;
-
-        /**
-         * If a default verifier is set, that verifier will be used by every child address that doesn't have a specific verifier set.
-         *
-         */
-        if (_defaultVerifier != address(0)) {
-            _setVerifierForDomain(DEFAULT_VERIFIER, _defaultVerifier, _gatewayUrls);
-        }
     }
 
     /*
@@ -93,13 +85,13 @@ contract ERC3668Resolver is IExtendedResolver, IMetadataResolver, SupportsInterf
      * @param verifierAddress The address of the CcipResponseVerifier contract.
      * @param urls The gateway url that should handle the OffchainLookup.
      */
-    function setVerifierForDomain(bytes32 node, address verifierAddress, string[] memory urls) external {
+    function setVerifierForDomain(bytes32 node, address verifierAddress, string[] memory urls, bytes memory verifierData) external {
         /*
          * Only the node owner can set the verifier for a node. NameWrapper profiles are supported too.
          */
         require(node != bytes32(0), "node is 0x0");
         require(msg.sender == getNodeOwner(node), "only node owner");
-        _setVerifierForDomain(node, verifierAddress, urls);
+        _setVerifierForDomain(node, verifierAddress, urls, verifierData);
     }
 
     /**
@@ -138,7 +130,7 @@ contract ERC3668Resolver is IExtendedResolver, IMetadataResolver, SupportsInterf
      * @param extraData The actual calldata that was called on the gateway.
      * @return the result of the offchain lookup
      */
-    function resolveWithProof(bytes calldata response, bytes calldata extraData) external view returns (bytes memory) {
+    function resolveWithProof(bytes calldata response, bytes calldata extraData, bytes calldata verifierData) external view returns (bytes memory) {
         /*
          * decode the calldata that was encoded in the resolve function for IResolverService.resolve()
          * bytes memory callData = abi.encodeWithSelector(IResolverService.resolveWithContext.selector, name);
@@ -166,7 +158,7 @@ contract ERC3668Resolver is IExtendedResolver, IMetadataResolver, SupportsInterf
          * So you might want to decode the result using abi.decode(resolveWithProofResponse, (bytes))
          */
         (bool success, bytes memory resolveWithProofResponse) = address(_ccipVerifier.verifierAddress).staticcall(
-            abi.encodeWithSelector(callBackSelector, response, extraData)
+            abi.encodeWithSelector(callBackSelector, response, extraData, _ccipVerifier.verifierData)
         );
         /*
          * Reverts if the call is not successful
@@ -290,8 +282,9 @@ contract ERC3668Resolver is IExtendedResolver, IMetadataResolver, SupportsInterf
      * @param verifierAddress The address of the CcipResponseVerifier contract.
      * @param urls The gateway url that should handle the OffchainLookup.
      */
-    function _setVerifierForDomain(bytes32 node, address verifierAddress, string[] memory urls) private {
+    function _setVerifierForDomain(bytes32 node, address verifierAddress, string[] memory urls, bytes memory verifierData) private {
         require(verifierAddress != address(0), "verifierAddress is 0x0");
+        // require(verifierData != bytes(0), "verifierData is 0x0");
         /*
          * We're doing a staticcall here to check if the verifierAddress implements the ICcipResponseVerifier interface.
          * This is done to prevent the user from setting an arbitrary address as the verifierAddress.
@@ -317,10 +310,10 @@ contract ERC3668Resolver is IExtendedResolver, IMetadataResolver, SupportsInterf
         /*
          * Set the new verifier for the given node.
          */
-        CcipVerifier memory _ccipVerifier = CcipVerifier(urls, ICcipResponseVerifier(verifierAddress));
+        CcipVerifier memory _ccipVerifier = CcipVerifier(urls, ICcipResponseVerifier(verifierAddress), verifierData);
         ccipVerifier[node] = _ccipVerifier;
 
-        emit VerifierAdded(node, verifierAddress, urls);
+        emit VerifierAdded(node, verifierAddress, urls, verifierData);
     }
 
     /**

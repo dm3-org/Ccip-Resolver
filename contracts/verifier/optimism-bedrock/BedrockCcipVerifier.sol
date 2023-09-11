@@ -5,7 +5,7 @@ import {CcipResponseVerifier} from "../CcipResponseVerifier.sol";
 import {IBedrockProofVerifier} from "./IBedrockProofVerifier.sol";
 import {convertEVMChainIdToCoinType} from "../../coinType/Ensip11CoinType.sol";
 
-contract BedrockCcipVerifier is CcipResponseVerifier {
+abstract contract BedrockCcipVerifier is CcipResponseVerifier {
     IBedrockProofVerifier public immutable bedrockProofVerifier;
     address public immutable target;
 
@@ -30,8 +30,9 @@ contract BedrockCcipVerifier is CcipResponseVerifier {
      */
     function resolveWithProof(
         bytes calldata response,
-        bytes calldata extraData
-    ) public view virtual override returns (bytes memory) {
+        bytes calldata extraData,
+        bytes calldata verifierData
+    ) public view virtual returns (bytes memory) {
         /*
          * @dev Decode the response and proof from the response bytes
          */
@@ -42,7 +43,8 @@ contract BedrockCcipVerifier is CcipResponseVerifier {
         /*
          * Revert if the proof target does not match the resolver. This is to prevent a malicious resolver from using a * proof intended for another address.
          */
-        require(proof.target == target, "proof target does not match resolver");
+        address targetAddress = abi.decode(verifierData, (address));
+        require(proof.target == targetAddress, "proof target does not match resolver");
         /*
          * bedrockProofVerifier.getProofValue(proof) always returns the packed result.
          * However, libraries like ethers.js expect the result to be encoded in bytes.
