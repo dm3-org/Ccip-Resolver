@@ -198,7 +198,7 @@ contract ERC3668Resolver is IExtendedResolver, IMetadataResolver, SupportsInterf
 
         ) = ICcipResponseVerifier(_ccipVerifier.verifierAddress).metadata(name);
 
-        return (resolverName, coinType, graphqlUrl, storageType, storageLocation, "");
+        return (resolverName, coinType, graphqlUrl, storageType, _ccipVerifier.verifierData, "");
     }
 
     /*

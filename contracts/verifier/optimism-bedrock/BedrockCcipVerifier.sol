@@ -7,18 +7,15 @@ import {convertEVMChainIdToCoinType} from "../../coinType/Ensip11CoinType.sol";
 
 abstract contract BedrockCcipVerifier is CcipResponseVerifier {
     IBedrockProofVerifier public immutable bedrockProofVerifier;
-    address public immutable target;
 
     constructor(
         address _owner,
         string memory _graphQlUrl,
         string memory _resolverName,
         uint256 _l2ResolverChainID,
-        IBedrockProofVerifier _bedrockProofVerifier,
-        address _target
+        IBedrockProofVerifier _bedrockProofVerifier
     ) CcipResponseVerifier(_owner, _graphQlUrl, _resolverName, _l2ResolverChainID) {
         bedrockProofVerifier = _bedrockProofVerifier;
-        target = _target;
     }
 
     /**
@@ -81,8 +78,8 @@ abstract contract BedrockCcipVerifier is CcipResponseVerifier {
             convertEVMChainIdToCoinType(l2ResolverChainID), // coinType according to ENSIP-11 for chain id 420
             this.graphqlUrl(), // the GraphQL Url
             uint8(0), // storage Type 0 => EVM
-            abi.encodePacked(address(target)), // storage location => resolver address
-            abi.encodePacked(address(0)) // context => l2 resolver address
+            abi.encodePacked(address(0)), // storage location => resolver address
+            abi.encodePacked(address(0))  // context => Kept for compatibility
         );
     }
 }
