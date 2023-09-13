@@ -66,8 +66,7 @@ contract ERC3668Resolver is IExtendedResolver, IMetadataResolver, SupportsInterf
         ENSRegistry _ensRegistry,
         // The name wrapper
         INameWrapper _nameWrapper,
-        string[] memory _gatewayUrls,
-        bytes memory verifierData
+        string[] memory _gatewayUrls
     ) {
         ensRegistry = _ensRegistry;
         nameWrapper = _nameWrapper;
