@@ -14,10 +14,11 @@ import 'hardhat-storage-layout';
 import 'hardhat-tracer';
 import 'solidity-coverage';
 
-const ETHERSCAN_API_KEY = process.env.ETHERSCAN_API_KEY;
-const OPTIMISTIC_ETHERSCAN_API_KEY = process.env.OPTIMISTIC_ETHERSCAN_API_KEY;
 
-const GOERLI_URL = process.env.GOERLI_RPC_URL ?? '';
+const OPTIMISTIC_ETHERSCAN_API_KEY = process.env.OPTIMISTIC_ETHERSCAN_API_KEY;
+const BASE_ETHERSCAN_API_KEY = process.env.BASE_ETHERSCAN_API_KEY;
+const GOERLI_ETHERSCAN_API_KEY = process.env.GOERLI_ETHERSCAN_API_KEY;
+const GOERLI_URL = process.env.L1_PROVIDER_URL
 const DEPLOYER_PRIVATE_KEY = process.env.DEPLOYER_PRIVATE_KEY ?? ethers.Wallet.createRandom().privateKey;
 
 const hardhat =
@@ -29,6 +30,11 @@ const hardhat =
               },
           };
 
+console.log({
+    GOERLI_URL,
+    DEPLOYER_PRIVATE_KEY,
+    GOERLI_ETHERSCAN_API_KEY
+})
 module.exports = {
     defaultNetwork: 'hardhat',
     networks: {
@@ -44,7 +50,30 @@ module.exports = {
         localhost: {},
     },
     etherscan: {
-        apiKey: ETHERSCAN_API_KEY,
+        apiKey: {
+            optimismGoerli: OPTIMISTIC_ETHERSCAN_API_KEY,
+            baseGoerli: BASE_ETHERSCAN_API_KEY,
+            goerli: GOERLI_ETHERSCAN_API_KEY
+        },
+        customChains: [
+            {
+                network: "optimismGoerli",
+                chainId: 420,
+                urls: {
+                    apiURL: "https://api-goerli-optimism.etherscan.io/api",
+                    browserURL: "https://goerli-optimism.etherscan.io"
+                }
+            },
+            {
+                network: "baseGoerli",
+                chainId: 84531,
+                urls: {
+                    browserURL: "https://goerli.basescan.org",
+                    apiURL: "https://api-goerli.basescan.org/api",
+                }
+            }
+        ]
+
     },
     namedAccounts: {
         deployer: {

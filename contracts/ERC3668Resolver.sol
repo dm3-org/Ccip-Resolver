@@ -112,7 +112,8 @@ contract ERC3668Resolver is IExtendedResolver, IMetadataResolver, SupportsInterf
         bytes memory callData = abi.encodeWithSelector(
             IResolverService.resolve.selector,
             name,
-            data
+            data,
+            _verifier.verifierData
         );
         revert OffchainLookup(
             address(this),
@@ -129,7 +130,7 @@ contract ERC3668Resolver is IExtendedResolver, IMetadataResolver, SupportsInterf
      * @param extraData The actual calldata that was called on the gateway.
      * @return the result of the offchain lookup
      */
-    function resolveWithProof(bytes calldata response, bytes calldata extraData, bytes calldata verifierData) external view returns (bytes memory) {
+    function resolveWithProof(bytes calldata response, bytes calldata extraData) external view returns (bytes memory) {
         /*
          * decode the calldata that was encoded in the resolve function for IResolverService.resolve()
          * bytes memory callData = abi.encodeWithSelector(IResolverService.resolveWithContext.selector, name);
