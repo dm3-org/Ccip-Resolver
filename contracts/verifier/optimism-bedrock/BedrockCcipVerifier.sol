@@ -40,13 +40,7 @@ abstract contract BedrockCcipVerifier is CcipResponseVerifier {
         /*
          * Revert if the proof target does not match the resolver. This is to prevent a malicious resolver from using a * proof intended for another address.
          */
-        // address targetAddress = abi.decode(verifierData, (address));
-        bytes memory vd = verifierData;
-        address targetAddress;
-        assembly {
-            targetAddress := mload(add(vd, 0x14))
-        }
-
+        address targetAddress = address(bytes20(verifierData));
         require(proof.target == targetAddress, "proof target does not match resolver");
         /*
          * bedrockProofVerifier.getProofValue(proof) always returns the packed result.
