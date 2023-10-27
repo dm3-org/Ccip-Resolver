@@ -1,4 +1,4 @@
-import { BigNumber } from "ethers";
+import { BigNumber } from 'ethers';
 
 /**
  * Converts a number or BigNumber to a hexadecimal string in RPC format.
@@ -11,14 +11,12 @@ export const toRpcHexString = (n: number | BigNumber) => {
     let num;
     if (typeof n === 'number') {
         num = '0x' + n.toString(16);
-    }
-    else {
+    } else {
         num = n.toHexString();
     }
     if (num === '0x0') {
         return num;
-    }
-    else {
+    } else {
         return num.replace(/^0x0/, '0x');
     }
 };
