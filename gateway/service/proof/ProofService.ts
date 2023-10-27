@@ -1,8 +1,8 @@
-import { toRpcHexString } from '@eth-optimism/core-utils';
 import { asL2Provider, CrossChainMessenger, L2Provider } from '@eth-optimism/sdk';
 import { BigNumber, ethers } from 'ethers';
 import { keccak256 } from 'ethers/lib/utils';
 
+import { toRpcHexString } from './toRpcHexString';
 import { CreateProofResult, EthGetProofResponse, StorageProof } from './types';
 
 export enum StorageLayout {

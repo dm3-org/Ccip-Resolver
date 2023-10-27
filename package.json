@@ -1,6 +1,6 @@
 {
     "name": "ccip-resolver",
-    "version": "0.2.7",
+    "version": "0.2.8",
     "description": "",
     "types": "dist/index.d.ts",
     "scripts": {
@@ -93,9 +93,8 @@
         "@ensdomains/buffer": "0.0.10",
         "@ensdomains/dnssec-oracle": "0.1.2",
         "@ensdomains/ens-contracts": "^0.0.19",
-        "@eth-optimism/contracts": "^0.5.40",
-        "@eth-optimism/core-utils": "^0.12.1",
-        "@eth-optimism/sdk": "^2.0.2",
+        "@eth-optimism/contracts": "^0.6.0",
+        "@eth-optimism/sdk": "^2.1.0",
         "axios": "^1.4.0",
         "body-parser": "^1.20.2",
         "express": "^4.18.2",
