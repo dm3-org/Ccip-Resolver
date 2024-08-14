@@ -2,6 +2,7 @@ import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import { BigNumber, ethers } from 'ethers';
 import { dnsEncode } from 'ethers/lib/utils';
 import { ethers as hreEthers } from 'hardhat';
+
 import { signAndEncodeResponse } from '../../gateway/handler/signing/signAndEncodeResponse';
 import { expect } from '../../test/chai-setup';
 import { SignatureCcipVerifier__factory } from '../../typechain';
