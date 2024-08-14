@@ -29,7 +29,8 @@ contract BedrockProofVerifier is IBedrockProofVerifier {
          * See https://github.com/ethereum-optimism/optimism/blob/4611198bf8bfd16563cc6bdf49bb35eed2e46801/packages/contracts-bedrock/contracts/L1/OptimismPortal.sol#L261
          */
         require(
-            l2OutputOracle.getL2Output(proof.l2OutputIndex).outputRoot == Hashing.hashOutputRootProof(proof.outputRootProof),
+            l2OutputOracle.getL2Output(proof.l2OutputIndex).outputRoot ==
+                Hashing.hashOutputRootProof(proof.outputRootProof),
             "Invalid output root"
         );
 
@@ -110,7 +111,10 @@ contract BedrockProofVerifier is IBedrockProofVerifier {
      * @param storageProof the StorageProof struct containing the necessary proof data
      * @return the retrieved storage proof value or 0x if the storage slot is empty
      */
-    function getSingleStorageProof(bytes32 storageRoot, StorageProof memory storageProof) private pure returns (bytes memory) {
+    function getSingleStorageProof(
+        bytes32 storageRoot,
+        StorageProof memory storageProof
+    ) private pure returns (bytes memory) {
         (bool storageExists, bytes memory retrievedValue) = Lib_SecureMerkleTrie.get(
             abi.encodePacked(storageProof.key),
             storageProof.storageTrieWitness,

@@ -9,7 +9,6 @@ import express from 'express';
 import { config, ethers as hreEthers } from 'hardhat';
 import request from 'supertest';
 
-
 import { getConfigReader } from '../../gateway/config/ConfigReader';
 import { ccipGateway } from '../../gateway/http/ccipGateway';
 import { StorageLayout } from '../../gateway/service/proof/ProofService';

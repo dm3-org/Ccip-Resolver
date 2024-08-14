@@ -9,7 +9,6 @@ import express from 'express';
 import { config, ethers as hreEthers } from 'hardhat';
 import request from 'supertest';
 
-
 import { getConfigReader } from '../../gateway/config/ConfigReader';
 import { ccipGateway } from '../../gateway/http/ccipGateway';
 import {
@@ -20,8 +19,6 @@ import {
     SignatureCcipVerifier__factory,
 } from '../../typechain';
 import { getGateWayUrl, getGateWayUrlForAddress } from '../helper/getGatewayUrl';
-
-
 
 describe('Signature Handler', () => {
     let ccipApp: express.Express;
