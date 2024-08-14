@@ -17,7 +17,7 @@ export async function signAndEncodeResponse(
     ttl: number = 30000,
 ): Promise<string> {
     const validUntil = Math.floor(Date.now() / 1000 + ttl);
-    global.logger.debug({ message: 'signAndEncodeResponse', signer, resolverAddr, result, calldata, validUntil });
+    console.debug({ message: 'signAndEncodeResponse', signer, resolverAddr, result, calldata, validUntil });
     /**
      * This hash has to be compiled the same way as at the OffchainResolver.makeSignatureHash method
      * since it'll be compared within the {@see resolveWithProof} function
@@ -34,6 +34,6 @@ export async function signAndEncodeResponse(
      */
     const sig = await signer.signMessage(msgHashDigest);
 
-    global.logger.debug({ message: 'signAndEncodeResponse result', result, validUntil, sig });
+    console.debug({ message: 'signAndEncodeResponse result', result, validUntil, sig });
     return ethers.utils.defaultAbiCoder.encode(['bytes', 'uint64', 'bytes'], [result, validUntil, sig]);
 }

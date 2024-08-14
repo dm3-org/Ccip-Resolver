@@ -117,7 +117,7 @@ contract ERC3668Resolver is IExtendedResolver, IMetadataResolver, SupportsInterf
         /*
          * Retrieves the owner of the node. NameWrapper profiles are supported too. This will be the context of the request.
          */
-        address nodeOwner = getNameOwner(name, 0);        
+        address nodeOwner = getNameOwner(name, 0);
         bytes memory context = abi.encodePacked(nodeOwner);
 
         /*
@@ -279,11 +279,11 @@ contract ERC3668Resolver is IExtendedResolver, IMetadataResolver, SupportsInterf
         bytes32 node = name.namehash(offset);
         (, offset) = name.readLabel(offset);
         nodeOwner = ensRegistry.owner(node);
-        if(offset >= name.length) {
+        if (offset >= name.length) {
             return address(0);
-        }else if (nodeOwner == address(0)){
+        } else if (nodeOwner == address(0)) {
             return getNameOwner(name, offset);
-        }else if(nodeOwner == address(nameWrapper)){
+        } else if (nodeOwner == address(nameWrapper)) {
             return nameWrapper.ownerOf(uint256(node));
         }
         return nodeOwner;
