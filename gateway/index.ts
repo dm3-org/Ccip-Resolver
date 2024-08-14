@@ -3,21 +3,11 @@ import bodyParser from "body-parser";
 import express from "express";
 import http from "http";
 import cors from "cors";
-import winston from "winston";
 
 import { ccipGateway } from "./http/ccipGateway";
 import { getConfigReader } from "./config/ConfigReader";
 
 dotenv.config();
-
-declare global {
-    var logger: winston.Logger
-}
-  
-global.logger = winston.createLogger({
-    level: process.env.LOG_LEVEL ?? 'info',
-    transports: [new winston.transports.Console()],
-});
 
 const app = express();
 app.use(express.json({ limit: "50mb" }));

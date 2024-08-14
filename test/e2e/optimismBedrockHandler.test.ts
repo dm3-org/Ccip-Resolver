@@ -8,7 +8,7 @@ import { ethers, Wallet } from 'ethers';
 import express from 'express';
 import { config, ethers as hreEthers } from 'hardhat';
 import request from 'supertest';
-import winston from 'winston';
+
 
 import { getConfigReader } from '../../gateway/config/ConfigReader';
 import { ccipGateway } from '../../gateway/http/ccipGateway';
@@ -95,11 +95,6 @@ describe('Optimism Bedrock Handler', () => {
 
         ccipApp = express();
         ccipApp.use(bodyParser.json());
-
-        global.logger = winston.createLogger({
-            level: process.env.LOG_LEVEL ?? 'info',
-            transports: [new winston.transports.Console()],
-        });
     });
 
     it('Returns valid string data from resolver', async () => {

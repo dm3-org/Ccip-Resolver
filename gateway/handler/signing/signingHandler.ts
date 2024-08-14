@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { ethers } from 'ethers';
-import { Logger } from 'winston';
+
 
 import { SigningConfigEntry } from '../../config/Config';
 

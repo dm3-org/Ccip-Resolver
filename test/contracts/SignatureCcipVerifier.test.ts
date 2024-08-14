@@ -1,10 +1,7 @@
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
-import exp from 'constants';
 import { BigNumber, ethers } from 'ethers';
 import { dnsEncode } from 'ethers/lib/utils';
 import { ethers as hreEthers } from 'hardhat';
-import winston from 'winston';
-
 import { signAndEncodeResponse } from '../../gateway/handler/signing/signAndEncodeResponse';
 import { expect } from '../../test/chai-setup';
 import { SignatureCcipVerifier__factory } from '../../typechain';
@@ -16,11 +13,6 @@ describe('Signature Ccip Verifier', () => {
     let rando: SignerWithAddress;
     let alice: SignerWithAddress;
     let resolver: SignerWithAddress;
-
-    global.logger = winston.createLogger({
-        level: process.env.LOG_LEVEL ?? 'info',
-        transports: [new winston.transports.Console()],
-    });
 
     beforeEach(async () => {
         // Get signers

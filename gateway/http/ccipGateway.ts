@@ -1,5 +1,5 @@
 import express from 'express';
-import { Logger } from 'winston';
+
 
 import { ConfigReader } from '../config/ConfigReader';
 import { optimismBedrockHandler } from '../handler/optimism-bedrock/optimismBedrockHandler';
