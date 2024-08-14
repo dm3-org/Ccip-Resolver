@@ -1,7 +1,6 @@
 import axios from 'axios';
 import { ethers } from 'ethers';
 
-
 import { SigningConfigEntry } from '../../config/Config';
 
 import { signAndEncodeResponse } from './signAndEncodeResponse';
@@ -37,6 +36,6 @@ export async function signingHandler(calldata: string, resolverAddr: string, con
      * Sign and encode the response the signingHandler has returned using the private key from the environment variable.
      */
     const signer = new ethers.Wallet(singerPk);
-    global.logger.info({ message: 'signingHandler', signer: signer.address });
+    console.info({ message: 'signingHandler', signer: signer.address });
     return signAndEncodeResponse(signer, resolverAddr, result, calldata);
 }

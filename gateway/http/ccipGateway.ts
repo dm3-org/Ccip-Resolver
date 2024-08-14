@@ -1,6 +1,5 @@
 import express from 'express';
 
-
 import { ConfigReader } from '../config/ConfigReader';
 import { optimismBedrockHandler } from '../handler/optimism-bedrock/optimismBedrockHandler';
 import { signingHandler } from '../handler/signing/signingHandler';
@@ -33,7 +32,7 @@ export function ccipGateway(configReader: ConfigReader) {
                 /**
                  * If there is no config entry for the resolverAddr, we return a 404. As there is no way for the gateway to resolve the request
                  */
-                global.logger.warn(`Unknown resolver selector pair for resolverAddr: ${resolverAddr}`);
+                console.warn(`Unknown resolver selector pair for resolverAddr: ${resolverAddr}`);
 
                 res.status(404).send({
                     message: 'Unknown resolver selector pair',
@@ -46,15 +45,15 @@ export function ccipGateway(configReader: ConfigReader) {
              */
             switch (configEntry.type) {
                 case 'signing': {
-                    global.logger.info({ type: 'signing' });
-                    global.logger.debug({ type: 'signing', calldata, resolverAddr, configEntry });
+                    console.info({ type: 'signing' });
+                    console.debug({ type: 'signing', calldata, resolverAddr, configEntry });
                     const response = await signingHandler(calldata, resolverAddr, configEntry);
                     res.status(200).send({ data: response });
                     break;
                 }
                 case 'optimism-bedrock': {
-                    global.logger.info({ type: 'optimism-bedrock' });
-                    global.logger.debug({ type: 'optimism-bedrock', calldata, resolverAddr, configEntry });
+                    console.info({ type: 'optimism-bedrock' });
+                    console.debug({ type: 'optimism-bedrock', calldata, resolverAddr, configEntry });
                     const response = await optimismBedrockHandler(calldata, resolverAddr, configEntry);
 
                     res.status(200).send({ data: response });
@@ -67,7 +66,7 @@ export function ccipGateway(configReader: ConfigReader) {
                     });
             }
         } catch (e) {
-            global.logger.warn((e as Error).message);
+            console.warn((e as Error).message);
             res.status(400).send({ message: 'ccip gateway error ,' + e });
         }
     });
